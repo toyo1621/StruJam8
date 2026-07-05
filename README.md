@@ -35,7 +35,7 @@ Implemented:
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
 - Strudel-style active code line highlighting while playing
 - Copy audible Strudel code to clipboard
-- Concrete technique routes for all eight targets: drums, bass, chords, keys, strings, bells, guitar, and voice
+- Concrete technique routes covering all eight targets and all eight intents at least once
 - Track templates for all eight targets
 - Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, TODO badges, and playback-safety notes for unverified snippets
 - Number-key shortcuts for live pads 1-8, with guards for editable controls
@@ -69,13 +69,17 @@ stack(
 )
 ```
 
-Concrete routes currently include:
+Concrete routes currently include 13 route sets, with at least one concrete route for every target and every intent:
 
-- ベース -> 崩す
-- コード -> 盛り上げる
 - ドラム -> 踊らせる
 - ドラム -> 盛り上げる
+- ドラム -> 抜く
+- ベース -> 崩す
+- ベース -> 踊らせる
+- コード -> 盛り上げる
+- コード -> チル
 - キーボード -> チル
+- キーボード -> ランダム感
 - ストリングス -> 広げる
 - ベル -> ランダム感
 - ギター -> 前に出す
@@ -172,11 +176,12 @@ src/
 docs/
   deployment.md          GitHub Pages deployment runbook
   license-review.md      License decision notes
+  technique-design.md    Technique design principles and route expansion guide
 ```
 
 ## Demo Assets
 
-See [docs/demo.md](docs/demo.md) for the screenshot and demo GIF capture plan.
+See [docs/demo.md](docs/demo.md) for the screenshot and demo GIF capture plan. See [docs/technique-design.md](docs/technique-design.md) for how technique routes should be designed.
 
 ## Contributing
 

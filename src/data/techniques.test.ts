@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getTechniqueOptions, targets } from "./pads";
+import { getTechniqueOptions, intents, targets } from "./pads";
 import { concreteTechniqueRoutes, getRouteDefinition, getRouteKey } from "./routes";
 import { getTechniqueById, getTechniquesByRoute, techniques } from "./techniques";
 
@@ -29,6 +29,13 @@ describe("technique catalog", () => {
     const targetIds = new Set(targets.map((target) => target.id));
 
     expect(coveredTargetIds).toEqual(targetIds);
+  });
+
+  it("covers every intent with at least one concrete route", () => {
+    const coveredIntentIds = new Set(concreteTechniqueRoutes.map((route) => route.intentId));
+    const intentIds = new Set(intents.map((intent) => intent.id));
+
+    expect(coveredIntentIds).toEqual(intentIds);
   });
 
   it("returns the concrete bass break route", () => {
@@ -86,6 +93,73 @@ describe("technique catalog", () => {
       "前で反転",
     ]);
     expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
+  });
+
+  it("returns the concrete drums remove route", () => {
+    const routeTechniques = getTechniquesByRoute("drums", "remove");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音数を抜く",
+      "半分に落とす",
+      "小さくする",
+      "こもらせる",
+      "高音だけ残す",
+      "逆に流す",
+      "休みを作る",
+      "影だけ残す",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
+  it("returns the concrete bass dance route", () => {
+    const routeTechniques = getTechniquesByRoute("bass", "dance");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "重心を押す",
+      "裏拍を足す",
+      "短く切る",
+      "低音を丸める",
+      "小走りを足す",
+      "オクターブ返し",
+      "フィルター弾み",
+      "少し荒くする",
+    ]);
+    expect(routeTechniques[5]?.strudelSnippet).toBe(".sometimes(add(note(\"12\")))");
+  });
+
+  it("returns the concrete chords chill route", () => {
+    const routeTechniques = getTechniquesByRoute("chords", "chill");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音を丸くする",
+      "ゆっくり鳴らす",
+      "空間を深く",
+      "音量を下げる",
+      "長くつなぐ",
+      "余韻を伸ばす",
+      "遅れを重ねる",
+      "少し抜く",
+    ]);
+  });
+
+  it("returns the concrete keys random route", () => {
+    const routeTechniques = getTechniquesByRoute("keys", "random");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "たまに鳴る",
+      "高く跳ねる",
+      "逆に流す",
+      "ずらし影",
+      "時々細かく",
+      "明暗ゆらぎ",
+      "小さな残響",
+      "低く返す",
+    ]);
+    expect(routeTechniques[7]?.strudelSnippet).toBe(".sometimes(add(note(\"-12\")))");
   });
 
   it("returns the concrete keys chill route", () => {

@@ -42,6 +42,7 @@ GitHub Actions runs the same check on pushes to `main` and pull requests.
 
 - Keep the UI usable even when audio playback fails or is unavailable.
 - Keep generated Strudel-like code readable, and keep the audible code panel aligned with what Play evaluates.
+- Read `docs/technique-design.md` before adding or changing technique routes.
 - Add concrete target/intent routes in `src/data/routes.ts` before adding route-specific techniques.
 - Keep every concrete route at exactly eight techniques.
 - Mark unverified Strudel snippets with `needsTodo: true`.

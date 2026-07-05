@@ -64,6 +64,34 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "盛り上げる",
     description: "ドラムの密度、音量、フィルを増やして、展開前の高まりを作るルート。",
   },
+  {
+    targetId: "drums",
+    intentId: "remove",
+    target: "ドラム",
+    intent: "抜く",
+    description: "ドラムの密度や明るさを落として、展開に余白やドロップ感を作るルート。",
+  },
+  {
+    targetId: "bass",
+    intentId: "dance",
+    target: "ベース",
+    intent: "踊らせる",
+    description: "ベースの重心、裏拍、短さを調整して、体が動くグルーヴを作るルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "chill",
+    target: "コード",
+    intent: "チル",
+    description: "コードを丸く、遅く、奥に置いて、落ち着いた空気を作るルート。",
+  },
+  {
+    targetId: "keys",
+    intentId: "random",
+    target: "キーボード",
+    intent: "ランダム感",
+    description: "キーボードの鳴り方、音高、タイミングを少し揺らして、偶然性のあるフレーズを作るルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {

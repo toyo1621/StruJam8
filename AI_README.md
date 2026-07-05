@@ -44,7 +44,7 @@ npm run check
 npm run check:pages
 ```
 
-A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, and the Strudel audio engine boundary.
+A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, and the Strudel audio engine boundary.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -62,6 +62,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `docs/demo.md`: screenshot and demo GIF capture plan for release assets.
 - `docs/deployment.md`: GitHub Pages deployment runbook and post-deploy QA checklist.
 - `docs/license-review.md`: AGPL license decision notes and upstream Strudel license check.
+- `docs/technique-design.md`: technique design principles, route priority, and route expansion rules.
 - `LICENSE`: GNU Affero General Public License version 3 text.
 - `src/types.ts`: shared data contracts.
 - `src/data/pads.ts`: target and intent pad definitions plus route-specific technique pad lookup.
@@ -170,19 +171,23 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: implemented at rendered track-line level, not yet token-level `miniLocations` parity with strudel.cc.
-- Technique catalog: nine real routes have concrete snippets:
-  - ベース -> 崩す
-  - コード -> 盛り上げる
+- Technique catalog: 13 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
+  - ドラム -> 抜く
+  - ベース -> 崩す
+  - ベース -> 踊らせる
+  - コード -> 盛り上げる
+  - コード -> チル
   - キーボード -> チル
+  - キーボード -> ランダム感
   - ストリングス -> 広げる
   - ベル -> ランダム感
   - ギター -> 前に出す
   - ボイス -> 前に出す
 - Learning experience: intent-level route descriptions, technique descriptions, snippets, and plain-language snippet explanations are visible in the pad preview and selected rule detail, but there is no guided mode or full code walkthrough yet.
 - Selection feedback: selected technique pads are outlined for active rules, and rules can be duplicated, removed, toggled on/off, reordered, undone, and redone. Parameter-level editing is not implemented yet.
-- Target coverage: all eight target families now have at least one concrete target/intent route.
+- Target and intent coverage: all eight target families and all eight intent families now have at least one concrete target/intent route.
 
 ### Missing
 
@@ -240,11 +245,11 @@ Recommended direction:
 
 ### Scalability
 
-Current level: fine for 72 techniques, 8 track templates, 2 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
+Current level: fine for 104 techniques, 8 track templates, 2 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
 
 Strengths:
 
-- Duplicate technique IDs, route uniqueness, concrete route completeness, and all-target route coverage are covered by tests.
+- Duplicate technique IDs, route uniqueness, concrete route completeness, all-target route coverage, and all-intent route coverage are covered by tests.
 - Track template coverage is validated by tests.
 - Preset coverage is validated by tests.
 - Saved jam snapshots are versioned and invalid saved rules are filtered on load.
@@ -410,7 +415,7 @@ Goal: make the 8-pad system musically useful across all targets.
 
 Tasks:
 
-- Define real techniques for more target/intent routes: first target coverage pass done; ドラム -> 踊らせる, ドラム -> 盛り上げる, キーボード -> チル, ストリングス -> 広げる, ベル -> ランダム感, ギター -> 前に出す, and ボイス -> 前に出す added.
+- Define real techniques for more target/intent routes: first target coverage pass done, then intent coverage pass added ドラム -> 抜く, ベース -> 踊らせる, コード -> チル, and キーボード -> ランダム感. Current catalog has 13 concrete routes and 104 techniques.
 - Create track templates for drums, bass, chords, keys, strings, bells, guitar, and voice: done.
 - Decide how multiple snippets compose for the same track: done for preview output with ordered per-track chaining.
 - Add presets beyond Toy House: done with a second static preset, Neon Dub.
