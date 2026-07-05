@@ -176,6 +176,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "前に出す",
     description: "コードの音量、明るさ、輪郭を上げて、和音を前面のフックとして聞かせるルート。",
   },
+  {
+    targetId: "keys",
+    intentId: "widen",
+    target: "キーボード",
+    intent: "広げる",
+    description: "キーボードの音域、余韻、時間差を広げて、フレーズを面として聞かせるルート。",
+  },
+  {
+    targetId: "bells",
+    intentId: "widen",
+    target: "ベル",
+    intent: "広げる",
+    description: "ベルの高域、余韻、遅れを広げて、きらめきが空間に散る感じを作るルート。",
+  },
+  {
+    targetId: "voice",
+    intentId: "widen",
+    target: "ボイス",
+    intent: "広げる",
+    description: "ボイス断片の上下、長さ、薄い重なりを広げて、声っぽい空間の層を作るルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {

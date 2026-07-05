@@ -452,6 +452,58 @@ describe("technique catalog", () => {
     expect(routeTechniques[2]?.strudelSnippet).toBe(".add(note(\"12\"))");
   });
 
+
+  it("returns the concrete keys widen route", () => {
+    const routeTechniques = getTechniquesByRoute("keys", "widen");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "高音を重ねる",
+      "低音を重ねる",
+      "空間を広げる",
+      "長くつなぐ",
+      "遅れを重ねる",
+      "明るく開く",
+      "ゆっくり雲にする",
+      "背景へ広げる",
+    ]);
+    expect(routeTechniques[5]?.strudelSnippet).toBe(".lpf(sine.range(1200, 3600).slow(8))");
+  });
+
+  it("returns the concrete bells widen route", () => {
+    const routeTechniques = getTechniquesByRoute("bells", "widen");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "高くきらめく",
+      "低く返す",
+      "余韻を広げる",
+      "長く鳴らす",
+      "遅れて光る",
+      "空気を残す",
+      "ゆっくり散らす",
+      "背景に散らす",
+    ]);
+    expect(routeTechniques[1]?.strudelSnippet).toBe(".sometimes(add(note(\"-12\")))");
+  });
+
+  it("returns the concrete voice widen route", () => {
+    const routeTechniques = getTechniquesByRoute("voice", "widen");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "高い声を重ねる",
+      "低い影を足す",
+      "響きを広げる",
+      "長く伸ばす",
+      "薄くダブル",
+      "丸く広げる",
+      "空気を足す",
+      "ゆっくり呼吸",
+    ]);
+    expect(routeTechniques[4]?.strudelSnippet).toBe(".off(1/8, x => x.gain(0.24))");
+  });
+
   it("returns no concrete techniques for undefined routes", () => {
     expect(getTechniquesByRoute("strings", "build")).toEqual([]);
   });

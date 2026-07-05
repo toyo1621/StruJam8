@@ -171,7 +171,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: implemented at rendered track-line level, not yet token-level `miniLocations` parity with strudel.cc.
-- Technique catalog: 25 real routes have concrete snippets, covering every target and every intent at least once:
+- Technique catalog: 28 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
   - ドラム -> 抜く
@@ -193,10 +193,13 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
   - コード -> 前に出す
   - キーボード -> チル
   - キーボード -> ランダム感
+  - キーボード -> 広げる
   - ストリングス -> 広げる
   - ベル -> ランダム感
+  - ベル -> 広げる
   - ギター -> 前に出す
   - ボイス -> 前に出す
+  - ボイス -> 広げる
 - Learning experience: intent-level route descriptions, technique descriptions, snippets, and plain-language snippet explanations are visible in the pad preview and selected rule detail, but there is no guided mode or full code walkthrough yet.
 - Selection feedback: selected technique pads are outlined for active rules, and rules can be duplicated, removed, toggled on/off, reordered, undone, and redone. Parameter-level editing is not implemented yet.
 - Target and intent coverage: all eight target families and all eight intent families now have at least one concrete target/intent route.
@@ -257,7 +260,7 @@ Recommended direction:
 
 ### Scalability
 
-Current level: fine for 200 techniques, 8 track templates, 2 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
+Current level: fine for 224 techniques, 8 track templates, 2 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
 
 Strengths:
 
@@ -427,7 +430,7 @@ Goal: make the 8-pad system musically useful across all targets.
 
 Tasks:
 
-- Define real techniques for more target/intent routes: first target coverage pass done, then intent coverage pass added ドラム -> 抜く, ベース -> 踊らせる, コード -> チル, and キーボード -> ランダム感. Core expansion then added ドラム -> 崩す, ベース -> 盛り上げる, and コード -> 広げる. Reduction expansion then added ベース -> 抜く, コード -> 抜く, and ドラム -> チル. Core contrast/surprise expansion then added ベース -> チル, コード -> 崩す, and ドラム -> ランダム感. Forward expansion then added ドラム -> 前に出す, ベース -> 前に出す, and コード -> 前に出す. Current catalog has 25 concrete routes and 200 techniques.
+- Define real techniques for more target/intent routes: first target coverage pass done, then intent coverage pass added ドラム -> 抜く, ベース -> 踊らせる, コード -> チル, and キーボード -> ランダム感. Core expansion then added ドラム -> 崩す, ベース -> 盛り上げる, and コード -> 広げる. Reduction expansion then added ベース -> 抜く, コード -> 抜く, and ドラム -> チル. Core contrast/surprise expansion then added ベース -> チル, コード -> 崩す, and ドラム -> ランダム感. Forward expansion then added ドラム -> 前に出す, ベース -> 前に出す, and コード -> 前に出す. Upper-layer widen expansion then added キーボード -> 広げる, ベル -> 広げる, and ボイス -> 広げる. Current catalog has 28 concrete routes and 224 techniques.
 - Create track templates for drums, bass, chords, keys, strings, bells, guitar, and voice: done.
 - Decide how multiple snippets compose for the same track: done for preview output with ordered per-track chaining.
 - Add presets beyond Toy House: done with a second static preset, Neon Dub.

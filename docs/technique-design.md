@@ -66,10 +66,13 @@ Implemented concrete routes:
 - コード -> 前に出す
 - キーボード -> チル
 - キーボード -> ランダム感
+- キーボード -> 広げる
 - ストリングス -> 広げる
 - ベル -> ランダム感
+- ベル -> 広げる
 - ギター -> 前に出す
 - ボイス -> 前に出す
+- ボイス -> 広げる
 
 This gives every target at least one concrete route and every intent at least one concrete route.
 
