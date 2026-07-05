@@ -33,6 +33,12 @@ export function RuleDetailPanel({ rule, technique }: RuleDetailPanelProps) {
         <p>{technique?.snippetExplanation ?? "このsnippetの日本語説明はまだ未定義です。"}</p>
       </div>
 
+      {rule.needsTodo && (
+        <p className="rule-detail-note">
+          このsnippetは未検証です。安全のため、Play用コードにはまだ反映されません。
+        </p>
+      )}
+
       {!rule.enabled && (
         <p className="rule-detail-note">
           このルールはOFFです。右側のコード表示には反映されません。

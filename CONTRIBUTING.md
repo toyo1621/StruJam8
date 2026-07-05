@@ -1,6 +1,6 @@
 # Contributing to StruJam8
 
-Thanks for helping improve StruJam8. This project is currently an MVP focused on UI, state management, and a readable Strudel-like code preview. Audio playback is not implemented yet.
+Thanks for helping improve StruJam8. This project is currently an MVP focused on UI, state management, readable Strudel-like code feedback, and a first browser audio preview through `@strudel/web`.
 
 ## Project Scope
 
@@ -10,7 +10,7 @@ StruJam8 should preserve its core 8-pad flow:
 2. Choose an intention.
 3. Choose a technique.
 4. Add a rule.
-5. Show readable Strudel-like code.
+5. Show readable Strudel-like code and keep Play aligned with the visible audible code.
 
 Before adding large new systems, prefer data-driven improvements in `src/data/` and small isolated helpers in `src/lib/`.
 
@@ -40,14 +40,14 @@ GitHub Actions runs the same check on pushes to `main` and pull requests.
 
 ## Development Guidelines
 
-- Keep the UI usable without audio playback.
-- Keep generated Strudel-like code readable, even when snippets are only previews.
+- Keep the UI usable even when audio playback fails or is unavailable.
+- Keep generated Strudel-like code readable, and keep the audible code panel aligned with what Play evaluates.
 - Add concrete target/intent routes in `src/data/routes.ts` before adding route-specific techniques.
 - Keep every concrete route at exactly eight techniques.
 - Mark unverified Strudel snippets with `needsTodo: true`.
 - Prefer stable IDs over display labels for state, persistence, and routing.
 - Keep parsing, persistence, clipboard, and sharing logic out of React components when practical.
-- Do not add Blockly or `@strudel/web` unless that phase is explicitly requested.
+- Do not add Blockly, external sample packs, soundfonts, or additional Strudel runtime packages unless that phase is explicitly requested and license-reviewed.
 
 ## Tests
 

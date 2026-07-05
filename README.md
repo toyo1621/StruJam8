@@ -19,7 +19,7 @@ StruJam8は、Strudelのためのオープンソースなビジュアル・ジ�
 ## Current Status
 
 StruJam8 is currently an MVP focused on UI, state management, generated-code feedback, and a first Strudel audio preview.
-Play/Stop can start and stop a conservative `@strudel/web` preview, but external sample packs are not loaded by default yet.
+Play/Stop can start and stop a conservative `@strudel/web` preview. While playing, changes to the audible code are re-evaluated so the right-side code panel stays aligned with playback. External sample packs are not loaded by default yet.
 
 Implemented:
 
@@ -29,15 +29,15 @@ Implemented:
 - Toy House and Neon Dub preset selection
 - Local browser persistence for rules and preset selection
 - JSON export/import for jam snapshots
-- Shareable URL snapshots for small jams
+- Shareable URL snapshots for small jams through the Share URL control
 - Audible Strudel code display from the same code string used by Play
-- First Play/Stop audio preview through `@strudel/web`
+- First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
 - Strudel-style active code line highlighting while playing
 - Copy audible Strudel code to clipboard
 - Concrete technique routes for all eight targets: drums, bass, chords, keys, strings, bells, guitar, and voice
 - Track templates for all eight targets
-- Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, and TODO badges
+- Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, TODO badges, and playback-safety notes for unverified snippets
 - Number-key shortcuts for live pads 1-8, with guards for editable controls
 - Visible keyboard focus states
 - Screen reader status announcements and full-route labels for rule actions, including reset semantics

@@ -7,7 +7,7 @@ Use this alongside README.md. README.md is product-facing; this file is implemen
 
 StruJam8 is an MVP for an open-source visual jam interface for Strudel.
 The current priority is UI, state management, code-generation experience, and cautious first playback.
-The app has a first Play/Stop audio preview through `@strudel/web`. Default presets use built-in synth/noise sounds only; external sample packs are not loaded by default yet.
+The app has a first Play/Stop audio preview through `@strudel/web`. While Play is active, changes to the audible code are re-evaluated so the right code panel, copied code, and evaluated code stay aligned. Default presets use built-in synth/noise sounds only; external sample packs are not loaded by default yet.
 
 Primary user flow:
 
@@ -16,6 +16,7 @@ Primary user flow:
 3. Select a technique.
 4. Add a rule.
 5. Show the audible Strudel code in the right code panel. The visible code, copied code, and Play input should stay identical.
+6. If Play is active, audible code changes should re-evaluate the Strudel preview instead of silently diverging.
 
 ## Current Workspace
 
@@ -96,7 +97,7 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play button initializes Strudel from a user click and evaluates conservative playable code. Stop calls `hush()` through the audio boundary. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. Stop calls `hush()` through the audio boundary. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
@@ -152,6 +153,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - First Strudel audio preview through Play/Stop using `@strudel/web`.
 - Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
 - The right code panel, copied code, and Play input all use the same audible code string.
+- Active playback re-evaluates when the audible code string changes, keeping sound and displayed code closer during live edits.
 - Active code line highlighting pulses through audible track lines while playing.
 - Audible code can be copied to the clipboard from the code panel.
 - Fallback technique pads for undefined target/intent combinations.
@@ -165,7 +167,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop: first audio preview only; it initializes Strudel and evaluates the same audible code shown in the right panel, but it is not a complete live-code transport yet.
+- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: implemented at rendered track-line level, not yet token-level `miniLocations` parity with strudel.cc.
 - Technique catalog: nine real routes have concrete snippets:
@@ -399,7 +401,7 @@ Tasks:
 - Show concrete/prototype route descriptions before choosing an intent: done.
 - Show short labels on pads where useful, but preserve full labels for readability: done.
 - Add plain-language explanations beside snippets: done in the pad preview.
-- Add TODO badges for unverified snippets: done in the pad preview.
+- Add TODO badges for unverified snippets: done in the pad preview, rule list, and rule detail panel; unverified snippets are skipped by Play.
 - Add a compact rule detail view: done.
 
 ### Phase 3: Expand Musical Coverage
@@ -427,6 +429,7 @@ Tasks:
 - Implement update and dispose lifecycle: pending.
 - Handle invalid code safely: partial; UI catches start failures, but runtime validation is still shallow.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
+- Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.
 - Review external sample-pack licensing before enabling remote samples: pending.
 

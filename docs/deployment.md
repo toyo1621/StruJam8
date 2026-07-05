@@ -55,6 +55,9 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 - Source and License links open the expected GitHub pages.
 - Pads navigate target -> intent -> technique.
 - Adding a technique updates the rules list and the audible Strudel Code panel.
+- While playing, adding/toggling/removing a playable technique updates the audible preview.
+- Changing preset or importing a jam stops current playback.
+- Share URL copies a URL that restores the current small jam.
 - LocalStorage restore still works after refresh.
 - Play starts the first Strudel audio preview after a user click, Stop hushes playback, and active code lines pulse while playing.
 

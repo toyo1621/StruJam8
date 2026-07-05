@@ -108,6 +108,7 @@ function App() {
   const [codePulseIndex, setCodePulseIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
+  const lastPlayedCodeRef = useRef<string | null>(null);
   const {
     currentLevel,
     selectedTarget,
@@ -186,6 +187,14 @@ function App() {
     setStatusMessage("");
     window.setTimeout(() => setStatusMessage(message), 0);
   }, []);
+
+  const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
+    stopStrudelAudio();
+    lastPlayedCodeRef.current = null;
+    dispatch({ type: "setPlaying", isPlaying: false });
+    setAudioStatusMessage(statusMessage);
+    announce(announcement);
+  }, [announce]);
 
   useEffect(() => {
     saveJamSnapshot(getBrowserStorage(), {
@@ -303,19 +312,26 @@ function App() {
   }, [announce, rules.length]);
 
   const handlePresetChange = useCallback((presetId: PresetId) => {
+    if (isPlaying) {
+      stopAudioPreview("Audio stopped for preset change", "Audio stopped for preset change");
+    }
+
     dispatch({ type: "selectPreset", presetId });
-  }, []);
+  }, [isPlaying, stopAudioPreview]);
 
   const handlePlay = useCallback(async () => {
     setAudioStatusMessage("Starting audio...");
 
     try {
       await startStrudelAudio(audibleCode);
+      lastPlayedCodeRef.current = audibleCode;
       dispatch({ type: "setPlaying", isPlaying: true });
       setAudioStatusMessage("Audio playing");
       announce("Audio playback started");
     } catch (error) {
       console.error(error);
+      stopStrudelAudio();
+      lastPlayedCodeRef.current = null;
       dispatch({ type: "setPlaying", isPlaying: false });
       setAudioStatusMessage("Audio start failed");
       announce("Audio playback could not start");
@@ -323,11 +339,45 @@ function App() {
   }, [announce, audibleCode]);
 
   const handleStop = useCallback(() => {
-    stopStrudelAudio();
-    dispatch({ type: "setPlaying", isPlaying: false });
-    setAudioStatusMessage("Audio stopped");
-    announce("Audio playback stopped");
-  }, [announce]);
+    stopAudioPreview("Audio stopped", "Audio playback stopped");
+  }, [stopAudioPreview]);
+
+  useEffect(() => {
+    if (!isPlaying || lastPlayedCodeRef.current === audibleCode) {
+      return;
+    }
+
+    let didCancel = false;
+    setAudioStatusMessage("Updating audio...");
+
+    startStrudelAudio(audibleCode)
+      .then(() => {
+        if (didCancel) {
+          return;
+        }
+
+        lastPlayedCodeRef.current = audibleCode;
+        setAudioStatusMessage("Audio playing");
+        announce("Audio playback updated");
+      })
+      .catch((error) => {
+        console.error(error);
+
+        if (didCancel) {
+          return;
+        }
+
+        stopStrudelAudio();
+        lastPlayedCodeRef.current = null;
+        dispatch({ type: "setPlaying", isPlaying: false });
+        setAudioStatusMessage("Audio update failed");
+        announce("Audio playback could not update");
+      });
+
+    return () => {
+      didCancel = true;
+    };
+  }, [announce, audibleCode, isPlaying]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
@@ -369,10 +419,14 @@ function App() {
       return;
     }
 
+    if (isPlaying) {
+      stopAudioPreview("Audio stopped for imported jam", "Audio stopped for imported jam");
+    }
+
     dispatch({ type: "importSnapshot", snapshot });
     setFileStatusMessage("Imported");
     announce("Jam JSON imported");
-  }, [announce]);
+  }, [announce, isPlaying, stopAudioPreview]);
 
   const handleShareJam = useCallback(async () => {
     const browserHref = getBrowserHref();
@@ -471,6 +525,14 @@ function App() {
             <button type="button" onClick={handleImportClick}>
               Import JSON
             </button>
+            <button
+              type="button"
+              onClick={() => {
+                void handleShareJam();
+              }}
+            >
+              Share URL
+            </button>
             {fileStatusMessage && (
               <span className="file-status" aria-live="polite">
                 {fileStatusMessage}
@@ -551,6 +613,7 @@ function App() {
                       <span>＞</span>
                       <strong>{rule.technique}</strong>
                       {!rule.enabled && <span className="rule-muted-label">OFF</span>}
+                      {rule.needsTodo && <span className="rule-muted-label">TODO</span>}
                     </div>
                     <div className="rule-actions" aria-label={formatRuleActionsGroupLabel(rule)}>
                       <button
