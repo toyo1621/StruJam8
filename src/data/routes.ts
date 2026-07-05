@@ -155,6 +155,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "ランダム感",
     description: "ドラムの発音、速度、反転、質感を少し揺らして、偶然性のあるグルーヴを作るルート。",
   },
+  {
+    targetId: "drums",
+    intentId: "forward",
+    target: "ドラム",
+    intent: "前に出す",
+    description: "ドラムの打点、輪郭、近さを強めて、リズムを前面に押し出すルート。",
+  },
+  {
+    targetId: "bass",
+    intentId: "forward",
+    target: "ベース",
+    intent: "前に出す",
+    description: "ベースの芯、明るさ、押し出しを増やして、低音を主役に近づけるルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "forward",
+    target: "コード",
+    intent: "前に出す",
+    description: "コードの音量、明るさ、輪郭を上げて、和音を前面のフックとして聞かせるルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {
