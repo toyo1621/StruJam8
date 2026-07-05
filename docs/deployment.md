@@ -54,9 +54,9 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 - CSS is applied and the dark UI is visible.
 - Source and License links open the expected GitHub pages.
 - Pads navigate target -> intent -> technique.
-- Adding a technique updates the rules list and Strudel Code panel.
+- Adding a technique updates the rules list and the audible Strudel Code panel.
 - LocalStorage restore still works after refresh.
-- Play/Stop is still presented as UI-only, not audio playback.
+- Play starts the first Strudel audio preview after a user click, Stop hushes playback, and active code lines pulse while playing.
 
 ## Troubleshooting
 
@@ -66,6 +66,6 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 
 ## Current Limits
 
-- No audio runtime is deployed yet.
+- Audio runtime is an early `@strudel/web` preview. Default presets use built-in synth/noise sounds; external sample packs are not loaded by default.
 - No custom domain is configured.
 - Demo screenshots/GIF assets are planned in `docs/demo.md` but are not captured yet.

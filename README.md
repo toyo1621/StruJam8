@@ -18,8 +18,8 @@ StruJam8は、Strudelのためのオープンソースなビジュアル・ジ�
 
 ## Current Status
 
-StruJam8 is currently an MVP focused on UI and state management.
-Audio playback is not implemented yet.
+StruJam8 is currently an MVP focused on UI, state management, generated-code feedback, and a first Strudel audio preview.
+Play/Stop can start and stop a conservative `@strudel/web` preview, but external sample packs are not loaded by default yet.
 
 Implemented:
 
@@ -30,8 +30,11 @@ Implemented:
 - Local browser persistence for rules and preset selection
 - JSON export/import for jam snapshots
 - Shareable URL snapshots for small jams
-- Track-composed Strudel-like code preview from selected techniques
-- Copy generated Strudel-like code to clipboard
+- Audible Strudel code display from the same code string used by Play
+- First Play/Stop audio preview through `@strudel/web`
+- Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
+- Strudel-style active code line highlighting while playing
+- Copy audible Strudel code to clipboard
 - Concrete technique routes for all eight targets: drums, bass, chords, keys, strings, bells, guitar, and voice
 - Track templates for all eight targets
 - Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, and TODO badges
@@ -45,7 +48,8 @@ Implemented:
 
 Not implemented yet:
 
-- Real Strudel playback
+- Token-level Strudel playback highlighting matching strudel.cc exactly
+- External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
@@ -59,11 +63,9 @@ Toy House starts with this base code:
 
 ```js
 stack(
-  s("bd*4"),
-  s("~ cp ~ cp"),
-  s("hh*8").gain(0.55),
-  note("c2 ~ eb2 g2").s("sawtooth").gain(0.45),
-  note("c4 eb4 g4 bb4").s("gm_electric_piano_1").slow(2).room(0.4)
+  stack(s("sbd*4").gain(0.8), s("~ pink ~ pink").decay(0.06).gain(0.35), s("white*8").decay(0.03).hpf(5000).gain(0.22)),
+  note("c2 ~ eb2 g2").s("sawtooth").lpf(900).gain(0.45),
+  note("c4 eb4 g4 bb4").s("triangle").slow(2).room(0.35).gain(0.38)
 )
 ```
 
@@ -82,12 +84,13 @@ Concrete routes currently include:
 When techniques are selected, StruJam8 groups them by track and appends a readable Strudel-like chain:
 
 ```js
-/* ベース ＞ 崩す ＞ 音を抜く */
-/* ベース ＞ 崩す ＞ 歪ませる */
-bass:
-  note("c2 ~ eb2 g2").s("sawtooth").gain(0.45)
+stack(
+  stack(s("sbd*4").gain(0.8), s("~ pink ~ pink").decay(0.06).gain(0.35), s("white*8").decay(0.03).hpf(5000).gain(0.22)),
+  note("c2 ~ eb2 g2").s("sawtooth").lpf(900).gain(0.45)
     .degradeBy(0.2)
-    .distort(0.4)
+    .distort(0.4),
+  note("c4 eb4 g4 bb4").s("triangle").slow(2).room(0.35).gain(0.38)
+)
 ```
 
 ## Tech Stack
@@ -97,8 +100,9 @@ bass:
 - TypeScript
 - CSS
 - Strudel concepts and snippets
+- `@strudel/web` for the first browser audio preview
 
-Note: Strudel runtime packages are not installed in this MVP.
+Note: the default presets use built-in synth/noise sounds only. External Strudel sample packs are not loaded by default in this playback phase.
 
 ## Development
 
@@ -142,6 +146,8 @@ The deployment workflow is defined in `.github/workflows/pages.yml`. It runs `np
 src/
   App.tsx                Main UI and app state
   App.css                Visual design and responsive layout
+  audio/
+    strudelEngine.ts      Small Strudel runtime boundary for Play/Stop
   types.ts               Shared TypeScript types
   components/            Focused React UI components
   data/
@@ -156,7 +162,8 @@ src/
     announcements.ts   Screen reader announcement formatting
     clipboard.ts       Clipboard copy helpers
     colorContrast.ts    Pad color contrast helpers
-    codegen.ts           Generated Strudel-like code formatting
+    codegen.ts           Audible Strudel code formatting
+    codeHighlight.ts      Active code line highlighting helpers
     keyboard.ts        Keyboard shortcut helpers
     persistence.ts     Local storage and JSON snapshot helpers
     shareUrl.ts        URL snapshot sharing helpers
@@ -183,4 +190,4 @@ This is not an official Strudel project.
 
 StruJam8 is licensed under `AGPL-3.0-or-later`. See [LICENSE](LICENSE).
 
-The current license decision is documented in [docs/license-review.md](docs/license-review.md). Re-check compatibility before adding Strudel runtime packages or accepting large third-party contributions.
+The current license decision is documented in [docs/license-review.md](docs/license-review.md). Re-check compatibility before loading external sample packs, changing runtime packages, deploying a hosted public service, or accepting large third-party contributions.

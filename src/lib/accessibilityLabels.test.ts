@@ -39,11 +39,10 @@ describe("accessibility labels", () => {
     expect(formatRuleRemoveActionLabel(rule)).toBe("ベース ＞ 崩す ＞ 音を抜く を削除");
   });
 
-  it("keeps transport labels explicit about v0 audio limits", () => {
-    expect(transportUiDescription).toContain("Audio playback is not implemented yet");
-    expect(formatTransportActionLabel("play")).toContain("Play");
-    expect(formatTransportActionLabel("play")).toContain("Audio playback is not implemented yet");
-    expect(formatTransportActionLabel("stop")).toContain("Stop");
-    expect(formatTransportActionLabel("stop")).toContain("Audio playback is not implemented yet");
+  it("keeps transport labels explicit about the Strudel audio preview", () => {
+    expect(transportUiDescription).toContain("Strudel audio preview");
+    expect(transportUiDescription).toContain("hushes");
+    expect(formatTransportActionLabel("play")).toBe("Start Strudel audio preview");
+    expect(formatTransportActionLabel("stop")).toBe("Stop Strudel audio preview");
   });
 });

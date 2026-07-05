@@ -168,7 +168,8 @@ button:focus-visible {
   white-space: nowrap;
 }
 
-.file-status {
+.file-status,
+.audio-status {
   min-height: 28px;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 7px;
@@ -585,13 +586,30 @@ button:focus-visible {
   overflow: auto;
   border: 1px solid rgba(255, 255, 255, 0.16);
   border-radius: 8px;
-  padding: 18px;
+  padding: 14px;
   color: #20242b;
   background: #d9dde5;
   font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
   font-size: 0.93rem;
   line-height: 1.65;
   white-space: pre-wrap;
+}
+
+.code-line {
+  display: block;
+  min-height: 1.65em;
+  border-radius: 6px;
+  padding: 0 4px;
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    box-shadow 120ms ease;
+}
+
+.code-line.is-active {
+  color: #0f1720;
+  background: rgba(128, 237, 153, 0.72);
+  box-shadow: inset 3px 0 0 #4cc9f0;
 }
 
 .pad-dock {

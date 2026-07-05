@@ -6,8 +6,8 @@ Use this alongside README.md. README.md is product-facing; this file is implemen
 ## Project Summary
 
 StruJam8 is an MVP for an open-source visual jam interface for Strudel.
-The current priority is UI, state management, and code-generation experience.
-The app does not play sound yet.
+The current priority is UI, state management, code-generation experience, and cautious first playback.
+The app has a first Play/Stop audio preview through `@strudel/web`. Default presets use built-in synth/noise sounds only; external sample packs are not loaded by default yet.
 
 Primary user flow:
 
@@ -15,7 +15,7 @@ Primary user flow:
 2. Select an intention.
 3. Select a technique.
 4. Add a rule.
-5. Show a Strudel-like code snippet in the right code panel.
+5. Show the audible Strudel code in the right code panel. The visible code, copied code, and Play input should stay identical.
 
 ## Current Workspace
 
@@ -43,14 +43,15 @@ npm run check
 npm run check:pages
 ```
 
-A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, and generated code formatting.
+A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, and the Strudel audio engine boundary.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
 
 ### Main Files
 
-- `src/App.tsx`: React state, navigation, rule creation, generated code output, and pad preview UI.
+- `src/App.tsx`: React state, navigation, rule creation, generated code output, transport calls, and pad preview UI.
+- `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush.
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
 - `src/App.css`: visual layout, dark theme, colorful pads, responsive behavior.
 - `vite.config.ts`: Vite React config; GitHub Pages uses the `build:pages` script for the `/StruJam8/` base path.
@@ -69,11 +70,12 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/data/routes.ts`: explicit concrete target/intent route definitions and route lookup helpers.
 - `src/data/tracks.ts`: track metadata and starter pattern templates for all eight targets.
 - `src/data/techniques.ts`: technique definitions with descriptions, Strudel-like snippets, and plain-language snippet explanations.
-- `src/lib/accessibilityLabels.ts`: pure labels for rule actions and UI-only transport controls.
+- `src/lib/accessibilityLabels.ts`: pure labels for rule actions and transport controls.
 - `src/lib/announcements.ts`: pure screen reader announcement formatting helpers.
 - `src/lib/clipboard.ts`: clipboard copy helpers with success/failure states.
 - `src/lib/colorContrast.ts`: pure WCAG-style contrast helpers used by pad palette tests.
-- `src/lib/codegen.ts`: pure formatting helpers for generated Strudel-like code.
+- `src/lib/codegen.ts`: pure formatting helpers for audible Strudel code and conservative runtime playback code.
+- `src/lib/codeHighlight.ts`: pure helpers for active code line highlighting.
 - `src/lib/keyboard.ts`: pure keyboard shortcut helpers and editing-control guards.
 - `src/lib/persistence.ts`: localStorage and JSON snapshot parse/serialize helpers.
 - `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter.
@@ -94,7 +96,7 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play and Stop buttons only toggle UI state. They do not control audio.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. Stop calls `hush()` through the audio boundary. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
@@ -140,27 +142,32 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Intent-level route guide plus technique preview and compact rule detail panels with descriptions, snippets, plain-language snippet explanations, short labels, and TODO badges.
 - Drum dance, drum build, keyboard chill, strings widen, bells random, guitar forward, and voice forward routes expand concrete musical coverage while keeping at least one concrete route for every target family.
 - Concrete route definitions are centralized in `src/data/routes.ts`.
-- Track templates exist for all eight target tracks.
-- Enabled rules are grouped by track and chained against track templates in generated code preview.
-- Toy House and Neon Dub preset selection with preset-specific base code.
+- Track templates exist for all eight target tracks and avoid sample/soundfont names by default.
+- Enabled safe rules are grouped by track and chained against track templates in the audible code panel.
+- Toy House and Neon Dub preset selection with synth-safe preset-specific base code.
 - Local browser persistence restores rules and selected preset on reload.
 - Jam snapshots can be exported and imported as validated JSON files.
 - Small jams can be shared through a copied URL containing a validated `jam` parameter.
-- Track-composed Strudel-like preview output for implemented techniques.
-- Generated code can be copied to the clipboard from the code panel.
+- Track-composed audible Strudel output for implemented techniques.
+- First Strudel audio preview through Play/Stop using `@strudel/web`.
+- Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
+- The right code panel, copied code, and Play input all use the same audible code string.
+- Active code line highlighting pulses through audible track lines while playing.
+- Audible code can be copied to the clipboard from the code panel.
 - Fallback technique pads for undefined target/intent combinations.
 - Basic responsive layout for desktop, tablet, and narrow screens.
 - Number-key shortcuts for live pads 1-8, with tested guards for editable controls and modified key events.
 - Visible focus states for keyboard navigation.
 - Screen reader status announcements for rule changes.
-- Rule action buttons include full-route accessible labels, and Play/Stop labels clarify the v0 audio limitation.
+- Rule action buttons include full-route accessible labels, and Play/Stop labels describe the Strudel audio preview.
 - Live pad text color contrast is guarded by tests against the shared target, intent, and technique palette.
 - Visible Source and License links in the app header for release readiness.
 
 ### Partially Implemented
 
-- Play/Stop: visual toggle only; no audio engine.
-- Strudel code generation: selected snippets are grouped by track and chained against track templates, but the result is still a preview and is not validated against a live Strudel runtime.
+- Play/Stop: first audio preview only; it initializes Strudel and evaluates the same audible code shown in the right panel, but it is not a complete live-code transport yet.
+- Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
+- Active code highlighting: implemented at rendered track-line level, not yet token-level `miniLocations` parity with strudel.cc.
 - Technique catalog: nine real routes have concrete snippets:
   - ベース -> 崩す
   - コード -> 盛り上げる
@@ -177,8 +184,9 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Missing
 
-- Real Strudel runtime integration.
-- Audio graph lifecycle: start, stop, update, dispose.
+- Token-level active code highlighting using Strudel mini location metadata.
+- Audio graph lifecycle beyond basic start/stop: update, dispose, and runtime error recovery.
+- External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
@@ -257,7 +265,7 @@ Recommended direction:
 
 ### Reliability
 
-Current level: acceptable for UI-only MVP.
+Current level: acceptable for early playback MVP.
 
 Risks:
 
@@ -269,7 +277,7 @@ Risks:
 Recommended direction:
 
 - Consider deterministic IDs only if future persistence requires predictable references.
-- Add snippet validation once Strudel runtime or parser is introduced.
+- Add stricter snippet validation as runtime playback expands beyond the conservative formatter.
 - Keep RESET semantics visible in tests and accessibility copy as rule editing grows.
 
 ### Usability
@@ -310,7 +318,7 @@ Strengths:
 - Focus states are visually stronger than browser defaults.
 - Rule changes are announced through an aria-live status region.
 - Rule action buttons expose full-route accessible labels.
-- Play/Stop controls expose that they are UI-only in v0.
+- Play/Stop controls expose the first Strudel audio preview behavior.
 - Live pad foreground/background contrast is guarded by a WCAG-style test for the shared palette.
 
 Risks:
@@ -337,7 +345,7 @@ Risks later:
 Recommended direction:
 
 - Keep generated code derived from state, not manually synchronized.
-- Keep audio update boundaries explicit when Strudel runtime is added.
+- Keep audio update boundaries explicit as Strudel runtime usage expands.
 
 ### Legal / Licensing
 
@@ -347,14 +355,14 @@ Strengths:
 
 - `LICENSE` is present with GNU AGPL version 3 text.
 - `package.json` uses the SPDX expression `AGPL-3.0-or-later`.
-- `docs/license-review.md` records the 2026-07-03 upstream Strudel license check and rationale.
+- `docs/license-review.md` records the 2026-07-04 Strudel package license check and rationale.
 - The app header exposes Source and License links through `src/data/projectLinks.ts`.
 - Attribution is clear: this is not an official Strudel project.
 
 Risks:
 
 - This is a project decision, not legal advice.
-- License compatibility should be re-checked before adding `@strudel/web`, deploying a hosted public service, or accepting large third-party contributions.
+- License compatibility should be re-checked before loading external sample packs, changing runtime packages, deploying a hosted public service, or accepting large third-party contributions.
 
 Recommended direction:
 
@@ -409,15 +417,18 @@ Tasks:
 
 Goal: make Play/Stop real.
 
-Do not add `@strudel/web` until this phase is explicitly requested.
+This phase is now active. `@strudel/web` has been added after explicit user request.
 
 Tasks:
 
-- Research the current official Strudel web/runtime integration path.
-- Add an audio engine boundary module instead of calling Strudel directly from UI components.
-- Implement start, stop, update, and dispose lifecycle.
-- Handle invalid code safely.
-- Add a user gesture gate for browser audio permissions.
+- Research the current Strudel web/runtime integration path: done for `@strudel/web@1.3.0`.
+- Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
+- Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
+- Implement update and dispose lifecycle: pending.
+- Handle invalid code safely: partial; UI catches start failures, but runtime validation is still shallow.
+- Keep right-panel code, copied code, and Play input identical: done for audible code.
+- Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.
+- Review external sample-pack licensing before enabling remote samples: pending.
 
 ### Phase 5: Persistence and Sharing
 
@@ -452,7 +463,7 @@ When continuing development:
 - Prefer data-driven additions in `src/data/techniques.ts` over hardcoded UI branches.
 - Register concrete routes in `src/data/routes.ts` before adding route-specific technique data.
 - Do not add Blockly yet unless explicitly requested.
-- Do not add `@strudel/web` or audio playback unless explicitly requested.
+- `@strudel/web` was added after explicit playback-phase request; keep Strudel calls isolated in `src/audio/strudelEngine.ts`.
 - Keep generated code readable even before it becomes executable.
 - Run `npm run check` before reporting completion when practical; at minimum run `npm test` and `npm run build`.
 - If touching GitHub, check `git status -sb` first and avoid staging unrelated changes.

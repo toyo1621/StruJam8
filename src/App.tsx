@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { startStrudelAudio, stopStrudelAudio } from "./audio/strudelEngine";
 import { RuleDetailPanel } from "./components/RuleDetailPanel";
 import {
   formatRedoAnnouncement,
@@ -27,7 +28,8 @@ import { getPresetDefinition, presets } from "./data/presets";
 import { projectLinks } from "./data/projectLinks";
 import { getRouteDefinition } from "./data/routes";
 import { getTechniqueById } from "./data/techniques";
-import { formatGeneratedCode } from "./lib/codegen";
+import { formatPlayableCodeLines } from "./lib/codegen";
+import { getActiveCodeLineIndexes, joinCodeLines } from "./lib/codeHighlight";
 import {
   copyTextToClipboard,
   getBrowserClipboard,
@@ -102,6 +104,8 @@ function App() {
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<CopyTextResult | "idle">("idle");
   const [fileStatusMessage, setFileStatusMessage] = useState("");
+  const [audioStatusMessage, setAudioStatusMessage] = useState("");
+  const [codePulseIndex, setCodePulseIndex] = useState(0);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
   const {
@@ -166,9 +170,14 @@ function App() {
     () => getPresetDefinition(selectedPresetId),
     [selectedPresetId],
   );
-  const generatedCode = useMemo(
-    () => formatGeneratedCode(rules, selectedPreset),
+  const audibleCodeLines = useMemo(
+    () => formatPlayableCodeLines(rules, selectedPreset),
     [rules, selectedPreset],
+  );
+  const audibleCode = useMemo(() => joinCodeLines(audibleCodeLines), [audibleCodeLines]);
+  const activeCodeLineIndexes = useMemo(
+    () => (isPlaying ? getActiveCodeLineIndexes(audibleCodeLines, codePulseIndex) : new Set<number>()),
+    [audibleCodeLines, codePulseIndex, isPlaying],
   );
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
   const copyStatusLabel = getCopyStatusLabel(copyStatus);
@@ -187,7 +196,20 @@ function App() {
 
   useEffect(() => {
     setCopyStatus("idle");
-  }, [generatedCode]);
+  }, [audibleCode]);
+
+  useEffect(() => {
+    if (!isPlaying) {
+      setCodePulseIndex(0);
+      return;
+    }
+
+    const intervalId = window.setInterval(() => {
+      setCodePulseIndex((currentIndex) => currentIndex + 1);
+    }, 280);
+
+    return () => window.clearInterval(intervalId);
+  }, [isPlaying]);
 
   useEffect(() => {
     setHighlightedPadId(null);
@@ -284,8 +306,31 @@ function App() {
     dispatch({ type: "selectPreset", presetId });
   }, []);
 
+  const handlePlay = useCallback(async () => {
+    setAudioStatusMessage("Starting audio...");
+
+    try {
+      await startStrudelAudio(audibleCode);
+      dispatch({ type: "setPlaying", isPlaying: true });
+      setAudioStatusMessage("Audio playing");
+      announce("Audio playback started");
+    } catch (error) {
+      console.error(error);
+      dispatch({ type: "setPlaying", isPlaying: false });
+      setAudioStatusMessage("Audio start failed");
+      announce("Audio playback could not start");
+    }
+  }, [announce, audibleCode]);
+
+  const handleStop = useCallback(() => {
+    stopStrudelAudio();
+    dispatch({ type: "setPlaying", isPlaying: false });
+    setAudioStatusMessage("Audio stopped");
+    announce("Audio playback stopped");
+  }, [announce]);
+
   const handleCopyCode = useCallback(async () => {
-    const result = await copyTextToClipboard(generatedCode, getBrowserClipboard());
+    const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
     const label = getCopyStatusLabel(result);
 
     setCopyStatus(result);
@@ -293,7 +338,7 @@ function App() {
     if (label) {
       announce(label);
     }
-  }, [announce, generatedCode]);
+  }, [announce, audibleCode]);
 
   const handleExportJam = useCallback(() => {
     downloadTextFile(
@@ -457,7 +502,9 @@ function App() {
               type="button"
               aria-label={formatTransportActionLabel("play")}
               aria-pressed={isPlaying}
-              onClick={() => dispatch({ type: "setPlaying", isPlaying: true })}
+              onClick={() => {
+                void handlePlay();
+              }}
             >
               Play
             </button>
@@ -466,10 +513,15 @@ function App() {
               type="button"
               aria-label={formatTransportActionLabel("stop")}
               aria-pressed={!isPlaying}
-              onClick={() => dispatch({ type: "setPlaying", isPlaying: false })}
+              onClick={handleStop}
             >
               Stop
             </button>
+            {audioStatusMessage && (
+              <span className="audio-status" aria-live="polite">
+                {audioStatusMessage}
+              </span>
+            )}
           </div>
         </div>
       </header>
@@ -589,8 +641,17 @@ function App() {
               </button>
             </div>
           </div>
-          <pre className="code-view" aria-label="Generated Strudel code">
-            <code>{generatedCode}</code>
+          <pre className="code-view" aria-label="Audible Strudel code">
+            <code>
+              {audibleCodeLines.map((line, index) => (
+                <span
+                  className={`code-line ${activeCodeLineIndexes.has(index) ? "is-active" : ""}`}
+                  key={`${index}-${line.text}`}
+                >
+                  {line.text || " "}
+                </span>
+              ))}
+            </code>
           </pre>
         </section>
       </main>

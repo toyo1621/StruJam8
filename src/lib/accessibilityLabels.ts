@@ -3,7 +3,7 @@ import type { Rule } from "../types";
 import { formatRuleRoute } from "./announcements";
 
 export const transportUiDescription =
-  "Play and Stop only change the visual transport state in v0. Audio playback is not implemented yet.";
+  "Play starts the first Strudel audio preview. Stop hushes the Strudel audio engine.";
 
 export function formatRuleDetailActionLabel(rule: Rule) {
   return `${formatRuleRoute(rule)} の詳細を表示`;
@@ -30,7 +30,5 @@ export function formatRuleActionsGroupLabel(rule: Rule) {
 }
 
 export function formatTransportActionLabel(action: "play" | "stop") {
-  return action === "play"
-    ? "Set transport UI to Play. Audio playback is not implemented yet."
-    : "Set transport UI to Stop. Audio playback is not implemented yet.";
+  return action === "play" ? "Start Strudel audio preview" : "Stop Strudel audio preview";
 }

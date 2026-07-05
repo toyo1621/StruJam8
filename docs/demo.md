@@ -2,7 +2,7 @@
 
 This guide defines the screenshots and short demo flow for README, release notes, and social previews.
 
-The app is still UI-only. Do not imply that Play/Stop produces audio yet.
+The app now has a first Play/Stop audio preview through `@strudel/web`. Default presets use built-in synth/noise sounds only. Do not imply external sample-pack support yet.
 
 ## Setup
 
@@ -28,7 +28,7 @@ localStorage.removeItem("strujam8:jam:v1")
 Save captured files under `docs/assets/` with these names:
 
 - `strujam8-home.png`: first view with Toy House selected and no rules.
-- `strujam8-rules-code.png`: rules added, rule detail visible, and code preview populated.
+- `strujam8-rules-code.png`: rules added, rule detail visible, audible code populated, and active line highlighting visible during playback.
 - `strujam8-sharing.png`: header showing Export JSON, Import JSON, Share URL, and Copy controls.
 - `strujam8-tablet.png`: tablet-width layout check.
 - `strujam8-demo.gif`: short interaction loop.
@@ -51,7 +51,7 @@ Check:
 
 - STRUJAM8 brand is visible.
 - Preset selector is visible.
-- Play/Stop controls are visible but not presented as working audio.
+- Play/Stop controls are visible and can be presented as first audio preview controls.
 - Dark background and colorful pads are clear.
 
 ### 2. Rules + Code Preview
@@ -70,7 +70,7 @@ Expected view:
 
 - Rule list contains at least two rules.
 - Selected-rule detail panel is visible.
-- Code panel groups the bass snippets as a chain.
+- Code panel shows the same audible code used by Play and groups the bass snippets as a chain.
 - TODO badges appear only for unverified snippets.
 
 ### 3. Persistence / Sharing Controls
@@ -119,7 +119,7 @@ Suggested flow:
 5. Switch preset to Neon Dub.
 6. Click `Share URL` or `Copy` to show feedback.
 
-Avoid showing Play/Stop as audio playback until Strudel runtime integration exists.
+If showing Play/Stop, describe it as a first built-in synth/noise preview. Avoid implying that remote sample packs or every generated snippet is fully verified.
 
 ## Release Checklist
 

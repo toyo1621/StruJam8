@@ -1,48 +1,52 @@
 import type { PresetDefinition, PresetId } from "../types";
 
+const toyHouseTrackPatterns = {
+  drums: 'stack(s("sbd*4").gain(0.8), s("~ pink ~ pink").decay(0.06).gain(0.35), s("white*8").decay(0.03).hpf(5000).gain(0.22))',
+  bass: 'note("c2 ~ eb2 g2").s("sawtooth").lpf(900).gain(0.45)',
+  chords: 'note("c4 eb4 g4 bb4").s("triangle").slow(2).room(0.35).gain(0.38)',
+  keys: 'note("c4 eb4 g4").s("square").lpf(1800).gain(0.26)',
+  strings: 'note("c3 g3 eb4").s("triangle").slow(4).room(0.55).gain(0.28)',
+  bells: 'note("c5 eb5 g5").s("sine").slow(2).release(0.25).gain(0.24)',
+  guitar: 'note("c3 eb3 g3 bb3").s("sawtooth").decay(0.18).lpf(1700).gain(0.24)',
+  voice: 'note("c4 ~ eb4 ~").s("triangle").vowel("a e").gain(0.24)',
+};
+
+const neonDubTrackPatterns = {
+  drums: 'stack(s("sbd ~ sbd ~").gain(0.85), s("~ pink ~ pink").decay(0.07).room(0.25).gain(0.3), s("white*8").decay(0.025).hpf(5200).gain(0.16))',
+  bass: 'note("c2 ~ c2 bb1").s("sawtooth").lpf(750).gain(0.5)',
+  chords: 'note("c4 eb4 g4 bb4").s("triangle").slow(4).room(0.6).gain(0.34)',
+  keys: 'note("g4 ~ eb4 c4").s("square").slow(2).lpf(1400).gain(0.22)',
+  strings: 'note("c3 bb3 eb4").s("triangle").slow(6).room(0.7).gain(0.24)',
+  bells: 'note("c5 ~ g5 eb5").s("sine").slow(4).release(0.3).gain(0.2)',
+  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").decay(0.2).room(0.25).gain(0.22)',
+  voice: 'note("c4 ~ bb3 ~").s("triangle").vowel("o a").gain(0.22)',
+};
+
 export const presets: PresetDefinition[] = [
   {
     id: "toy-house",
     name: "Toy House",
-    description: "明るいドラム、軽いベース、エレピのコードで始める最初のプリセット。",
+    description: "外部サンプルなしで鳴る、明るいシンセドラム、軽いベース、柔らかいコードの最初のプリセット。",
     baseCode: `stack(
-  s("bd*4"),
-  s("~ cp ~ cp"),
-  s("hh*8").gain(0.55),
-  note("c2 ~ eb2 g2").s("sawtooth").gain(0.45),
-  note("c4 eb4 g4 bb4").s("gm_electric_piano_1").slow(2).room(0.4)
+  ${toyHouseTrackPatterns.drums},
+  ${toyHouseTrackPatterns.bass},
+  ${toyHouseTrackPatterns.chords}
 )`,
-    trackPatterns: {
-      drums: 'stack(s("bd*4"), s("~ cp ~ cp"), s("hh*8").gain(0.55))',
-      bass: 'note("c2 ~ eb2 g2").s("sawtooth").gain(0.45)',
-      chords: 'note("c4 eb4 g4 bb4").s("gm_electric_piano_1").slow(2).room(0.4)',
-      keys: 'note("c4 eb4 g4").s("gm_electric_piano_1")',
-      strings: 'note("c3 g3 eb4").s("gm_strings").slow(4)',
-      bells: 'note("c5 eb5 g5").s("gm_celesta").slow(2)',
-      guitar: 'note("c3 eb3 g3 bb3").s("gm_electric_guitar_clean")',
-      voice: 's("~ [ah oh] ~ [eh]")',
-    },
+    playbackTrackIds: ["drums", "bass", "chords"],
+    trackPatterns: toyHouseTrackPatterns,
   },
   {
     id: "neon-dub",
     name: "Neon Dub",
-    description: "深めの低音、控えめなハット、余韻のあるコードで始める夜寄りのプリセット。",
+    description: "外部サンプルなしで鳴る、深めの低音、控えめなノイズハット、余韻のあるコードの夜寄りプリセット。",
     baseCode: `stack(
-  stack(s("bd ~ bd ~"), s("~ cp ~ cp"), s("hh*8").gain(0.35)),
-  note("c2 ~ c2 bb1").s("sawtooth").lpf(900).gain(0.5),
-  note("c4 eb4 g4 bb4").s("gm_electric_piano_1").slow(4).room(0.65),
-  note("g4 ~ eb4 c4").s("gm_synth_bass_2").slow(2).gain(0.32)
+  ${neonDubTrackPatterns.drums},
+  ${neonDubTrackPatterns.bass},
+  ${neonDubTrackPatterns.chords},
+  ${neonDubTrackPatterns.keys}
 )`,
-    trackPatterns: {
-      drums: 'stack(s("bd ~ bd ~"), s("~ cp ~ cp"), s("hh*8").gain(0.35))',
-      bass: 'note("c2 ~ c2 bb1").s("sawtooth").lpf(900).gain(0.5)',
-      chords: 'note("c4 eb4 g4 bb4").s("gm_electric_piano_1").slow(4).room(0.65)',
-      keys: 'note("g4 ~ eb4 c4").s("gm_synth_bass_2").slow(2).gain(0.32)',
-      strings: 'note("c3 bb3 eb4").s("gm_strings").slow(6).room(0.7)',
-      bells: 'note("c5 ~ g5 eb5").s("gm_celesta").slow(4).gain(0.35)',
-      guitar: 'note("c3 ~ eb3 g3").s("gm_electric_guitar_clean").room(0.25)',
-      voice: 's("~ [oh ah] ~ ~").gain(0.4)',
-    },
+    playbackTrackIds: ["drums", "bass", "chords", "keys"],
+    trackPatterns: neonDubTrackPatterns,
   },
 ];
 

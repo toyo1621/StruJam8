@@ -9,6 +9,11 @@ export interface TrackRuleGroup {
   rules: Rule[];
 }
 
+export interface PlayableCodeLine {
+  text: string;
+  targetId?: TargetId;
+}
+
 export function getTrackCodeName(targetId: TargetId) {
   return getTrackDefinition(targetId).codeName;
 }
@@ -63,6 +68,63 @@ function formatSnippetChainLine(rule: Rule) {
   }
 
   return `    ${rule.strudelSnippet}`;
+}
+
+function getPlayableRules(rules: Rule[]) {
+  return getEnabledRules(rules).filter((rule) => rule.strudelSnippet && !rule.needsTodo);
+}
+
+function formatPlayableTrackLines(track: TrackDefinition, rules: Rule[], preset: PresetDefinition): PlayableCodeLine[] {
+  const snippetChain = rules
+    .filter((rule) => rule.targetId === track.targetId)
+    .map((rule) => ({
+      text: `    ${rule.strudelSnippet}`,
+      targetId: track.targetId,
+    }));
+
+  return [
+    {
+      text: `  ${getPresetTrackPattern(track, preset)}`,
+      targetId: track.targetId,
+    },
+    ...snippetChain,
+  ];
+}
+
+function getPlayableTracks(preset: PresetDefinition, rules: Rule[]) {
+  const targetIds = new Set<TargetId>(preset.playbackTrackIds);
+
+  rules.forEach((rule) => targetIds.add(rule.targetId));
+
+  return [...targetIds].map(getTrackDefinition);
+}
+
+export function formatPlayableCodeLines(rules: Rule[], preset: PresetDefinition = defaultPreset): PlayableCodeLine[] {
+  const playableRules = getPlayableRules(rules);
+  const tracks = getPlayableTracks(preset, playableRules);
+  const lines: PlayableCodeLine[] = [{ text: "stack(" }];
+
+  tracks.forEach((track, trackIndex) => {
+    const trackLines = formatPlayableTrackLines(track, playableRules, preset);
+    const isLastTrack = trackIndex === tracks.length - 1;
+    const lastLine = trackLines[trackLines.length - 1];
+
+    if (lastLine && !isLastTrack) {
+      lastLine.text += ",";
+    }
+
+    lines.push(...trackLines);
+  });
+
+  lines.push({ text: ")" });
+
+  return lines;
+}
+
+export function formatPlayableCode(rules: Rule[], preset: PresetDefinition = defaultPreset) {
+  return formatPlayableCodeLines(rules, preset)
+    .map((line) => line.text)
+    .join("\n");
 }
 
 export function formatComposedTrackSnippet(group: TrackRuleGroup, preset: PresetDefinition = defaultPreset) {

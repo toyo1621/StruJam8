@@ -53,6 +53,7 @@ export interface PresetDefinition {
   name: string;
   description: string;
   baseCode: string;
+  playbackTrackIds: TargetId[];
   trackPatterns: Partial<Record<TargetId, string>>;
 }
 
