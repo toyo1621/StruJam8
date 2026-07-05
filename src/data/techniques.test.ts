@@ -348,6 +348,58 @@ describe("technique catalog", () => {
     expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
   });
 
+
+  it("returns the concrete bass chill route", () => {
+    const routeTechniques = getTechniquesByRoute("bass", "chill");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "丸く沈める",
+      "ゆっくり流す",
+      "小さく支える",
+      "長めに伸ばす",
+      "低く返す",
+      "薄い影を足す",
+      "奥へ置く",
+      "少し間引く",
+    ]);
+    expect(routeTechniques[4]?.strudelSnippet).toBe(".sometimes(add(note(\"-12\")))");
+  });
+
+  it("returns the concrete chords break route", () => {
+    const routeTechniques = getTechniquesByRoute("chords", "break");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音を欠けさせる",
+      "逆に流す",
+      "拍をずらす",
+      "短く刻む",
+      "高くひっかける",
+      "低く落とす",
+      "明暗を揺らす",
+      "たまに休む",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
+  it("returns the concrete drums random route", () => {
+    const routeTechniques = getTechniquesByRoute("drums", "random");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "たまに欠ける",
+      "時々倍速",
+      "たまに反転",
+      "影を散らす",
+      "高音だけ飛ばす",
+      "丸く揺らす",
+      "粗く光る",
+      "たまに休む",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
   it("returns no concrete techniques for undefined routes", () => {
     expect(getTechniquesByRoute("strings", "build")).toEqual([]);
   });

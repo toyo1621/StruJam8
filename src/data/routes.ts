@@ -134,6 +134,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "チル",
     description: "ドラムの明るさや密度を抑えて、落ち着いたグルーヴにするルート。",
   },
+  {
+    targetId: "bass",
+    intentId: "chill",
+    target: "ベース",
+    intent: "チル",
+    description: "ベースの角を丸め、動きを遅くして、落ち着いた低音の支えを作るルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "break",
+    target: "コード",
+    intent: "崩す",
+    description: "コードの順番、密度、長さを崩して、展開の引っかかりやブレイク感を作るルート。",
+  },
+  {
+    targetId: "drums",
+    intentId: "random",
+    target: "ドラム",
+    intent: "ランダム感",
+    description: "ドラムの発音、速度、反転、質感を少し揺らして、偶然性のあるグルーヴを作るルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {
