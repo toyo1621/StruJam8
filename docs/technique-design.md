@@ -34,7 +34,7 @@ StruJam8 currently uses conservative browser playback through `@strudel/web`. A 
 
 Rules for snippets:
 
-- Prefer simple, already-used operators first: `gain`, `lpf`, `hpf`, `room`, `slow`, `fast`, `rev`, `degradeBy`, `off`, `sometimes`, `add(note(...))`, `distort`, `legato`, `release`.
+- Prefer simple, already-used operators first: `gain`, `lpf`, `hpf`, `room`, `slow`, `fast`, `rev`, `degradeBy`, `off`, `sometimes`, `add(note(...))`, `distort`, `legato`, `release`, `decay`.
 - If a snippet is musically useful but not confirmed in the current runtime, keep it visible but set `needsTodo: true`.
 - The audible code generator skips disabled rules, missing snippets, and `needsTodo` snippets.
 - The UI should explain skipped snippets so users do not think Play is broken.
@@ -49,12 +49,15 @@ Implemented concrete routes:
 - ドラム -> 盛り上げる
 - ドラム -> 抜く
 - ドラム -> 崩す
+- ドラム -> チル
 - ベース -> 崩す
 - ベース -> 踊らせる
 - ベース -> 盛り上げる
+- ベース -> 抜く
 - コード -> 盛り上げる
 - コード -> チル
 - コード -> 広げる
+- コード -> 抜く
 - キーボード -> チル
 - キーボード -> ランダム感
 - ストリングス -> 広げる

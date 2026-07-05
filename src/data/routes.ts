@@ -113,6 +113,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "広げる",
     description: "コードの音域、余韻、奥行きを広げて、曲の面を大きくするルート。",
   },
+  {
+    targetId: "bass",
+    intentId: "remove",
+    target: "ベース",
+    intent: "抜く",
+    description: "ベースの量、長さ、明るさを落として、低音の余白とドロップ感を作るルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "remove",
+    target: "コード",
+    intent: "抜く",
+    description: "コードの主張を下げて、曲に余白、奥行き、落ち着きを作るルート。",
+  },
+  {
+    targetId: "drums",
+    intentId: "chill",
+    target: "ドラム",
+    intent: "チル",
+    description: "ドラムの明るさや密度を抑えて、落ち着いたグルーヴにするルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {

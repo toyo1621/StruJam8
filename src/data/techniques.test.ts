@@ -21,7 +21,7 @@ describe("technique catalog", () => {
 
   it("finds concrete route definitions by target and intent", () => {
     expect(getRouteDefinition("drums", "build")?.description).toContain("密度");
-    expect(getRouteDefinition("drums", "chill")).toBeUndefined();
+    expect(getRouteDefinition("strings", "build")).toBeUndefined();
   });
 
   it("covers every target with at least one concrete route", () => {
@@ -144,6 +144,58 @@ describe("technique catalog", () => {
       "左右に揺らす",
     ]);
     expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
+
+  it("returns the concrete bass remove route", () => {
+    const routeTechniques = getTechniquesByRoute("bass", "remove");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音数を抜く",
+      "小さくする",
+      "短く切る",
+      "こもらせる",
+      "半分に落とす",
+      "芯だけ残す",
+      "休みを作る",
+      "影だけ残す",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
+  it("returns the concrete chords remove route", () => {
+    const routeTechniques = getTechniquesByRoute("chords", "remove");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音数を抜く",
+      "音量を下げる",
+      "こもらせる",
+      "短く切る",
+      "ゆっくり残す",
+      "響きだけ残す",
+      "高音だけ残す",
+      "休みを作る",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
+  it("returns the concrete drums chill route", () => {
+    const routeTechniques = getTechniquesByRoute("drums", "chill");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "小さくする",
+      "丸くする",
+      "ゆっくりにする",
+      "空気だけ残す",
+      "余韻を足す",
+      "薄い影を足す",
+      "少し抜く",
+      "短く整える",
+    ]);
+    expect(routeTechniques[7]?.strudelSnippet).toBe(".decay(0.05)");
   });
 
   it("returns the concrete drums remove route", () => {
@@ -297,7 +349,7 @@ describe("technique catalog", () => {
   });
 
   it("returns no concrete techniques for undefined routes", () => {
-    expect(getTechniquesByRoute("drums", "chill")).toEqual([]);
+    expect(getTechniquesByRoute("strings", "build")).toEqual([]);
   });
 
   it("keeps every concrete route at eight techniques", () => {

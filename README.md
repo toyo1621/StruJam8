@@ -69,18 +69,21 @@ stack(
 )
 ```
 
-Concrete routes currently include 16 route sets, with at least one concrete route for every target and every intent:
+Concrete routes currently include 19 route sets, with at least one concrete route for every target and every intent:
 
 - ドラム -> 踊らせる
 - ドラム -> 盛り上げる
 - ドラム -> 抜く
 - ドラム -> 崩す
+- ドラム -> チル
 - ベース -> 崩す
 - ベース -> 踊らせる
 - ベース -> 盛り上げる
+- ベース -> 抜く
 - コード -> 盛り上げる
 - コード -> チル
 - コード -> 広げる
+- コード -> 抜く
 - キーボード -> チル
 - キーボード -> ランダム感
 - ストリングス -> 広げる
