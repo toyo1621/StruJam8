@@ -95,6 +95,57 @@ describe("technique catalog", () => {
     expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
   });
 
+
+  it("returns the concrete drums break route", () => {
+    const routeTechniques = getTechniquesByRoute("drums", "break");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "拍をずらす",
+      "逆に流す",
+      "時々倍速",
+      "欠けさせる",
+      "高音だけにする",
+      "細かい影",
+      "粗くする",
+      "たまに反転",
+    ]);
+  });
+
+  it("returns the concrete bass build route", () => {
+    const routeTechniques = getTechniquesByRoute("bass", "build");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "音量を上げる",
+      "フィルター開く",
+      "高い返しを足す",
+      "歪みを足す",
+      "小走りを入れる",
+      "長く押す",
+      "裏で厚くする",
+      "低音を太く",
+    ]);
+    expect(routeTechniques[2]?.strudelSnippet).toBe(".sometimes(add(note(\"12\")))");
+  });
+
+  it("returns the concrete chords widen route", () => {
+    const routeTechniques = getTechniquesByRoute("chords", "widen");
+
+    expect(routeTechniques).toHaveLength(8);
+    expect(routeTechniques.map((technique) => technique.label)).toEqual([
+      "高音を重ねる",
+      "低音を重ねる",
+      "空間を広げる",
+      "雲みたいに伸ばす",
+      "長くつなぐ",
+      "明るく開く",
+      "遅れを重ねる",
+      "左右に揺らす",
+    ]);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+  });
+
   it("returns the concrete drums remove route", () => {
     const routeTechniques = getTechniquesByRoute("drums", "remove");
 

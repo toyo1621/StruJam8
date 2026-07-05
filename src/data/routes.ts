@@ -92,6 +92,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "ランダム感",
     description: "キーボードの鳴り方、音高、タイミングを少し揺らして、偶然性のあるフレーズを作るルート。",
   },
+  {
+    targetId: "drums",
+    intentId: "break",
+    target: "ドラム",
+    intent: "崩す",
+    description: "ドラムの規則性を崩して、フィルやブレイク前の引っかかりを作るルート。",
+  },
+  {
+    targetId: "bass",
+    intentId: "build",
+    target: "ベース",
+    intent: "盛り上げる",
+    description: "ベースの明るさ、密度、押し出しを増やして、展開の熱量を上げるルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "widen",
+    target: "コード",
+    intent: "広げる",
+    description: "コードの音域、余韻、奥行きを広げて、曲の面を大きくするルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {
