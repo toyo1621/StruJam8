@@ -13,7 +13,7 @@ next. Update the checkpoint and evidence links when a release changes.
 - Repository visibility: public
 - Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34486774332`)
 - Public HTTP smoke: not validated in this local environment (DNS blocked)
-- Local working commit pushed: `a133fb9`
+- Local working commit pushed: `9304d8c`
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
 
 ## Functional Requirements
