@@ -46,7 +46,7 @@ Implemented:
 - Dark interface with colorful live pads
 - Responsive layout for desktop and tablet-sized screens
 - Recoverable audio failures expose a visible Retry state
-- React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, and number-key navigation
+- React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
 - Playwright browser checks for route navigation, code updates, RESET, tablet-width overflow, browser audio start/stop, and live code highlighting
 
 Not implemented yet:
