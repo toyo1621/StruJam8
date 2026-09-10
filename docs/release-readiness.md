@@ -7,11 +7,11 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `7d57a3a`
+- Application checkpoint commit: `c49e7ab`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34480341505`)
+- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34486774332`)
 - Public HTTP smoke: `200 OK`
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
 
@@ -24,6 +24,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Show readable generated Strudel-like code | Done | `src/lib/codegen.ts` is tested for track grouping, comments, and snippets. |
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
 | Update the running preview after a rule change | Done | Browser test covers adding a technique while audio is playing. |
+| Select a static preset, including the original Indietronica palette | Done | Toy House, Neon Dub, and Indietronica are defined in `src/data/presets.ts`; Chromium covers selecting and playing Indietronica. |
 | Evaluate every catalog technique snippet | Done for installed runtime | `npm run verify:techniques` evaluated all 296 catalog snippets in a real Chromium page against the installed Strudel runtime. `npm run verify:highlighting` confirms `miniLocations` for 296/296 techniques and observes runtime event locations for 295/296 in a 500ms window; the remaining rest-oriented technique may be silent during that window. |
 | Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted at token level; evaluator `miniLocations` are forwarded to refine the active source leaves; the left rule list also marks the producing rule `LIVE`, with a target-level fallback for broad locations; selecting a rule scrolls its generated code chain into view. Representative all-eight-target coverage, one verified playback technique per concrete route, 28 additional runtime-verified techniques, and 295/296 event-location observation are covered. Exact strudel.cc editor rendering/state parity and event-window coverage for intentional silence remain incomplete. |
 | Stop and retry after runtime failure | Done for MVP | Invalid snippet and failed runtime-load recovery are covered in Chromium. This is not full strudel.cc transport parity. |
@@ -37,7 +38,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 170 unit/component tests, and 18 Chromium tests pass in root preview. Pages-base-path verification also passes 18 Chromium tests for the production-shaped build. |
+| Regression coverage | Done for MVP | 22 Vitest files, 171 unit/component tests, and 20 Chromium tests pass in root preview. Pages-base-path verification also passes 20 Chromium tests for the production-shaped build. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
