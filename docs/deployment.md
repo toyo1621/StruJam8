@@ -20,6 +20,14 @@ npm run test:e2e
 npm run test:e2e:pages
 ```
 
+Source-location verification uses the Vite development server. Start
+`npm run dev` in another terminal, then run:
+
+```bash
+npm run verify:techniques
+npm run verify:highlighting
+```
+
 `npm run check` validates the normal local/root build. `npm run check:pages` validates the GitHub Pages build with the `/StruJam8/` asset base path and should be the final command before inspecting `dist/index.html`.
 `npm run test:e2e:pages` serves the built artifact under `/StruJam8/` and runs the browser flow against the production-shaped preview.
 

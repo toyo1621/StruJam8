@@ -55,11 +55,11 @@ Implemented:
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
 - Playwright browser checks for route navigation, all concrete route reachability, one verified playback technique from every concrete route, 28 additional runtime-verified technique playbacks, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, and live code highlighting across a representative route for all eight target tracks
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
-- All 296 catalog technique snippets pass the installed Strudel evaluator through `npm run verify:techniques`; evaluator `miniLocations` are used to refine the active source ranges (full event-by-event highlight coverage remains a separate check)
+- All 296 catalog technique snippets pass the installed Strudel evaluator through `npm run verify:techniques`; `npm run verify:highlighting` confirms `miniLocations` for 296/296 techniques and observes runtime event locations for 295/296 in a 500ms window (the remaining rest-oriented technique can be silent during that window)
 
 Not implemented yet:
 
-- Exact strudel.cc editor rendering/state parity beyond the runtime `miniLocations` mapping, and full all-technique runtime event/highlight coverage
+- Exact strudel.cc editor rendering/state parity beyond the runtime `miniLocations` mapping, and event-window coverage for techniques that intentionally begin with silence
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
@@ -156,6 +156,9 @@ Test:
 npm test
 npm run test:e2e
 npm run test:e2e:pages
+# npm run dev を別ターミナルで起動してから実行
+npm run verify:techniques
+npm run verify:highlighting
 ```
 
 The first browser test run may require `npx playwright install chromium`.
