@@ -201,6 +201,25 @@ test.describe("StruJam8 browser flow", () => {
     );
   });
 
+  test("updates the running preview when a new technique is added", async ({ page }) => {
+    await page.goto("./");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await chooseBassBreakTechnique(page);
+
+    await expect(page.getByLabel("Audible Strudel code")).toContainText(".degradeBy(0.2)");
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing");
+    await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
   test("highlights runtime code locations across all eight target tracks", async ({ page }) => {
     await page.goto(allTargetCoverageJamUrl());
 
