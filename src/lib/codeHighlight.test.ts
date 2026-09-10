@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { PlayableCodeLine } from "./codegen";
 import {
   getActiveCodeLineIndexes,
+  getActiveCodeRuleIds,
   getActiveCodeRuleId,
   getHighlightableRuleIds,
   getHighlightableTargets,
@@ -38,5 +39,16 @@ describe("code highlight helpers", () => {
     expect(getActiveCodeRuleId(lines, 1)).toBe("bass-drop");
     expect(getActiveCodeRuleId(lines, 2)).toBeNull();
     expect(getActiveCodeRuleId(lines, 3)).toBe("bass-drive");
+  });
+
+  it("maps active rendered lines to their rules", () => {
+    expect([...getActiveCodeRuleIds(lines, new Set([3]))]).toEqual(["bass-drop"]);
+  });
+
+  it("falls back to every rule on an active target for broad locations", () => {
+    expect([...getActiveCodeRuleIds(lines, new Set([2]))]).toEqual([
+      "bass-drop",
+      "bass-drive",
+    ]);
   });
 });

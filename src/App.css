@@ -465,6 +465,29 @@ button:focus-visible {
   box-shadow: 0 0 0 2px rgba(128, 237, 153, 0.12);
 }
 
+.rule-block.is-live {
+  border-color: rgba(76, 201, 240, 0.9);
+  background:
+    linear-gradient(90deg, rgba(76, 201, 240, 0.18), transparent 72%),
+    #292e38;
+  box-shadow:
+    inset 3px 0 0 #4cc9f0,
+    0 0 0 2px rgba(76, 201, 240, 0.12);
+}
+
+.rule-live-label {
+  display: inline-flex;
+  min-height: 24px;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0 8px;
+  color: #10202a;
+  background: #4cc9f0;
+  font-size: 0.68rem;
+  font-weight: 950;
+  letter-spacing: 0.04em;
+}
+
 .rule-muted-label {
   display: inline-flex;
   min-height: 24px;

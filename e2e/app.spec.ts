@@ -426,6 +426,9 @@ test.describe("StruJam8 browser flow", () => {
 
     await expect(page.getByLabel("Audible Strudel code")).toContainText(".degradeBy(0.2)");
     await expect(page.locator(".audio-status")).toHaveText("Audio playing");
+    await expect
+      .poll(() => page.locator('.rule-block[data-live="true"]').count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
     await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
       "aria-pressed",
       "false",

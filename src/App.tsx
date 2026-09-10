@@ -37,7 +37,12 @@ import { getRouteDefinition } from "./data/routes";
 import { starterJam } from "./data/starterJam";
 import { getTechniqueById } from "./data/techniques";
 import { formatPlayableCodeLines } from "./lib/codegen";
-import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./lib/codeHighlight";
+import {
+  getActiveCodeLineIndexes,
+  getActiveCodeRuleId,
+  getActiveCodeRuleIds,
+  joinCodeLines,
+} from "./lib/codeHighlight";
 import {
   expandCodeLocationsToMiniLocations,
   getActiveCodeLineIndexesFromLocations,
@@ -273,6 +278,13 @@ function App() {
 
     return getActiveCodeRuleId(audibleCodeLines, codePulseIndex);
   }, [audibleCodeLines, codePulseIndex, isPlaying, renderedCodeLocations]);
+  const activeCodeRuleIds = useMemo(
+    () =>
+      isPlaying
+        ? getActiveCodeRuleIds(audibleCodeLines, activeCodeLineIndexes)
+        : new Set<string>(),
+    [activeCodeLineIndexes, audibleCodeLines, isPlaying],
+  );
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
   const copyStatusLabel = getCopyStatusLabel(copyStatus);
 
@@ -832,84 +844,90 @@ function App() {
           {rules.length > 0 ? (
             <>
               <ol className="rule-list">
-                {rules.map((rule, index) => (
-                  <li
-                    className={`rule-block ${rule.enabled ? "" : "is-disabled"} ${
-                      selectedRule?.id === rule.id ? "is-focused" : ""
-                    }`}
-                    key={rule.id}
-                  >
-                    <span className="rule-index">{String(index + 1).padStart(2, "0")}</span>
-                    <div className="rule-copy">
-                      <span>{rule.target}</span>
-                      <span>＞</span>
-                      <span>{rule.intent}</span>
-                      <span>＞</span>
-                      <strong>{rule.technique}</strong>
-                      {!rule.enabled && <span className="rule-muted-label">OFF</span>}
-                      {rule.needsTodo && <span className="rule-muted-label">TODO</span>}
-                    </div>
-                    <div
-                      className="rule-actions"
-                      role="group"
-                      aria-label={formatRuleActionsGroupLabel(rule)}
+                {rules.map((rule, index) => {
+                  const isRuleLive = activeCodeRuleIds.has(rule.id);
+
+                  return (
+                    <li
+                      className={`rule-block ${rule.enabled ? "" : "is-disabled"} ${
+                        selectedRule?.id === rule.id ? "is-focused" : ""
+                      } ${isRuleLive ? "is-live" : ""}`}
+                      data-live={isRuleLive ? "true" : "false"}
+                      key={rule.id}
                     >
-                      <button
-                        aria-label={formatRuleDetailActionLabel(rule)}
-                        aria-pressed={selectedRule?.id === rule.id}
-                        className={`rule-action-button ${
-                          selectedRule?.id === rule.id ? "is-selected" : ""
-                        }`}
-                        type="button"
-                        onClick={() => setSelectedRuleId(rule.id)}
+                      <span className="rule-index">{String(index + 1).padStart(2, "0")}</span>
+                      <div className="rule-copy">
+                        <span>{rule.target}</span>
+                        <span>＞</span>
+                        <span>{rule.intent}</span>
+                        <span>＞</span>
+                        <strong>{rule.technique}</strong>
+                        {!rule.enabled && <span className="rule-muted-label">OFF</span>}
+                        {rule.needsTodo && <span className="rule-muted-label">TODO</span>}
+                        {isRuleLive && <span className="rule-live-label">LIVE</span>}
+                      </div>
+                      <div
+                        className="rule-actions"
+                        role="group"
+                        aria-label={formatRuleActionsGroupLabel(rule)}
                       >
-                        詳細
-                      </button>
-                      <button
-                        aria-label={formatRuleDuplicateActionLabel(rule)}
-                        className="rule-action-button"
-                        type="button"
-                        onClick={() => handleDuplicateRule(rule)}
-                      >
-                        複製
-                      </button>
-                      <button
-                        aria-label={formatRuleMoveActionLabel(rule, "up")}
-                        className="rule-action-button is-icon"
-                        type="button"
-                        onClick={() => handleMoveRule(rule, "up")}
-                        disabled={index === 0}
-                      >
-                        ↑
-                      </button>
-                      <button
-                        aria-label={formatRuleMoveActionLabel(rule, "down")}
-                        className="rule-action-button is-icon"
-                        type="button"
-                        onClick={() => handleMoveRule(rule, "down")}
-                        disabled={index === rules.length - 1}
-                      >
-                        ↓
-                      </button>
-                      <button
-                        aria-label={formatRuleToggleActionLabel(rule)}
-                        className="rule-action-button"
-                        type="button"
-                        onClick={() => handleToggleRule(rule)}
-                      >
-                        {rule.enabled ? "OFF" : "ON"}
-                      </button>
-                      <button
-                        aria-label={formatRuleRemoveActionLabel(rule)}
-                        className="rule-action-button is-danger"
-                        type="button"
-                        onClick={() => handleRemoveRule(rule)}
-                      >
-                        削除
-                      </button>
-                    </div>
-                  </li>
-                ))}
+                        <button
+                          aria-label={formatRuleDetailActionLabel(rule)}
+                          aria-pressed={selectedRule?.id === rule.id}
+                          className={`rule-action-button ${
+                            selectedRule?.id === rule.id ? "is-selected" : ""
+                          }`}
+                          type="button"
+                          onClick={() => setSelectedRuleId(rule.id)}
+                        >
+                          詳細
+                        </button>
+                        <button
+                          aria-label={formatRuleDuplicateActionLabel(rule)}
+                          className="rule-action-button"
+                          type="button"
+                          onClick={() => handleDuplicateRule(rule)}
+                        >
+                          複製
+                        </button>
+                        <button
+                          aria-label={formatRuleMoveActionLabel(rule, "up")}
+                          className="rule-action-button is-icon"
+                          type="button"
+                          onClick={() => handleMoveRule(rule, "up")}
+                          disabled={index === 0}
+                        >
+                          ↑
+                        </button>
+                        <button
+                          aria-label={formatRuleMoveActionLabel(rule, "down")}
+                          className="rule-action-button is-icon"
+                          type="button"
+                          onClick={() => handleMoveRule(rule, "down")}
+                          disabled={index === rules.length - 1}
+                        >
+                          ↓
+                        </button>
+                        <button
+                          aria-label={formatRuleToggleActionLabel(rule)}
+                          className="rule-action-button"
+                          type="button"
+                          onClick={() => handleToggleRule(rule)}
+                        >
+                          {rule.enabled ? "OFF" : "ON"}
+                        </button>
+                        <button
+                          aria-label={formatRuleRemoveActionLabel(rule)}
+                          className="rule-action-button is-danger"
+                          type="button"
+                          onClick={() => handleRemoveRule(rule)}
+                        >
+                          削除
+                        </button>
+                      </div>
+                    </li>
+                  );
+                })}
               </ol>
 
               {selectedRule && (
