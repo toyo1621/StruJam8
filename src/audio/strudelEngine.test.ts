@@ -71,6 +71,39 @@ describe("strudel engine", () => {
     expect(webaudioOutputMock).toHaveBeenNthCalledWith(2, {}, 0, 0.25, 1, 0);
   });
 
+  it("reports output failures through the runtime error handler", async () => {
+    const onError = vi.fn();
+    const outputError = new Error("audio output failed");
+
+    await startStrudelAudio('note("c2")', undefined, onError);
+
+    const options = initStrudelMock.mock.calls[0]?.[0] as { defaultOutput?: DefaultOutput };
+    webaudioOutputMock.mockRejectedValueOnce(outputError);
+
+    await expect(options.defaultOutput?.({}, 0, 0.25, 1, 0)).rejects.toThrow("audio output failed");
+    expect(onError).toHaveBeenCalledWith(outputError);
+  });
+
+  it("reports a scheduler error once until the runtime clears it", async () => {
+    const onError = vi.fn();
+    let onUpdateState: ((state: unknown) => void) | undefined;
+    initStrudelMock.mockImplementation((options: { onUpdateState?: (state: unknown) => void }) => {
+      onUpdateState = options.onUpdateState;
+      return Promise.resolve({});
+    });
+    const schedulerError = new Error("scheduler failed");
+
+    await startStrudelAudio('note("c2")', undefined, onError);
+    onUpdateState?.({ schedulerError });
+    onUpdateState?.({ schedulerError });
+    onUpdateState?.({ schedulerError: undefined });
+    onUpdateState?.({ schedulerError });
+
+    expect(onError).toHaveBeenCalledTimes(2);
+    expect(onError).toHaveBeenNthCalledWith(1, schedulerError);
+    expect(onError).toHaveBeenNthCalledWith(2, schedulerError);
+  });
+
   it("surfaces Strudel evaluation errors instead of reporting playback success", async () => {
     let onEvalError: ((error: unknown) => void) | undefined;
     initStrudelMock.mockImplementation((options: { onEvalError?: (error: unknown) => void }) => {

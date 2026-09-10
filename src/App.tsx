@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "r
 import {
   startStrudelAudio,
   stopStrudelAudio,
+  type StrudelAudioErrorHandler,
   type StrudelAudioTriggerHandler,
   type StrudelCodeLocation,
 } from "./audio/strudelEngine";
@@ -237,6 +238,16 @@ function App() {
     setActiveCodeLocations(locations);
   }, []);
 
+  const handleAudioRuntimeError = useCallback<StrudelAudioErrorHandler>((error) => {
+    console.error(error);
+    stopStrudelAudio();
+    lastPlayedCodeRef.current = null;
+    setActiveCodeLocations(null);
+    dispatch({ type: "setPlaying", isPlaying: false });
+    setAudioStatusMessage("Audio stopped after error");
+    announce("Audio playback stopped because of an audio error");
+  }, [announce]);
+
   const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
@@ -380,7 +391,7 @@ function App() {
     setActiveCodeLocations(null);
 
     try {
-      const didEvaluate = await startStrudelAudio(audibleCode, handleAudioTrigger);
+      const didEvaluate = await startStrudelAudio(audibleCode, handleAudioTrigger, handleAudioRuntimeError);
       if (!didEvaluate) {
         return;
       }
@@ -398,7 +409,7 @@ function App() {
       setAudioStatusMessage("Audio start failed");
       announce("Audio playback could not start");
     }
-  }, [announce, audibleCode, handleAudioTrigger]);
+  }, [announce, audibleCode, handleAudioRuntimeError, handleAudioTrigger]);
 
   const handleStop = useCallback(() => {
     stopAudioPreview("Audio stopped", "Audio playback stopped");
@@ -413,9 +424,9 @@ function App() {
     setActiveCodeLocations(null);
     setAudioStatusMessage("Updating audio...");
 
-    startStrudelAudio(audibleCode, handleAudioTrigger)
+    startStrudelAudio(audibleCode, handleAudioTrigger, handleAudioRuntimeError)
       .then((didEvaluate) => {
-        if (didCancel || !didEvaluate) {
+        if (didCancel || !didEvaluate || lastPlayedCodeRef.current === null) {
           return;
         }
 
@@ -441,7 +452,7 @@ function App() {
     return () => {
       didCancel = true;
     };
-  }, [announce, audibleCode, handleAudioTrigger, isPlaying]);
+  }, [announce, audibleCode, handleAudioRuntimeError, handleAudioTrigger, isPlaying]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());

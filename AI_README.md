@@ -170,7 +170,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
+- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, and stops UI playback when evaluation, output, or scheduler errors are reported. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus runtime Hap source-location highlighting are implemented; exact editor-level `miniLocations` state parity and non-mini technique coverage are still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -218,7 +218,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
-- Audio graph disposal and runtime scheduler error recovery beyond evaluation error handling.
+- Audio graph disposal and full recovery/retry UX beyond the current runtime error stop path.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
@@ -226,7 +226,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - MIDI/controller input.
 - Full browser-rendered UI interaction tests.
 - Accessibility pass beyond basic semantic buttons and labels.
-- Full recovery UI for invalid snippets, audio-context failures, and future runtime scheduler errors.
+- Full recovery/retry UX for invalid snippets, closed audio contexts, and future runtime scheduler errors.
 
 ## Non-Functional Requirements Evaluation
 
@@ -458,7 +458,7 @@ Tasks:
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
 - Implement serialized latest-request update lifecycle: done; implement dispose lifecycle: pending.
-- Handle invalid code safely: partial; evaluation errors and missing patterns are surfaced to the UI, while audio-context and scheduler recovery remain pending.
+- Handle invalid code safely: evaluation, output, and scheduler errors are surfaced and stop UI playback; closed-context recovery and richer retry UX remain pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.

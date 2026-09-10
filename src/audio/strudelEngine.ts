@@ -10,6 +10,7 @@ export interface StrudelCodeLocation {
 }
 
 export type StrudelAudioTriggerHandler = (locations: StrudelCodeLocation[]) => void;
+export type StrudelAudioErrorHandler = (error: Error) => void;
 
 export const starterAudioCode = 'note("c2 eb2 g2 bb2").s("sawtooth").slow(2).gain(0.35)';
 
@@ -21,6 +22,8 @@ let playbackGeneration = 0;
 let latestEvaluationRequest = 0;
 let evaluationQueue: Promise<void> = Promise.resolve();
 let audioTriggerHandler: StrudelAudioTriggerHandler | null = null;
+let audioErrorHandler: StrudelAudioErrorHandler | null = null;
+let didReportSchedulerError = false;
 let latestEvaluationError: unknown = null;
 
 export function getStrudelRuntimeStatus() {
@@ -87,6 +90,18 @@ function notifyAudioTrigger(locations: StrudelCodeLocation[]) {
   }
 }
 
+function notifyAudioError(error: unknown) {
+  if (!audioErrorHandler) {
+    return;
+  }
+
+  try {
+    audioErrorHandler(toEvaluationError(error, "Strudel audio runtime failed"));
+  } catch (handlerError) {
+    console.error("StruJam8 audio error handler failed", handlerError);
+  }
+}
+
 async function loadStrudelModule() {
   if (!strudelModulePromise) {
     strudelModulePromise = import("@strudel/web").then((module) => {
@@ -109,9 +124,15 @@ async function ensureStrudelInitialized() {
 
   if (!initPromise) {
     const moduleWithOutput = module as StrudelWebModuleWithOutput;
-    const defaultOutput = (...args: StrudelOutputArgs) => {
+    const defaultOutput = async (...args: StrudelOutputArgs) => {
       notifyAudioTrigger(getHapLocations(args[0]));
-      return moduleWithOutput.webaudioOutput(...args);
+
+      try {
+        return await moduleWithOutput.webaudioOutput(...args);
+      } catch (error) {
+        notifyAudioError(error);
+        throw error;
+      }
     };
 
     initPromise = Promise.resolve(
@@ -119,6 +140,25 @@ async function ensureStrudelInitialized() {
         defaultOutput,
         onEvalError: (error: unknown) => {
           latestEvaluationError = error;
+        },
+        onUpdateState: (state: unknown) => {
+          if (!state || typeof state !== "object") {
+            return;
+          }
+
+          const schedulerError = (state as { schedulerError?: unknown }).schedulerError;
+
+          if (!schedulerError) {
+            didReportSchedulerError = false;
+            return;
+          }
+
+          if (didReportSchedulerError) {
+            return;
+          }
+
+          didReportSchedulerError = true;
+          notifyAudioError(schedulerError);
         },
       }),
     ).then((runtime) => {
@@ -140,9 +180,14 @@ async function ensureStrudelInitialized() {
 export async function startStrudelAudio(
   code: string = starterAudioCode,
   onTrigger?: StrudelAudioTriggerHandler,
+  onError?: StrudelAudioErrorHandler,
 ) {
   if (onTrigger) {
     audioTriggerHandler = onTrigger;
+  }
+
+  if (onError) {
+    audioErrorHandler = onError;
   }
 
   const requestId = ++latestEvaluationRequest;
@@ -187,6 +232,8 @@ export function stopStrudelAudio() {
   playbackGeneration += 1;
   latestEvaluationRequest += 1;
   audioTriggerHandler = null;
+  audioErrorHandler = null;
+  didReportSchedulerError = false;
   latestEvaluationError = null;
 
   if (!didInitialize || !strudelModule) {
@@ -205,5 +252,7 @@ export function resetStrudelEngineForTests() {
   latestEvaluationRequest = 0;
   evaluationQueue = Promise.resolve();
   audioTriggerHandler = null;
+  audioErrorHandler = null;
+  didReportSchedulerError = false;
   latestEvaluationError = null;
 }
