@@ -42,9 +42,10 @@ npm run build
 npm run build:pages
 npm run check
 npm run check:pages
+npm run test:e2e
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, and tablet-width overflow.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -56,7 +57,9 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
 - `src/App.css`: visual layout, dark theme, colorful pads, responsive behavior.
 - `vite.config.ts`: Vite React config; GitHub Pages uses the `build:pages` script for the `/StruJam8/` base path.
-- `.github/workflows/ci.yml`: GitHub Actions workflow running `npm run check`.
+- `playwright.config.ts` and `e2e/app.spec.ts`: Chromium-backed browser flow and responsive layout checks.
+- `vitest.config.ts`: limits unit/component discovery to `src/` so Playwright files are not run by Vitest.
+- `.github/workflows/ci.yml`: GitHub Actions workflow running `npm run check` and the Playwright browser checks.
 - `.github/workflows/pages.yml`: GitHub Pages deployment workflow.
 - `CONTRIBUTING.md`: contributor setup, validation, PR checklist, and scope guidance.
 - `docs/demo.md`: screenshot and demo GIF capture plan for release assets.
@@ -224,7 +227,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
 - MIDI/controller input.
-- Real-browser WebAudio, runtime-highlight, and responsive visual checks; core DOM interactions are covered by jsdom integration tests.
+- Real-browser WebAudio output, runtime-highlight timing, and audio-recovery checks; route, code-update, RESET, and tablet overflow checks are covered by Playwright.
 - Accessibility pass beyond basic semantic buttons and labels.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors; surfaced failures stop playback and expose Retry, while closed AudioContexts are recreated before the next Play attempt.
 
@@ -246,7 +249,7 @@ Strengths:
 - Persistence parsing, storage writes, and JSON snapshot serialization are isolated in `src/lib/persistence.ts` and tested.
 - Clipboard copy behavior is isolated in `src/lib/clipboard.ts` and tested.
 - Share URL encoding/decoding is isolated in `src/lib/shareUrl.ts` and tested.
-- Local and CI quality gates run `npm run check`; the GitHub Pages workflow runs `npm run check:pages` for the deployment build.
+- Local quality gates run `npm run check` plus `npm run test:e2e`; CI runs both, and the GitHub Pages workflow runs `npm run check:pages` for the deployment build.
 - Contributor setup and PR expectations are documented in `CONTRIBUTING.md`.
 - Demo capture states are documented in `docs/demo.md`.
 - Deployment setup and post-deploy QA are documented in `docs/deployment.md`.
@@ -483,9 +486,9 @@ Tasks:
 
 - Choose final license and add LICENSE: done with `AGPL-3.0-or-later`; see `docs/license-review.md`.
 - Add contribution guidelines: done in `CONTRIBUTING.md`.
-- Add automated checks in GitHub Actions: done for test and build via `npm run check`.
+- Add automated checks in GitHub Actions: done for unit/build validation via `npm run check` and Chromium browser validation via `npm run test:e2e`.
 - Add GitHub Pages deployment workflow: done in `.github/workflows/pages.yml`; it runs `npm run check:pages`, and repository Pages settings still need to allow GitHub Actions deployment. Runbook added in `docs/deployment.md`.
-- Add screenshots or demo GIF: capture plan added in `docs/demo.md`; actual image/GIF assets still pending.
+- Add screenshots or demo GIF: desktop/rules/tablet PNG assets are committed under `docs/assets/`; the short demo GIF remains pending.
 - Add visible Source and License links in the app header: done via `src/data/projectLinks.ts`.
 - Add deployment target: GitHub Pages selected; expected URL is `https://toyo1621.github.io/StruJam8/` after repository Pages settings are enabled.
 

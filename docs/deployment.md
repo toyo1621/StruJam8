@@ -11,11 +11,12 @@ This runbook describes the current GitHub Pages release path for StruJam8.
 
 ## Local Validation
 
-Run both checks before merging release-related changes. Run them sequentially because both commands write `dist/`:
+Run all release checks before merging. Run the build checks sequentially because they write `dist/`, then run the browser checks:
 
 ```bash
 npm run check
 npm run check:pages
+npm run test:e2e
 ```
 
 `npm run check` validates the normal local/root build. `npm run check:pages` validates the GitHub Pages build with the `/StruJam8/` asset base path and should be the final command before inspecting `dist/index.html`.
@@ -71,4 +72,4 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 
 - Audio runtime is an early `@strudel/web` preview. Default presets use built-in synth/noise sounds; external sample packs are not loaded by default.
 - No custom domain is configured.
-- Demo screenshots/GIF assets are planned in `docs/demo.md` but are not captured yet.
+- Desktop, rules, and tablet PNG assets are committed under `docs/assets/`; the short demo GIF remains planned in `docs/demo.md`.

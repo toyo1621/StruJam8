@@ -47,15 +47,16 @@ Implemented:
 - Responsive layout for desktop and tablet-sized screens
 - Recoverable audio failures expose a visible Retry state
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, and number-key navigation
+- Playwright browser checks for route navigation, code updates, RESET, and tablet-width overflow
 
 Not implemented yet:
 
-- Editor-level exact `miniLocations` parity and a full real-browser audio/visual test matrix
+- Editor-level exact `miniLocations` parity and a full real-browser audio/runtime test matrix
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- Real-browser UI, WebAudio, runtime-highlight, and responsive visual checks
+- Real-browser WebAudio output, runtime-highlight timing, and audio-recovery checks
 
 ## Presets
 
@@ -145,7 +146,10 @@ Test:
 
 ```bash
 npm test
+npm run test:e2e
 ```
+
+The first browser test run may require `npx playwright install chromium`.
 
 Build:
 
@@ -209,7 +213,11 @@ docs/
 
 ## Demo Assets
 
-See [docs/demo.md](docs/demo.md) for the screenshot and demo GIF capture plan. See [docs/technique-design.md](docs/technique-design.md) for how technique routes should be designed.
+![StruJam8 home screen](docs/assets/strujam8-home.png)
+
+![Rules and highlighted Strudel code](docs/assets/strujam8-rules-code.png)
+
+A tablet-width capture is available at [docs/assets/strujam8-tablet.png](docs/assets/strujam8-tablet.png). See [docs/demo.md](docs/demo.md) for the capture flow and remaining GIF plan. See [docs/technique-design.md](docs/technique-design.md) for how technique routes should be designed.
 
 ## Contributing
 

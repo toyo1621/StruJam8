@@ -25,12 +25,15 @@ localStorage.removeItem("strujam8:jam:v1")
 
 ## Recommended Assets
 
-Save captured files under `docs/assets/` with these names:
+Captured files live under `docs/assets/`:
 
 - `strujam8-home.png`: first view with Toy House selected and no rules.
-- `strujam8-rules-code.png`: rules added, rule detail visible, audible code populated, and active code-token highlighting visible during playback.
+- `strujam8-rules-code.png`: one bass rule, rule detail visible, audible code populated, and the selected code line highlighted.
+- `strujam8-tablet.png`: 1024 x 768 tablet-width layout.
+
+Still to capture:
+
 - `strujam8-sharing.png`: header showing Export JSON, Import JSON, Share URL, and Copy controls.
-- `strujam8-tablet.png`: tablet-width layout check.
 - `strujam8-demo.gif`: short interaction loop.
 
 ## Screenshot States
@@ -123,7 +126,8 @@ If showing Play/Stop, describe it as a first built-in synth/noise preview. Avoid
 
 ## Release Checklist
 
-- Capture desktop and tablet screenshots after `npm run check` passes.
+- Capture desktop and tablet screenshots after `npm run check` and `npm run test:e2e` pass.
 - Re-capture assets when header controls, pad layout, or code panel behavior changes.
 - Keep filenames stable so README links do not churn.
 - Do not commit screenshots that show local browser extensions, private URLs, or unrelated desktop UI.
+- The PNG assets currently committed were checked at 1440 x 1000 and 1024 x 768.

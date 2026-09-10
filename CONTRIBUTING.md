@@ -19,6 +19,7 @@ Before adding large new systems, prefer data-driven improvements in `src/data/` 
 ```bash
 npm install
 npm run dev
+npx playwright install chromium
 ```
 
 ## Validation
@@ -27,6 +28,7 @@ Run the full local quality gate before opening a PR:
 
 ```bash
 npm run check
+npm run test:e2e
 ```
 
 `npm run check` runs both:
@@ -36,7 +38,7 @@ npm test
 npm run build
 ```
 
-GitHub Actions runs the same check on pushes to `main` and pull requests.
+GitHub Actions runs the unit/build check and the Chromium browser check on pushes to `main` and pull requests.
 
 ## Development Guidelines
 
@@ -64,7 +66,7 @@ For UI-only styling changes, run `npm run check` and manually inspect the app in
 
 - The change preserves the 8-pad target -> intent -> technique model.
 - New data has stable IDs and focused tests where appropriate.
-- `npm run check` passes locally.
+- `npm run check` and `npm run test:e2e` pass locally.
 - README.md or AI_README.md is updated when behavior, commands, architecture, or requirements change.
 - No unrelated generated files or local-only artifacts are included.
 
