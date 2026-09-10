@@ -8,7 +8,10 @@ const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1440, height: 900 } });
   await page.goto(verificationUrl, { waitUntil: "domcontentloaded" });
-  await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+  const startButton = page.getByRole("button", {
+    name: /^(Start Strudel audio preview|Play|再生|Play Strudel Audio)$/i,
+  });
+  await startButton.click();
   await page.getByText("Audio playing").waitFor({ state: "visible", timeout: 15_000 });
 
   const result = await page.evaluate(async ({ settleMs: delay }) => {
@@ -84,7 +87,7 @@ try {
     };
   }, { settleMs });
 
-  await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+  await page.getByRole("button", { name: /^(Stop Strudel audio preview|Stop|停止)$/i }).click();
 
   console.log(JSON.stringify({ ...result, settleMs }, null, 2));
 

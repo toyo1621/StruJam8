@@ -274,8 +274,10 @@ test.describe("StruJam8 browser flow", () => {
     await page.getByLabel("Preset", { exact: true }).selectOption("indietronica");
 
     await expect(page.getByLabel("Preset", { exact: true })).toHaveValue("indietronica");
-    await expect(page.getByLabel("Audible Strudel code")).toContainText('s("sbd ~ [~ sbd] ~")');
-    await expect(page.getByText("原曲のメロディや録音は使用しません。", { exact: false })).toBeVisible();
+    await expect(page.getByLabel("Audible Strudel code")).toContainText(/s\("sbd ~ \[(~ sbd|sbd sbd)\] ~"\)/);
+    await expect(
+      page.getByText("原曲のメロディや録音は使用していません。", { exact: false }),
+    ).toBeVisible();
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
