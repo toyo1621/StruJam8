@@ -84,6 +84,30 @@ describe("strudel engine", () => {
     expect(onError).toHaveBeenCalledWith(outputError);
   });
 
+  it("invalidates a pending evaluation after an output error", async () => {
+    const onError = vi.fn();
+    let resolveEvaluate: (value: unknown) => void = () => {};
+    let defaultOutput: DefaultOutput | undefined;
+    initStrudelMock.mockImplementation((options: { defaultOutput?: DefaultOutput }) => {
+      defaultOutput = options.defaultOutput;
+      return Promise.resolve({});
+    });
+    evaluateMock.mockImplementationOnce(() => new Promise((resolve) => {
+      resolveEvaluate = resolve;
+    }));
+
+    const pending = startStrudelAudio('note("c2")', undefined, onError);
+    await vi.waitFor(() => expect(evaluateMock).toHaveBeenCalledTimes(1));
+    const outputError = new Error("output failed before start completed");
+    webaudioOutputMock.mockRejectedValueOnce(outputError);
+
+    await expect(defaultOutput?.({}, 0, 0.25, 1, 0)).rejects.toThrow("output failed before start completed");
+    resolveEvaluate({});
+
+    await expect(pending).resolves.toBe(false);
+    expect(onError).toHaveBeenCalledWith(outputError);
+  });
+
   it("reports a scheduler error once until the runtime clears it", async () => {
     const onError = vi.fn();
     let onUpdateState: ((state: unknown) => void) | undefined;

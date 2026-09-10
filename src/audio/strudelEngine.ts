@@ -91,6 +91,9 @@ function notifyAudioTrigger(locations: StrudelCodeLocation[]) {
 }
 
 function notifyAudioError(error: unknown) {
+  playbackGeneration += 1;
+  latestEvaluationRequest += 1;
+
   if (!audioErrorHandler) {
     return;
   }
