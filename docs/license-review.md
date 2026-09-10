@@ -1,6 +1,6 @@
 # StruJam8 License Review
 
-Last reviewed: 2026-07-04
+Last reviewed: 2026-09-10
 
 This note records the current licensing decision for StruJam8. It is project documentation, not legal advice.
 
@@ -25,6 +25,8 @@ Observed package metadata:
 - `@strudel/core`: `AGPL-3.0-or-later`
 - `@strudel/webaudio`: `AGPL-3.0-or-later`
 - `@strudel/transpiler`: `AGPL-3.0-or-later`
+
+Development-only tooling currently reports permissive licenses: Playwright is Apache-2.0, while React, Vite, Vitest, Testing Library, and jsdom are MIT. These packages are used for build/test workflows and are not runtime audio assets.
 
 The GitHub mirror at https://github.com/tidalcycles/strudel also indicates that the project moved to Codeberg and shows AGPL-3.0 licensing on the mirror.
 
