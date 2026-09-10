@@ -7,7 +7,7 @@ function livePads(page: Page) {
 }
 
 function isStrudelRuntimeRequest(url: string) {
-  return url.includes("@strudel_web") || /\/dist-[^/]+\.js(?:\?|$)/.test(url);
+  return url.includes("@strudel_web") || /\/(?:dist|strudel-runtime)-[^/]+\.js(?:\?|$)/.test(url);
 }
 
 async function chooseBassBreakTechnique(page: Page) {

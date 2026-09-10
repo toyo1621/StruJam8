@@ -40,7 +40,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
-| Performance | Partial | Strudel is lazy-loaded. Two audio chunks are about 651 kB minified each; investigate further before adding more runtime dependencies. |
+| Performance | Partial | Strudel is lazy-loaded as one runtime chunk of about 1.3 MB minified (about 432 kB gzip); Retry uses a query-keyed URL to bypass a failed module cache. The initial UI chunk is about 305 kB minified, so this budget remains under review. |
 | Runtime resilience | Partial | Retry, closed AudioContext recreation, stale evaluation cancellation, stale Superdough controller/effect reset during closed-context recovery, and error boundaries exist. Full normal-stop audio-graph disposal is intentionally not guessed and needs browser-specific validation. |
 | License and provenance | Partial | The app is AGPL-3.0-or-later and the current runtime review is documented. Re-check before adding samples, fonts, or hosted services. |
 
