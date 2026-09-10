@@ -15,6 +15,13 @@ async function chooseBassBreakTechnique(page: Page) {
   await pads.filter({ hasText: "音を抜く" }).click();
 }
 
+async function chooseUnverifiedBassBreakTechnique(page: Page) {
+  const pads = livePads(page);
+  await pads.filter({ hasText: "ベース" }).click();
+  await pads.filter({ hasText: "崩す" }).click();
+  await pads.filter({ hasText: "たまに休む" }).click();
+}
+
 test.describe("StruJam8 browser flow", () => {
   test("navigates through the three pad levels and updates audible code", async ({ page }) => {
     await page.goto("./");
@@ -38,6 +45,24 @@ test.describe("StruJam8 browser flow", () => {
 
     await expect(code).not.toContainText(".degradeBy(0.2)");
     await expect(page.getByText("ベース ＞ 崩す", { exact: true }).first()).toBeVisible();
+  });
+
+  test("shows unverified techniques as TODO without sending them to Play", async ({ page }) => {
+    await page.goto("./");
+    await chooseUnverifiedBassBreakTechnique(page);
+
+    await expect(page.getByText("ベース ＞ 崩す ＞ たまに休む", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("TODO", { exact: true }).first()).toBeVisible();
+
+    const code = page.getByLabel("Audible Strudel code");
+    await expect(code).not.toContainText(".sometimes(silence)");
+    await expect(code).not.toContainText("TODO");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });
 
   test("starts and stops the browser audio preview with live code highlighting", async ({ page }) => {

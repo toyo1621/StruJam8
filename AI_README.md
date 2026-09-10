@@ -46,7 +46,7 @@ npm run test:e2e
 npm run test:e2e:pages
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, live code highlighting, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same six flows against a Pages-base-path production preview.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, safe exclusion of unverified snippets, tablet-width overflow, browser audio start/stop, live code highlighting, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same seven flows against a Pages-base-path production preview.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -124,7 +124,7 @@ The Play button initializes Strudel from a user click and evaluates conservative
 - `needsTodo?`
 
 Use `needsTodo: true` when a snippet is plausible but not verified against real Strudel behavior.
-The code panel displays a TODO comment for those snippets, and the pad preview displays `snippetExplanation` beside the snippet.
+The technique preview and rule detail display a TODO badge, while conservative Play code excludes the snippet until it is verified. The pad preview displays `snippetExplanation` beside the snippet.
 
 ### Route Data Contract
 
@@ -229,7 +229,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
 - MIDI/controller input.
-- Real-browser invalid-snippet behavior and all-route runtime-highlight coverage; browser audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
+- Real-browser invalid-snippet evaluation and all-route runtime-highlight coverage; browser safe-exclusion checks, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
 - Accessibility pass beyond basic semantic buttons and labels.
 - Full error telemetry or remote crash reporting; the current boundary logs locally and offers reload.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors remains pending; surfaced failures stop playback and expose Retry, runtime-load Retry bypasses a failed module cache, and closed AudioContexts are recreated before the next Play attempt.
@@ -464,7 +464,7 @@ Tasks:
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
 - Implement serialized latest-request update lifecycle: done; implement full audio graph dispose lifecycle: pending.
-- Handle invalid code safely: evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Error-specific recovery and full audio graph disposal remain pending.
+- Handle invalid code safely: unverified snippets are excluded before Play, while evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Real invalid-snippet evaluation, error-specific recovery, and full audio graph disposal remain pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.
