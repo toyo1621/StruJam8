@@ -673,7 +673,7 @@ function App() {
             ))}
           </nav>
 
-          <div className="file-controls" aria-label="Jam file controls">
+          <div className="file-controls" role="group" aria-label="Jam file controls">
             <button type="button" onClick={handleExportJam}>
               Export JSON
             </button>
@@ -708,6 +708,7 @@ function App() {
 
           <div
             className="transport-controls"
+            role="group"
             aria-label="Transport controls"
             aria-describedby="transport-ui-description"
           >
@@ -775,7 +776,11 @@ function App() {
                       {!rule.enabled && <span className="rule-muted-label">OFF</span>}
                       {rule.needsTodo && <span className="rule-muted-label">TODO</span>}
                     </div>
-                    <div className="rule-actions" aria-label={formatRuleActionsGroupLabel(rule)}>
+                    <div
+                      className="rule-actions"
+                      role="group"
+                      aria-label={formatRuleActionsGroupLabel(rule)}
+                    >
                       <button
                         aria-label={formatRuleDetailActionLabel(rule)}
                         aria-pressed={selectedRule?.id === rule.id}
@@ -928,7 +933,7 @@ function App() {
             <strong>{pathLabel}</strong>
           </div>
 
-          <div className="navigation-controls">
+          <div className="navigation-controls" role="group" aria-label="Navigation controls">
             <button
               type="button"
               onClick={() => dispatch({ type: "goBack" })}
@@ -1030,7 +1035,7 @@ function App() {
           </div>
         </section>
 
-        <div className="pad-grid" aria-label={`${currentLevel} pads`}>
+        <div className="pad-grid" role="group" aria-label={`${currentLevel} pads`}>
           {visiblePads.map((pad, index) => {
             const isSelectedTechnique =
               currentLevel === "technique" && activeTechniqueIds.has(pad.id);

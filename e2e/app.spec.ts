@@ -303,4 +303,22 @@ test.describe("StruJam8 browser flow", () => {
 
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
   });
+
+  test("keeps the pad dock usable in a narrow mobile viewport", async ({ page }) => {
+    await page.setViewportSize({ width: 360, height: 800 });
+    await page.goto("./");
+
+    await expect(page.locator("footer.pad-dock button.live-pad")).toHaveCount(8);
+
+    const layout = await page.evaluate(() => ({
+      documentWidth: document.documentElement.scrollWidth,
+      viewportWidth: document.documentElement.clientWidth,
+    }));
+    const minimumControlHeight = await page
+      .locator(".transport-button, .navigation-controls button, .file-controls button, .copy-code-button, .live-pad")
+      .evaluateAll((elements) => Math.min(...elements.map((element) => element.getBoundingClientRect().height)));
+
+    expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
+    expect(minimumControlHeight).toBeGreaterThanOrEqual(44);
+  });
 });

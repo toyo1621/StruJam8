@@ -63,6 +63,7 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 - Share URL copies a URL that restores the current small jam.
 - LocalStorage restore still works after refresh.
 - The initial page does not load the Strudel runtime; Play loads it after a user click and starts the first audio preview. If that module load fails, Retry uses a separate query-keyed module URL to bypass the failed browser module cache. Stop hushes playback, suspended AudioContexts are resumed and closed AudioContexts are recreated before retry, runtime Strudel event locations highlight the corresponding code tokens while playing, and audio output/scheduler failures stop playback with a retryable UI state; a line pulse is used as fallback.
+- At a 360px mobile viewport, the pad dock has no horizontal overflow and primary controls retain at least a 44px touch target.
 
 ## Troubleshooting
 
