@@ -68,7 +68,7 @@ For UI-only styling changes, run `npm run check` and manually inspect the app in
 
 - The change preserves the 8-pad target -> intent -> technique model.
 - New data has stable IDs and focused tests where appropriate.
-- `npm run check` and `npm run test:e2e` pass locally.
+- `npm run check`, `npm run test:e2e`, and `npm run test:e2e:pages` pass locally.
 - README.md or AI_README.md is updated when behavior, commands, architecture, or requirements change.
 - No unrelated generated files or local-only artifacts are included.
 

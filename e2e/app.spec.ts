@@ -4,6 +4,10 @@ function livePads(page: Page) {
   return page.locator("footer.pad-dock button.live-pad");
 }
 
+function isStrudelRuntimeRequest(url: string) {
+  return url.includes("@strudel_web") || /\/dist-[^/]+\.js(?:\?|$)/.test(url);
+}
+
 async function chooseBassBreakTechnique(page: Page) {
   const pads = livePads(page);
   await pads.filter({ hasText: "ベース" }).click();
@@ -77,6 +81,37 @@ test.describe("StruJam8 browser flow", () => {
         { timeout: 15_000 },
       )
       .toBe(true);
+  });
+
+  test("recovers in the browser after the audio runtime load fails", async ({ page }) => {
+    let failNextRuntimeRequest = true;
+
+    await page.route("**/*", async (route) => {
+      if (failNextRuntimeRequest && isStrudelRuntimeRequest(route.request().url())) {
+        failNextRuntimeRequest = false;
+        await route.fulfill({
+          status: 200,
+          contentType: "application/javascript",
+          body: 'throw new Error("forced Strudel runtime load failure");',
+        });
+        return;
+      }
+
+      await route.continue();
+    });
+
+    await page.goto("./");
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio start failed. Retry available.", {
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Retry Strudel audio preview" })).toBeVisible();
+
+    await page.getByRole("button", { name: "Retry Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });
 
   test("keeps the main surfaces inside a tablet viewport", async ({ page }) => {

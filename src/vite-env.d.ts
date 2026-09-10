@@ -5,3 +5,7 @@ declare module "@strudel/web" {
   export function evaluate(code: string, autoplay?: boolean): Promise<unknown>;
   export function hush(): void;
 }
+
+declare module "@strudel/web?retry=1" {
+  export * from "@strudel/web";
+}

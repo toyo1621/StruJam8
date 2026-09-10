@@ -17,9 +17,11 @@ Run all release checks before merging. Run the build checks sequentially because
 npm run check
 npm run check:pages
 npm run test:e2e
+npm run test:e2e:pages
 ```
 
 `npm run check` validates the normal local/root build. `npm run check:pages` validates the GitHub Pages build with the `/StruJam8/` asset base path and should be the final command before inspecting `dist/index.html`.
+`npm run test:e2e:pages` serves the built artifact under `/StruJam8/` and runs the browser flow against the production-shaped preview.
 
 After `npm run check:pages`, inspect `dist/index.html` and confirm generated asset URLs begin with `/StruJam8/assets/`.
 
@@ -60,7 +62,7 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 - Changing preset or importing a jam stops current playback.
 - Share URL copies a URL that restores the current small jam.
 - LocalStorage restore still works after refresh.
-- The initial page does not load the Strudel runtime; Play loads it after a user click and starts the first audio preview. Stop hushes playback, suspended AudioContexts are resumed and closed AudioContexts are recreated before retry, runtime Strudel event locations highlight the corresponding code tokens while playing, and audio output/scheduler failures stop playback with a retryable UI state; a line pulse is used as fallback.
+- The initial page does not load the Strudel runtime; Play loads it after a user click and starts the first audio preview. If that module load fails, Retry uses a separate query-keyed module URL to bypass the failed browser module cache. Stop hushes playback, suspended AudioContexts are resumed and closed AudioContexts are recreated before retry, runtime Strudel event locations highlight the corresponding code tokens while playing, and audio output/scheduler failures stop playback with a retryable UI state; a line pulse is used as fallback.
 
 ## Troubleshooting
 

@@ -52,12 +52,12 @@ Implemented:
 
 Not implemented yet:
 
-- Editor-level exact `miniLocations` parity and full real-browser error-recovery and all-route audio/runtime coverage
+- Editor-level exact `miniLocations` parity, invalid-snippet behavior, and all-route audio/runtime coverage
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- Real-browser error recovery, invalid-snippet behavior, and all-route runtime-highlight coverage
+- Real-browser invalid-snippet behavior and all-route runtime-highlight coverage; browser audio start/stop, lazy loading, and runtime-load Retry recovery are covered
 
 ## Presets
 
@@ -148,6 +148,7 @@ Test:
 ```bash
 npm test
 npm run test:e2e
+npm run test:e2e:pages
 ```
 
 The first browser test run may require `npx playwright install chromium`.

@@ -46,7 +46,7 @@ npm run test:e2e
 npm run test:e2e:pages
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, live code highlighting, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same five flows against a Pages-base-path production preview.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, live code highlighting, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same six flows against a Pages-base-path production preview.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -104,7 +104,7 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. Stop calls `hush()` through the audio boundary. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. If the first module load fails, the next Retry uses a separate query-keyed module URL to bypass the browser's failed ES-module cache. Stop calls `hush()` through the audio boundary. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
@@ -222,15 +222,15 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
-- Audio graph disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures.
+- Audio graph disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures; runtime-load failure recovery is covered by browser E2E.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
 - MIDI/controller input.
-- Real-browser error recovery, invalid-snippet behavior, and all-route runtime-highlight coverage; basic browser audio start/stop and live code highlighting are covered by Playwright.
+- Real-browser invalid-snippet behavior and all-route runtime-highlight coverage; browser audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
 - Accessibility pass beyond basic semantic buttons and labels.
-- Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors; surfaced failures stop playback and expose Retry, while closed AudioContexts are recreated before the next Play attempt.
+- Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors remains pending; surfaced failures stop playback and expose Retry, runtime-load Retry bypasses a failed module cache, and closed AudioContexts are recreated before the next Play attempt.
 
 ## Non-Functional Requirements Evaluation
 
@@ -250,7 +250,7 @@ Strengths:
 - Persistence parsing, storage writes, and JSON snapshot serialization are isolated in `src/lib/persistence.ts` and tested.
 - Clipboard copy behavior is isolated in `src/lib/clipboard.ts` and tested.
 - Share URL encoding/decoding is isolated in `src/lib/shareUrl.ts` and tested.
-- Local quality gates run `npm run check` plus `npm run test:e2e`; CI runs both, and the GitHub Pages workflow runs `npm run check:pages` for the deployment build.
+- Local quality gates run `npm run check`, `npm run test:e2e`, and `npm run test:e2e:pages`; CI runs the unit/build gate plus both browser suites, and the GitHub Pages workflow runs `npm run check:pages` for the deployment build.
 - Contributor setup and PR expectations are documented in `CONTRIBUTING.md`.
 - Demo capture states are documented in `docs/demo.md`.
 - Deployment setup and post-deploy QA are documented in `docs/deployment.md`.
@@ -487,7 +487,7 @@ Tasks:
 
 - Choose final license and add LICENSE: done with `AGPL-3.0-or-later`; see `docs/license-review.md`.
 - Add contribution guidelines: done in `CONTRIBUTING.md`.
-- Add automated checks in GitHub Actions: done for unit/build validation via `npm run check` and Chromium browser validation via `npm run test:e2e`.
+- Add automated checks in GitHub Actions: done for unit/build validation via `npm run check`, development Chromium validation via `npm run test:e2e`, and Pages-base-path production validation via `npm run test:e2e:pages`.
 - Add GitHub Pages deployment workflow: done in `.github/workflows/pages.yml`; it runs `npm run check:pages`, and repository Pages settings still need to allow GitHub Actions deployment. Runbook added in `docs/deployment.md`.
 - Add screenshots or demo GIF: desktop/rules/tablet PNG assets are committed under `docs/assets/`; the short demo GIF remains pending.
 - Add visible Source and License links in the app header: done via `src/data/projectLinks.ts`.

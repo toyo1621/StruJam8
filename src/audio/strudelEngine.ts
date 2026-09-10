@@ -23,6 +23,7 @@ export const starterAudioCode = 'note("c2 eb2 g2 bb2").s("sawtooth").slow(2).gai
 
 let strudelModulePromise: Promise<StrudelWebModule> | null = null;
 let strudelModule: StrudelWebModule | null = null;
+let strudelImportAttempt = 0;
 let initPromise: Promise<unknown> | null = null;
 let didInitialize = false;
 let playbackGeneration = 0;
@@ -179,7 +180,12 @@ async function prepareAudioContext(module: StrudelWebModule) {
 
 async function loadStrudelModule() {
   if (!strudelModulePromise) {
-    strudelModulePromise = import("@strudel/web").then((module) => {
+    const importAttempt = strudelImportAttempt;
+    const importStrudelRuntime =
+      importAttempt === 0 ? import("@strudel/web") : import("@strudel/web?retry=1");
+
+    strudelImportAttempt += 1;
+    strudelModulePromise = importStrudelRuntime.then((module) => {
       strudelModule = module;
       return module;
     });
@@ -334,6 +340,7 @@ export function stopStrudelAudio() {
 export function resetStrudelEngineForTests() {
   strudelModulePromise = null;
   strudelModule = null;
+  strudelImportAttempt = 0;
   initPromise = null;
   didInitialize = false;
   playbackGeneration = 0;
