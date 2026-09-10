@@ -46,6 +46,7 @@ Implemented:
 - Dark interface with colorful live pads
 - Responsive layout for desktop and tablet-sized screens
 - Recoverable audio failures expose a visible Retry state
+- Unexpected UI rendering failures show a reloadable fallback instead of a blank screen
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
 - Playwright browser checks for route navigation, code updates, RESET, tablet-width overflow, browser audio start/stop, and live code highlighting
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews

@@ -54,6 +54,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 ### Main Files
 
 - `src/App.tsx`: React state, navigation, rule creation, generated code output, transport calls, and pad preview UI.
+- `src/components/AppErrorBoundary.tsx`: catches unexpected render failures and provides a reload action.
 - `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush, runtime event locations, and evaluation errors.
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
 - `src/App.css`: visual layout, dark theme, colorful pads, responsive behavior.
@@ -230,6 +231,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - MIDI/controller input.
 - Real-browser invalid-snippet behavior and all-route runtime-highlight coverage; browser audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
 - Accessibility pass beyond basic semantic buttons and labels.
+- Full error telemetry or remote crash reporting; the current boundary logs locally and offers reload.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors remains pending; surfaced failures stop playback and expose Retry, runtime-load Retry bypasses a failed module cache, and closed AudioContexts are recreated before the next Play attempt.
 
 ## Non-Functional Requirements Evaluation

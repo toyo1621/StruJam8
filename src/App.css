@@ -42,6 +42,55 @@ button:focus-visible {
   white-space: nowrap;
 }
 
+.app-error-boundary {
+  display: grid;
+  min-height: 100vh;
+  place-items: center;
+  padding: 24px;
+}
+
+.app-error-panel {
+  width: min(100%, 520px);
+  border: 1px solid rgba(255, 209, 102, 0.4);
+  border-radius: 8px;
+  padding: 28px;
+  background: rgba(35, 38, 44, 0.96);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.3);
+}
+
+.app-error-panel h1 {
+  margin: 0 0 12px;
+  color: #ffffff;
+  font-size: clamp(1.45rem, 4vw, 2rem);
+}
+
+.app-error-panel p:not(.eyebrow) {
+  margin: 0 0 20px;
+  color: #d9dee8;
+  line-height: 1.7;
+}
+
+.app-error-panel button {
+  min-height: 44px;
+  border: 1px solid rgba(255, 209, 102, 0.8);
+  border-radius: 8px;
+  padding: 0 18px;
+  color: #1d232c;
+  background: #ffd166;
+  font: inherit;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.app-error-panel button:hover {
+  background: #ffe3a3;
+}
+
+.app-error-panel button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
 .app-shell {
   display: flex;
   min-height: 100vh;
