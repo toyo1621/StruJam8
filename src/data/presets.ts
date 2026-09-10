@@ -28,11 +28,11 @@ const indietronicaTrackPatterns = {
   bass: 'note("c2 ~ c2 eb2 g2").s("sawtooth").lpf(650).distort(0.2).slow(2).gain(0.46)',
   chords:
     'note("c4 eb4 g4 bb4").s("triangle").arp("updown").slow(4).lpf(1450).room(0.72).gain(0.3)',
-  keys: 'note("c5 ~ g5 ~ eb5").s("sawtooth").lpf(2200).slow(3).room(0.5).gain(0.19)',
+  keys: 'note("c5 ~ g5 ~ eb5").s("sawtooth").lpf(2200).slow(3).delay(0.22).room(0.5).gain(0.19)',
   strings: 'note("g3 c4 eb4").s("triangle").slow(5).lpf(1650).room(0.8).gain(0.22)',
   bells: 'note("g5 c6 eb6").s("sine").slow(4).release(0.4).room(0.9).gain(0.16)',
-  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1400).decay(0.13).room(0.32).gain(0.2)',
-  voice: 'note("c4 eb4 g4").s("triangle").vowel("o a e").room(0.6).gain(0.17)',
+  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1400).decay(0.13).room(0.34).gain(0.2)',
+  voice: 'note("c4 eb4 g4").s("triangle").vowel("a i e").room(0.64).gain(0.17)',
 };
 
 export const presets: PresetDefinition[] = [
@@ -65,7 +65,7 @@ export const presets: PresetDefinition[] = [
     id: "indietronica",
     name: "Indietronica",
     description:
-      "alt-J「Tessellate」のクリック感あるパーカッション、低域の推進、透明感のあるシンセを出発点にした、オリジナルのインディー・エレクトロニカ。原曲のメロディや録音は使用していません。",
+      "alt-J「Tessellate」のクリック感あるリズム、細かい揺れ、透明感のあるシンセレイヤーをモチーフにしたオリジナルプリセット。原曲のメロディや録音は使用していません。",
     baseCode: `stack(
   ${indietronicaTrackPatterns.drums},
   ${indietronicaTrackPatterns.bass},
