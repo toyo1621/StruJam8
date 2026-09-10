@@ -320,6 +320,75 @@ test.describe("StruJam8 browser flow", () => {
     );
   });
 
+  test("closes the AudioContext on Stop and recreates it on the next Play", async ({ page }) => {
+    await page.goto("./");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await page.evaluate(async () => {
+      const runtimeUrl = performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .find((name) =>
+          name.includes("@strudel_web") || /\/(?:dist|strudel-runtime)-[^/]+\.js(?:\?|$)/.test(name),
+        );
+
+      if (!runtimeUrl) {
+        throw new Error("Strudel runtime module was not loaded");
+      }
+
+      const runtimeChunk = await import(runtimeUrl);
+      const runtime = runtimeChunk.n ?? runtimeChunk.t ?? runtimeChunk;
+      (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext =
+        runtime.getAudioContext?.();
+    });
+
+    await expect
+      .poll(() => page.evaluate(() =>
+        (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext?.state ?? null,
+      ))
+      .toBe("running");
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+    await expect
+      .poll(() => page.evaluate(() =>
+        (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext?.state ?? null,
+      ), { timeout: 5_000 })
+      .toBe("closed");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    const replacementContext = await page.evaluate(async () => {
+      const runtimeUrl = performance
+        .getEntriesByType("resource")
+        .map((entry) => entry.name)
+        .find((name) =>
+          name.includes("@strudel_web") || /\/(?:dist|strudel-runtime)-[^/]+\.js(?:\?|$)/.test(name),
+        );
+
+      if (!runtimeUrl) {
+        throw new Error("Strudel runtime module was not loaded after restart");
+      }
+
+      const runtimeChunk = await import(runtimeUrl);
+      const runtime = runtimeChunk.n ?? runtimeChunk.t ?? runtimeChunk;
+      const currentContext = runtime.getAudioContext?.();
+      return {
+        state: currentContext?.state ?? null,
+        isSameContext: currentContext ===
+          (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext,
+      };
+    });
+
+    expect(replacementContext).toEqual({ state: "running", isSameContext: false });
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
   test("updates the running preview when a new technique is added", async ({ page }) => {
     await page.goto("./");
 

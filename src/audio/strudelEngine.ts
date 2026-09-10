@@ -36,6 +36,7 @@ let audioErrorHandler: StrudelAudioErrorHandler | null = null;
 let didReportSchedulerError = false;
 let latestEvaluationError: unknown = null;
 let preparedAudioContext: AudioContext | null = null;
+let audioContextClosePromise: Promise<void> | null = null;
 
 export function getStrudelRuntimeStatus() {
   return didInitialize ? "ready" : "idle";
@@ -157,6 +158,47 @@ function resetClosedAudioRuntime(module: StrudelWebModule) {
   didReportSchedulerError = false;
   latestEvaluationError = null;
   preparedAudioContext = null;
+}
+
+async function waitForAudioContextClose() {
+  const pendingClose = audioContextClosePromise;
+
+  if (!pendingClose) {
+    return;
+  }
+
+  await pendingClose;
+
+  if (audioContextClosePromise === pendingClose) {
+    audioContextClosePromise = null;
+  }
+}
+
+function closeAudioContextAfterStop(module: StrudelWebModule) {
+  if (audioContextClosePromise) {
+    return;
+  }
+
+  const moduleWithAudio = module as StrudelWebAudioModule;
+  const audioContext = getCurrentAudioContext(module);
+
+  if (!audioContext || audioContext.state === "closed" || typeof audioContext.close !== "function") {
+    return;
+  }
+
+  audioContextClosePromise = Promise.resolve()
+    .then(() => audioContext.close())
+    .then(() => {
+      if (getCurrentAudioContext(module) !== audioContext) {
+        return;
+      }
+
+      resetClosedAudioRuntime(module);
+    })
+    .catch((error) => {
+      console.warn("StruJam8 could not close the audio context after stop", error);
+      moduleWithAudio.setSuperdoughAudioController?.(null);
+    });
 }
 
 async function prepareAudioContext(module: StrudelWebModule) {
@@ -295,6 +337,7 @@ export async function startStrudelAudio(
 
   const requestId = ++latestEvaluationRequest;
   const generation = playbackGeneration;
+  await waitForAudioContextClose();
   const module = await ensureStrudelInitialized();
   let didEvaluate = false;
 
@@ -344,6 +387,7 @@ export function stopStrudelAudio() {
   }
 
   strudelModule.hush();
+  closeAudioContextAfterStop(strudelModule);
 }
 
 export function resetStrudelEngineForTests() {
@@ -360,4 +404,5 @@ export function resetStrudelEngineForTests() {
   didReportSchedulerError = false;
   latestEvaluationError = null;
   preparedAudioContext = null;
+  audioContextClosePromise = null;
 }

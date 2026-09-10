@@ -36,12 +36,12 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 164 unit/component tests, and 16 Chromium tests pass in both root and Pages previews at the checkpoint. |
+| Regression coverage | Done for MVP | 22 Vitest files, 165 unit/component tests, and 17 Chromium tests pass in root preview. Pages-base-path verification is run separately before each release. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
 | Performance | Partial | Strudel is lazy-loaded as one runtime chunk of about 1.3 MB minified (about 432 kB gzip); Retry uses a query-keyed URL to bypass a failed module cache. The initial UI chunk is about 305 kB minified, so this budget remains under review. |
-| Runtime resilience | Partial | Retry, closed AudioContext recreation, stale evaluation cancellation, stale Superdough controller/effect reset during closed-context recovery, and error boundaries exist. Full normal-stop audio-graph disposal is intentionally not guessed and needs browser-specific validation. |
+| Runtime resilience | Done for MVP | Retry, normal-stop AudioContext disposal, fresh-context recreation, stale evaluation cancellation, stale Superdough controller/effect reset, and error boundaries are covered by unit tests and Chromium E2E. Full strudel.cc transport parity and error-specific recovery remain outside the MVP. |
 | License and provenance | Partial | The app is AGPL-3.0-or-later and the current runtime review is documented. Re-check before adding samples, fonts, or hosted services. |
 
 ## Release Gate
@@ -61,7 +61,7 @@ Then verify:
 - `git status --short --branch` is clean and `origin/main` matches the release commit.
 - The Pages workflow is green for the same commit.
 - The public URL returns `200 OK` and shows the latest build.
-- Play starts only after a user gesture, Stop stops the preview, and Retry is available after a deliberate failure.
+- Play starts only after a user gesture, Stop hushes and closes the preview context, the next Play recreates it, and Retry is available after a deliberate failure.
 - The 360px layout has no horizontal overflow and primary controls remain at least 44px high.
 - Source and license links point to the expected public pages.
 
