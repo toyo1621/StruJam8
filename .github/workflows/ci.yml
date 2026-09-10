@@ -34,3 +34,6 @@ jobs:
 
       - name: Run browser checks
         run: npm run test:e2e
+
+      - name: Run GitHub Pages browser checks
+        run: npm run test:e2e:pages

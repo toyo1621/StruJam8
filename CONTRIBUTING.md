@@ -29,6 +29,7 @@ Run the full local quality gate before opening a PR:
 ```bash
 npm run check
 npm run test:e2e
+npm run test:e2e:pages
 ```
 
 `npm run check` runs both:
@@ -39,6 +40,7 @@ npm run build
 ```
 
 GitHub Actions runs the unit/build check and the Chromium browser check on pushes to `main` and pull requests.
+`npm run test:e2e:pages` additionally builds with the GitHub Pages base path and runs the same browser flow against Vite's production preview.
 
 ## Development Guidelines
 

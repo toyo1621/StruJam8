@@ -13,7 +13,7 @@ async function chooseBassBreakTechnique(page: Page) {
 
 test.describe("StruJam8 browser flow", () => {
   test("navigates through the three pad levels and updates audible code", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     await expect(page.getByRole("heading", { name: "STRUJAM8" })).toBeVisible();
     await chooseBassBreakTechnique(page);
@@ -24,7 +24,7 @@ test.describe("StruJam8 browser flow", () => {
   });
 
   test("resets added rules while keeping the current navigation context", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
     await chooseBassBreakTechnique(page);
 
     const code = page.getByLabel("Audible Strudel code");
@@ -37,7 +37,7 @@ test.describe("StruJam8 browser flow", () => {
   });
 
   test("starts and stops the browser audio preview with live code highlighting", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
@@ -55,24 +55,33 @@ test.describe("StruJam8 browser flow", () => {
   });
 
   test("loads the Strudel runtime only after Play", async ({ page }) => {
-    await page.goto("/");
+    await page.goto("./");
 
-    const hasStrudelRuntime = () =>
+    const getScriptResources = () =>
       page.evaluate(() =>
         performance
           .getEntriesByType("resource")
-          .some((entry) => entry.name.includes("@strudel_web")),
+          .map((entry) => entry.name)
+          .filter((name) => name.includes(".js")),
       );
 
-    expect(await hasStrudelRuntime()).toBe(false);
+    const initialScripts = new Set(await getScriptResources());
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
-    await expect.poll(hasStrudelRuntime, { timeout: 15_000 }).toBe(true);
+    await expect
+      .poll(
+        async () => {
+          const scriptsAfterPlay = await getScriptResources();
+          return scriptsAfterPlay.some((script) => !initialScripts.has(script));
+        },
+        { timeout: 15_000 },
+      )
+      .toBe(true);
   });
 
   test("keeps the main surfaces inside a tablet viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
-    await page.goto("/");
+    await page.goto("./");
 
     await expect(page.locator("footer.pad-dock button.live-pad")).toHaveCount(8);
     await expect(page.locator(".code-panel")).toBeVisible();

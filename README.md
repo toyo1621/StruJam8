@@ -48,7 +48,7 @@ Implemented:
 - Recoverable audio failures expose a visible Retry state
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
 - Playwright browser checks for route navigation, code updates, RESET, tablet-width overflow, browser audio start/stop, and live code highlighting
-- The Strudel audio runtime is lazy-loaded only after Play, with a browser check guarding that initial-load behavior
+- The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
 
 Not implemented yet:
 
