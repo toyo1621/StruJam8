@@ -93,6 +93,40 @@ function allTargetCoverageJamUrl() {
   return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
 }
 
+function allConcreteRoutePlaybackSnapshot() {
+  const rules = concreteTechniqueRoutes.map((route, index) => {
+    const technique = getTechniquesByRoute(route.targetId, route.intentId).find(
+      (candidate) => !candidate.needsTodo,
+    );
+
+    if (!technique) {
+      throw new Error(`Missing verified technique for ${route.targetId}:${route.intentId}`);
+    }
+
+    return {
+      id: `e2e-route-playback-${index}`,
+      targetId: technique.targetId,
+      intentId: technique.intentId,
+      techniqueId: technique.id,
+      target: technique.target,
+      intent: technique.intent,
+      technique: technique.label,
+      shortLabel: technique.shortLabel,
+      strudelSnippet: technique.strudelSnippet,
+      needsTodo: false,
+      enabled: true,
+    };
+  });
+
+  const snapshot = {
+    version: 1,
+    selectedPresetId: "toy-house",
+    rules,
+  };
+
+  return snapshot;
+}
+
 test.describe("StruJam8 browser flow", () => {
   test("navigates through the three pad levels and updates audible code", async ({ page }) => {
     await page.goto("./");
@@ -280,6 +314,25 @@ test.describe("StruJam8 browser flow", () => {
     });
 
     expect(seenTargetIds).toEqual([...targetCoverageIds].sort());
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
+  test("plays one verified technique from every concrete route", async ({ page }) => {
+    await page.addInitScript((snapshot) => {
+      window.localStorage.setItem("strujam8:jam:v1", JSON.stringify(snapshot));
+    }, allConcreteRoutePlaybackSnapshot());
+    await page.goto("./");
+
+    await expect(page.locator(".rule-block")).toHaveCount(concreteTechniqueRoutes.length);
+    await expect(page.getByLabel("Audible Strudel code")).not.toContainText("TODO");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+    await expect
+      .poll(() => page.locator(".code-token.is-location-active").count(), { timeout: 15_000 })
+      .toBeGreaterThan(0);
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
