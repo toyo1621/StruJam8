@@ -89,7 +89,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/lib/codeLocations.ts`: merges simultaneous Strudel event locations and maps source ranges to rendered code lines and tokens.
 - `src/lib/keyboard.ts`: pure keyboard shortcut helpers and editing-control guards.
 - `src/lib/persistence.ts`: localStorage and JSON snapshot parse/serialize helpers.
-- `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter.
+- `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter, including a practical length guard.
 - `src/state/appReducer.ts`: reducer for navigation, rules, and transport UI state.
 
 ### State Model
@@ -159,7 +159,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Toy House and Neon Dub preset selection with synth-safe preset-specific base code.
 - Local browser persistence restores rules and selected preset on reload.
 - Jam snapshots can be exported and imported as validated JSON files.
-- Small jams can be shared through a copied URL containing a validated `jam` parameter.
+- Small jams can be shared through a copied URL containing a validated `jam` parameter; oversized jams are directed to JSON export.
 - Track-composed audible Strudel output for implemented techniques.
 - First Strudel audio preview through Play/Stop using `@strudel/web`.
 - Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
@@ -231,7 +231,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
-- Large jam sharing beyond practical URL length limits.
+- URL sharing of large jams beyond the practical length limit; the UI intentionally directs those jams to JSON export.
 - MIDI/controller input.
 - Full all-technique runtime-highlight coverage; the representative all-eight-target smoke, one-verified-technique-per-route playback smoke, safe-exclusion checks, real invalid-snippet failure/recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
 - Accessibility pass beyond basic semantic buttons and labels.
@@ -299,7 +299,7 @@ Risks:
 - Composition semantics are still simple ordered chaining and may need stronger musical rules later.
 - localStorage is browser-local and not a cross-device save system.
 - Browser clipboard permissions can still deny copy requests.
-- URL sharing is convenient for small jams but can exceed browser URL limits as rule counts grow.
+- URL sharing is convenient for small jams; the `shareUrl` helper and App guard block oversized URLs and direct users to JSON export.
 
 Recommended direction:
 

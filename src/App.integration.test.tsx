@@ -4,6 +4,7 @@ import "@testing-library/jest-dom/vitest";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import App from "./App";
+import { jamStorageKey } from "./lib/persistence";
 
 function clickButton(name: string | RegExp) {
   fireEvent.click(screen.getByRole("button", { name }));
@@ -119,5 +120,31 @@ describe("App interactions", () => {
 
     fireEvent.keyDown(window, { key: "2" });
     expect(screen.getByRole("button", { name: /音を抜く/ })).toBeInTheDocument();
+  });
+
+  it("directs large jams to JSON export instead of copying an unusable URL", () => {
+    const rules = Array.from({ length: 40 }, (_, index) => ({
+      id: `large-share-rule-${index}`,
+      targetId: "bass" as const,
+      intentId: "break" as const,
+      techniqueId: `large-share-technique-${index}`,
+      target: "ベース",
+      intent: "崩す",
+      technique: `手法 ${index}`,
+      shortLabel: "手法",
+      strudelSnippet: ".degradeBy(0.2)",
+      needsTodo: false,
+      enabled: true,
+    }));
+
+    window.localStorage.setItem(
+      jamStorageKey,
+      JSON.stringify({ version: 1, selectedPresetId: "toy-house", rules }),
+    );
+
+    render(<App />);
+    clickButton("Share URL");
+
+    expect(screen.getByText("Share URL too long; use Export JSON")).toBeInTheDocument();
   });
 });

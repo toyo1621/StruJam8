@@ -2,6 +2,14 @@ import { parseJamSnapshotText, serializeJamSnapshot, type PersistableJamSnapshot
 import type { PersistedJamSnapshot } from "../types";
 
 export const jamUrlParam = "jam";
+export const maxJamShareUrlLength = 4000;
+
+export function isJamShareUrlWithinLimit(
+  urlText: string,
+  maxLength = maxJamShareUrlLength,
+) {
+  return urlText.length <= maxLength;
+}
 
 export function createJamShareUrl(baseUrl: string, snapshot: PersistableJamSnapshot) {
   const url = new URL(baseUrl);

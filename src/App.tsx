@@ -52,7 +52,12 @@ import {
   type CopyTextResult,
 } from "./lib/clipboard";
 import { getPadShortcutIndexFromEvent } from "./lib/keyboard";
-import { createJamShareUrl, getBrowserHref, parseJamShareUrl } from "./lib/shareUrl";
+import {
+  createJamShareUrl,
+  getBrowserHref,
+  isJamShareUrlWithinLimit,
+  parseJamShareUrl,
+} from "./lib/shareUrl";
 import {
   getBrowserStorage,
   loadJamSnapshot,
@@ -596,6 +601,13 @@ function App() {
       selectedPresetId,
       rules,
     });
+
+    if (!isJamShareUrlWithinLimit(shareUrl)) {
+      setFileStatusMessage("Share URL too long; use Export JSON");
+      announce("Share URL is too long. Use Export JSON instead");
+      return;
+    }
+
     const result = await copyTextToClipboard(shareUrl, getBrowserClipboard());
 
     if (result === "copied") {

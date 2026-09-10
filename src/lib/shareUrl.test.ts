@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createJamShareUrl, jamUrlParam, parseJamShareUrl } from "./shareUrl";
+import {
+  createJamShareUrl,
+  isJamShareUrlWithinLimit,
+  jamUrlParam,
+  parseJamShareUrl,
+} from "./shareUrl";
 import type { Rule } from "../types";
 
 function makeRule(overrides: Partial<Rule> = {}): Rule {
@@ -51,5 +56,15 @@ describe("jam share URL", () => {
     expect(parseJamShareUrl("https://example.com/")).toBeNull();
     expect(parseJamShareUrl("https://example.com/?jam=not-json")).toBeNull();
     expect(parseJamShareUrl("not a url")).toBeNull();
+  });
+
+  it("guards URLs that exceed the practical sharing limit", () => {
+    const url = createJamShareUrl("https://example.com/", {
+      selectedPresetId: "toy-house",
+      rules: [makeRule()],
+    });
+
+    expect(isJamShareUrlWithinLimit(url, url.length)).toBe(true);
+    expect(isJamShareUrlWithinLimit(url, url.length - 1)).toBe(false);
   });
 });

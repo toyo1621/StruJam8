@@ -30,7 +30,7 @@ Implemented:
 - Toy House and Neon Dub preset selection
 - Local browser persistence for rules and preset selection
 - JSON export/import for jam snapshots
-- Shareable URL snapshots for small jams through the Share URL control
+- Shareable URL snapshots for small jams through the Share URL control, with oversized jams directed to JSON export
 - Audible Strudel code display from the same code string used by Play
 - Playable snippets include readable route comments immediately above each technique chain
 - First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
