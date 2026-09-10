@@ -42,6 +42,7 @@ import {
   getCodeLineOffsets,
   getCodeTokenOffsets,
   getCodeTokenSegments,
+  mergeCodeLocations,
 } from "./lib/codeLocations";
 import { tokenizeCodeLine } from "./lib/codeTokens";
 import {
@@ -147,6 +148,8 @@ function App() {
   const [audioRecoveryAvailable, setAudioRecoveryAvailable] = useState(false);
   const [codePulseIndex, setCodePulseIndex] = useState(0);
   const [activeCodeLocations, setActiveCodeLocations] = useState<StrudelCodeLocation[] | null>(null);
+  const pendingAudioLocationsRef = useRef<StrudelCodeLocation[]>([]);
+  const pendingAudioFlushIdRef = useRef<number | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
   const lastPlayedCodeRef = useRef<string | null>(null);
@@ -261,12 +264,33 @@ function App() {
     window.setTimeout(() => setStatusMessage(message), 0);
   }, []);
 
+  const clearPendingAudioLocations = useCallback(() => {
+    if (pendingAudioFlushIdRef.current !== null) {
+      window.clearTimeout(pendingAudioFlushIdRef.current);
+      pendingAudioFlushIdRef.current = null;
+    }
+
+    pendingAudioLocationsRef.current = [];
+  }, []);
+
   const handleAudioTrigger = useCallback<StrudelAudioTriggerHandler>((locations) => {
-    setActiveCodeLocations(locations.length > 0 ? locations : null);
+    pendingAudioLocationsRef.current = mergeCodeLocations(pendingAudioLocationsRef.current, locations);
+
+    if (pendingAudioFlushIdRef.current !== null) {
+      return;
+    }
+
+    pendingAudioFlushIdRef.current = window.setTimeout(() => {
+      pendingAudioFlushIdRef.current = null;
+      const nextLocations = pendingAudioLocationsRef.current;
+      pendingAudioLocationsRef.current = [];
+      setActiveCodeLocations(nextLocations.length > 0 ? nextLocations : null);
+    }, 0);
   }, []);
 
   const handleAudioRuntimeError = useCallback<StrudelAudioErrorHandler>((error) => {
     console.error(error);
+    clearPendingAudioLocations();
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
@@ -274,9 +298,10 @@ function App() {
     setAudioRecoveryAvailable(true);
     setAudioStatusMessage("Audio stopped after error. Retry available.");
     announce("Audio playback stopped because of an audio error");
-  }, [announce]);
+  }, [announce, clearPendingAudioLocations]);
 
   const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
+    clearPendingAudioLocations();
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
@@ -284,13 +309,14 @@ function App() {
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage(statusMessage);
     announce(announcement);
-  }, [announce]);
+  }, [announce, clearPendingAudioLocations]);
 
   useEffect(() => {
     return () => {
+      clearPendingAudioLocations();
       stopStrudelAudio();
     };
-  }, []);
+  }, [clearPendingAudioLocations]);
 
   useEffect(() => {
     saveJamSnapshot(getBrowserStorage(), {
@@ -433,6 +459,7 @@ function App() {
   }, [isPlaying, stopAudioPreview]);
 
   const handlePlay = useCallback(async () => {
+    clearPendingAudioLocations();
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Starting audio...");
     setActiveCodeLocations(null);
@@ -458,7 +485,7 @@ function App() {
       setAudioStatusMessage("Audio start failed. Retry available.");
       announce("Audio playback could not start");
     }
-  }, [announce, audibleCode, handleAudioRuntimeError, handleAudioTrigger]);
+  }, [announce, audibleCode, clearPendingAudioLocations, handleAudioRuntimeError, handleAudioTrigger]);
 
   const handleStop = useCallback(() => {
     stopAudioPreview("Audio stopped", "Audio playback stopped");
@@ -470,6 +497,7 @@ function App() {
     }
 
     let didCancel = false;
+    clearPendingAudioLocations();
     setActiveCodeLocations(null);
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Updating audio...");
@@ -504,7 +532,7 @@ function App() {
     return () => {
       didCancel = true;
     };
-  }, [announce, audibleCode, handleAudioRuntimeError, handleAudioTrigger, isPlaying]);
+  }, [announce, audibleCode, clearPendingAudioLocations, handleAudioRuntimeError, handleAudioTrigger, isPlaying]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
@@ -861,6 +889,8 @@ function App() {
                       isRuleActive ? "is-rule-active" : "",
                       isRuleSelected ? "is-rule-selected" : "",
                     ].filter(Boolean).join(" ")}
+                    data-rule-id={line.ruleId}
+                    data-target-id={line.targetId}
                     key={index + "-" + line.text}
                   >
                     {(audibleCodeTokens[index] ?? []).map((token, tokenIndex) => {

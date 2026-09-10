@@ -6,6 +6,7 @@ import {
   getCodeLineOffsets,
   getCodeTokenOffsets,
   getCodeTokenSegments,
+  mergeCodeLocations,
 } from "./codeLocations";
 
 describe("code location helpers", () => {
@@ -47,5 +48,18 @@ describe("code location helpers", () => {
   it("does not activate empty or non-overlapping ranges", () => {
     expect([...getActiveCodeLineIndexesFromLocations(["note(\"c2\")"], [])]).toEqual([]);
     expect([...getActiveCodeTokenIndexes(0, tokenizeCodeLine("note(\"c2\")"), [{ start: 40, end: 42 }])]).toEqual([]);
+  });
+
+  it("merges simultaneous runtime locations without duplicates", () => {
+    expect(
+      mergeCodeLocations(
+        [{ start: 30, end: 34 }, { start: 10, end: 12 }],
+        [{ start: 10, end: 12 }, { start: 20, end: 18 }],
+      ),
+    ).toEqual([
+      { start: 10, end: 12 },
+      { start: 18, end: 20 },
+      { start: 30, end: 34 },
+    ]);
   });
 });

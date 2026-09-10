@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { getTechniqueById } from "../src/data/techniques";
 
 function livePads(page: Page) {
   return page.locator("footer.pad-dock button.live-pad");
@@ -41,6 +42,51 @@ function invalidSnippetJamUrl() {
         enabled: true,
       },
     ],
+  };
+
+  return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
+}
+
+const targetCoverageTechniqueIds = [
+  "drums-dance-boost-kick",
+  "bass-break-drop-notes",
+  "chords-build-add-high-note",
+  "keys-chill-soft-filter",
+  "strings-widen-high-layer",
+  "bells-random-sparse-hits",
+  "guitar-forward-boost-gain",
+  "voice-forward-boost-gain",
+] as const;
+
+const targetCoverageIds = ["drums", "bass", "chords", "keys", "strings", "bells", "guitar", "voice"];
+
+function allTargetCoverageJamUrl() {
+  const rules = targetCoverageTechniqueIds.map((techniqueId, index) => {
+    const technique = getTechniqueById(techniqueId);
+
+    if (!technique) {
+      throw new Error(`Missing target coverage technique: ${techniqueId}`);
+    }
+
+    return {
+      id: `e2e-target-coverage-${index}`,
+      targetId: technique.targetId,
+      intentId: technique.intentId,
+      techniqueId: technique.id,
+      target: technique.target,
+      intent: technique.intent,
+      technique: technique.label,
+      shortLabel: technique.shortLabel,
+      strudelSnippet: technique.strudelSnippet,
+      needsTodo: technique.needsTodo ?? false,
+      enabled: true,
+    };
+  });
+
+  const snapshot = {
+    version: 1,
+    selectedPresetId: "toy-house",
+    rules,
   };
 
   return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
@@ -153,6 +199,38 @@ test.describe("StruJam8 browser flow", () => {
       "aria-pressed",
       "true",
     );
+  });
+
+  test("highlights runtime code locations across all eight target tracks", async ({ page }) => {
+    await page.goto(allTargetCoverageJamUrl());
+
+    await expect(page.locator(".rule-block")).toHaveCount(8);
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    const seenTargetIds = await page.evaluate(async () => {
+      const seen = new Set<string>();
+      const startedAt = performance.now();
+
+      while (performance.now() - startedAt < 15_000 && seen.size < 8) {
+        document.querySelectorAll(".code-token.is-location-active").forEach((token) => {
+          const targetId = token.closest<HTMLElement>("[data-target-id]")?.dataset.targetId;
+
+          if (targetId) {
+            seen.add(targetId);
+          }
+        });
+
+        await new Promise((resolve) => window.setTimeout(resolve, 25));
+      }
+
+      return [...seen].sort();
+    });
+
+    expect(seenTargetIds).toEqual([...targetCoverageIds].sort());
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });
 
   test("loads the Strudel runtime only after Play", async ({ page }) => {

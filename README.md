@@ -35,7 +35,7 @@ Implemented:
 - Playable snippets include readable route comments immediately above each technique chain
 - First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
-- Token-colored Strudel-like code with runtime event-location highlighting while playing, plus a fallback pulse when no location is available
+- Token-colored Strudel-like code with runtime event-location highlighting while playing, including merged highlights for simultaneous tracks, plus a fallback pulse when no location is available
 - Copy audible Strudel code to clipboard
 - Concrete technique routes covering all eight targets and all eight intents at least once
 - Track templates for all eight targets
@@ -50,7 +50,7 @@ Implemented:
 - Recoverable audio failures expose a visible Retry state
 - Unexpected UI rendering failures show a reloadable fallback instead of a blank screen
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
-- Playwright browser checks for route navigation, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, browser audio start/stop, and live code highlighting
+- Playwright browser checks for route navigation, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, browser audio start/stop, and live code highlighting across a representative route for all eight target tracks
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
 
 Not implemented yet:
@@ -60,7 +60,7 @@ Not implemented yet:
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- All-route runtime-highlight coverage; browser safe-exclusion checks, real invalid-snippet failure recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered
+- Full all-route runtime-highlight coverage remains; representative all-eight-target coverage, safe-exclusion checks, real invalid-snippet failure recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered
 
 ## Presets
 

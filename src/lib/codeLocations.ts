@@ -5,6 +5,27 @@ export interface CodeLocation {
   end: number;
 }
 
+export function mergeCodeLocations(
+  ...locationGroups: readonly (readonly CodeLocation[])[]
+) {
+  const uniqueLocations = new Map<string, CodeLocation>();
+
+  locationGroups.flat().forEach((location) => {
+    const start = Math.min(location.start, location.end);
+    const end = Math.max(location.start, location.end);
+
+    if (start >= end) {
+      return;
+    }
+
+    uniqueLocations.set(`${start}:${end}`, { start, end });
+  });
+
+  return [...uniqueLocations.values()].sort((left, right) =>
+    left.start - right.start || left.end - right.end,
+  );
+}
+
 function rangesOverlap(start: number, end: number, location: CodeLocation) {
   const locationStart = Math.min(location.start, location.end);
   const locationEnd = Math.max(location.start, location.end);
