@@ -58,7 +58,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush, runtime event locations, and evaluation errors.
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
 - `src/App.css`: visual layout, dark theme, colorful pads, responsive behavior.
-- `vite.config.ts`: Vite React config; GitHub Pages uses the `build:pages` script for the `/StruJam8/` base path. Production builds keep one lazy `strudel-runtime` chunk and preserve a query-keyed Retry import so a failed module cache can be bypassed without shipping the runtime twice.
+- `vite.config.ts`: Vite React config; GitHub Pages uses the `build:pages` script for the `/StruJam8/` base path. Production builds use the `@strudel/web` source entry so `@strudel/core` is shared once, keep one lazy `strudel-runtime` chunk, and preserve a query-keyed Retry import so a failed module cache can be bypassed without shipping the runtime twice. The custom output pass removes Vite's preload wrapper because it would otherwise eagerly fetch the lazy audio chunk.
 - `playwright.config.ts` and `e2e/app.spec.ts`: Chromium-backed browser flow and responsive layout checks.
 - `vitest.config.ts`: limits unit/component discovery to `src/` so Playwright files are not run by Vitest.
 - `.github/workflows/ci.yml`: GitHub Actions workflow running `npm run check` and the Playwright browser checks.

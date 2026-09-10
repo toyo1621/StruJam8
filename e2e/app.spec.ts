@@ -523,26 +523,22 @@ test.describe("StruJam8 browser flow", () => {
   test("loads the Strudel runtime only after Play", async ({ page }) => {
     await page.goto("./");
 
-    const getScriptResources = () =>
+    const getStrudelRuntimeResources = () =>
       page.evaluate(() =>
         performance
           .getEntriesByType("resource")
           .map((entry) => entry.name)
-          .filter((name) => name.includes(".js")),
+          .filter(
+            (name) =>
+              name.includes("@strudel_web") ||
+              /\/(?:dist|strudel-runtime)-[^/]+\.js(?:\?|$)/.test(name),
+          ),
       );
 
-    const initialScripts = new Set(await getScriptResources());
+    await expect(getStrudelRuntimeResources()).resolves.toEqual([]);
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
-    await expect
-      .poll(
-        async () => {
-          const scriptsAfterPlay = await getScriptResources();
-          return scriptsAfterPlay.some((script) => !initialScripts.has(script));
-        },
-        { timeout: 15_000 },
-      )
-      .toBe(true);
+    await expect.poll(getStrudelRuntimeResources, { timeout: 15_000 }).not.toEqual([]);
   });
 
   test("recovers in the browser after the audio runtime load fails", async ({ page }) => {
