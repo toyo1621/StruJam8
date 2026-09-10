@@ -49,6 +49,9 @@ test.describe("StruJam8 browser flow", () => {
     await expect
       .poll(() => page.locator(".code-line.is-active").count(), { timeout: 10_000 })
       .toBeGreaterThan(0);
+    await expect
+      .poll(() => page.locator(".code-token.is-location-active").count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
