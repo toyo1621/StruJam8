@@ -118,6 +118,7 @@ function App() {
   const [copyStatus, setCopyStatus] = useState<CopyTextResult | "idle">("idle");
   const [fileStatusMessage, setFileStatusMessage] = useState("");
   const [audioStatusMessage, setAudioStatusMessage] = useState("");
+  const [audioRecoveryAvailable, setAudioRecoveryAvailable] = useState(false);
   const [codePulseIndex, setCodePulseIndex] = useState(0);
   const [activeCodeLocations, setActiveCodeLocations] = useState<StrudelCodeLocation[] | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -244,7 +245,8 @@ function App() {
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
     dispatch({ type: "setPlaying", isPlaying: false });
-    setAudioStatusMessage("Audio stopped after error");
+    setAudioRecoveryAvailable(true);
+    setAudioStatusMessage("Audio stopped after error. Retry available.");
     announce("Audio playback stopped because of an audio error");
   }, [announce]);
 
@@ -253,6 +255,7 @@ function App() {
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
     dispatch({ type: "setPlaying", isPlaying: false });
+    setAudioRecoveryAvailable(false);
     setAudioStatusMessage(statusMessage);
     announce(announcement);
   }, [announce]);
@@ -387,6 +390,7 @@ function App() {
   }, [isPlaying, stopAudioPreview]);
 
   const handlePlay = useCallback(async () => {
+    setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Starting audio...");
     setActiveCodeLocations(null);
 
@@ -397,6 +401,7 @@ function App() {
       }
 
       lastPlayedCodeRef.current = audibleCode;
+      setAudioRecoveryAvailable(false);
       dispatch({ type: "setPlaying", isPlaying: true });
       setAudioStatusMessage("Audio playing");
       announce("Audio playback started");
@@ -406,7 +411,8 @@ function App() {
       lastPlayedCodeRef.current = null;
       setActiveCodeLocations(null);
       dispatch({ type: "setPlaying", isPlaying: false });
-      setAudioStatusMessage("Audio start failed");
+      setAudioRecoveryAvailable(true);
+      setAudioStatusMessage("Audio start failed. Retry available.");
       announce("Audio playback could not start");
     }
   }, [announce, audibleCode, handleAudioRuntimeError, handleAudioTrigger]);
@@ -422,6 +428,7 @@ function App() {
 
     let didCancel = false;
     setActiveCodeLocations(null);
+    setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Updating audio...");
 
     startStrudelAudio(audibleCode, handleAudioTrigger, handleAudioRuntimeError)
@@ -431,6 +438,7 @@ function App() {
         }
 
         lastPlayedCodeRef.current = audibleCode;
+        setAudioRecoveryAvailable(false);
         setAudioStatusMessage("Audio playing");
         announce("Audio playback updated");
       })
@@ -445,7 +453,8 @@ function App() {
         lastPlayedCodeRef.current = null;
         setActiveCodeLocations(null);
         dispatch({ type: "setPlaying", isPlaying: false });
-        setAudioStatusMessage("Audio update failed");
+        setAudioRecoveryAvailable(true);
+        setAudioStatusMessage("Audio update failed. Retry available.");
         announce("Audio playback could not update");
       });
 
@@ -635,15 +644,17 @@ function App() {
               {transportUiDescription}
             </span>
             <button
-              className={`transport-button ${isPlaying ? "is-active" : ""}`}
+              className={`transport-button ${isPlaying ? "is-active" : ""} ${
+                audioRecoveryAvailable ? "is-retry" : ""
+              }`}
               type="button"
-              aria-label={formatTransportActionLabel("play")}
+              aria-label={formatTransportActionLabel(audioRecoveryAvailable ? "retry" : "play")}
               aria-pressed={isPlaying}
               onClick={() => {
                 void handlePlay();
               }}
             >
-              Play
+              {audioRecoveryAvailable ? "Retry" : "Play"}
             </button>
             <button
               className={`transport-button ${!isPlaying ? "is-active" : ""}`}
@@ -655,7 +666,10 @@ function App() {
               Stop
             </button>
             {audioStatusMessage && (
-              <span className="audio-status" aria-live="polite">
+              <span
+                className={`audio-status ${audioRecoveryAvailable ? "is-error" : ""}`}
+                aria-live="polite"
+              >
                 {audioStatusMessage}
               </span>
             )}

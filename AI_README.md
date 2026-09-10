@@ -44,7 +44,7 @@ npm run check
 npm run check:pages
 ```
 
-A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, and the Strudel audio engine boundary.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -164,13 +164,13 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Number-key shortcuts for live pads 1-8, with tested guards for editable controls and modified key events.
 - Visible focus states for keyboard navigation.
 - Screen reader status announcements for rule changes.
-- Rule action buttons include full-route accessible labels, and Play/Stop labels describe the Strudel audio preview.
+- Rule action buttons include full-route accessible labels, and Play/Stop/Retry labels describe the Strudel audio preview.
 - Live pad text color contrast is guarded by tests against the shared target, intent, and technique palette.
 - Visible Source and License links in the app header for release readiness.
 
 ### Partially Implemented
 
-- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, resumes suspended AudioContexts, recreates closed AudioContexts before the next evaluation, and stops UI playback when evaluation, output, or scheduler errors are reported. It is still not full strudel.cc transport parity.
+- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, resumes suspended AudioContexts, recreates closed AudioContexts before the next evaluation, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus runtime Hap source-location highlighting are implemented; exact editor-level `miniLocations` state parity and non-mini technique coverage are still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -218,15 +218,15 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
-- Audio graph disposal and richer recovery/retry UX for invalid snippets and unrecoverable runtime failures.
+- Audio graph disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
 - MIDI/controller input.
-- Full browser-rendered UI interaction tests.
+- Real-browser WebAudio, runtime-highlight, and responsive visual checks; core DOM interactions are covered by jsdom integration tests.
 - Accessibility pass beyond basic semantic buttons and labels.
-- Full recovery/retry UX for invalid snippets and unrecoverable runtime scheduler errors; closed AudioContexts are recreated before the next Play attempt.
+- Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors; surfaced failures stop playback and expose Retry, while closed AudioContexts are recreated before the next Play attempt.
 
 ## Non-Functional Requirements Evaluation
 
@@ -457,8 +457,8 @@ Tasks:
 - Research the current Strudel web/runtime integration path: done for `@strudel/web@1.3.0`.
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
-- Implement serialized latest-request update lifecycle: done; implement dispose lifecycle: pending.
-- Handle invalid code safely: evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed and closed contexts are recreated before retry. Richer retry UX and full audio graph disposal remain pending.
+- Implement serialized latest-request update lifecycle: done; implement full audio graph dispose lifecycle: pending.
+- Handle invalid code safely: evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Error-specific recovery and full audio graph disposal remain pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.

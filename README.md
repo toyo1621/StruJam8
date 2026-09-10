@@ -45,15 +45,17 @@ Implemented:
 - Visible source and license links for release readiness
 - Dark interface with colorful live pads
 - Responsive layout for desktop and tablet-sized screens
+- Recoverable audio failures expose a visible Retry state
+- React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, and number-key navigation
 
 Not implemented yet:
 
-- Editor-level exact `miniLocations` parity and full browser-level interaction tests
+- Editor-level exact `miniLocations` parity and a full real-browser audio/visual test matrix
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- Full browser-level UI interaction tests
+- Real-browser UI, WebAudio, runtime-highlight, and responsive visual checks
 
 ## Presets
 

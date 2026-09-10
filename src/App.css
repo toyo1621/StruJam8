@@ -218,6 +218,17 @@ button:focus-visible {
   background: #80ed99;
 }
 
+.transport-button.is-retry {
+  border-color: rgba(255, 209, 102, 0.8);
+  color: #1d232c;
+  background: #ffd166;
+}
+
+.transport-button.is-retry:hover {
+  border-color: rgba(255, 227, 163, 0.96);
+  background: #ffe3a3;
+}
+
 .navigation-controls button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
@@ -314,6 +325,12 @@ button:focus-visible {
   background: rgba(255, 255, 255, 0.08);
   font-size: 0.78rem;
   font-weight: 900;
+}
+
+.audio-status.is-error {
+  border-color: rgba(255, 92, 138, 0.46);
+  color: #ffe3ea;
+  background: rgba(255, 92, 138, 0.14);
 }
 
 .copy-status-copied {

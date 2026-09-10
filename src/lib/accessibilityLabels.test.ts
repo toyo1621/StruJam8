@@ -43,6 +43,7 @@ describe("accessibility labels", () => {
     expect(transportUiDescription).toContain("Strudel audio preview");
     expect(transportUiDescription).toContain("hushes");
     expect(formatTransportActionLabel("play")).toBe("Start Strudel audio preview");
+    expect(formatTransportActionLabel("retry")).toBe("Retry Strudel audio preview");
     expect(formatTransportActionLabel("stop")).toBe("Stop Strudel audio preview");
   });
 });
