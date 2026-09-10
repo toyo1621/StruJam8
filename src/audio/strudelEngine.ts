@@ -4,6 +4,13 @@ type StrudelWebModuleWithOutput = StrudelWebModule & {
   webaudioOutput: (...args: StrudelOutputArgs) => unknown;
 };
 
+type StrudelWebAudioModule = StrudelWebModuleWithOutput & {
+  getAudioContext?: () => AudioContext;
+  setAudioContext?: (context: AudioContext | null) => AudioContext | null;
+  setDefaultAudioContext?: () => AudioContext;
+  initAudio?: () => Promise<unknown>;
+};
+
 export interface StrudelCodeLocation {
   start: number;
   end: number;
@@ -25,6 +32,7 @@ let audioTriggerHandler: StrudelAudioTriggerHandler | null = null;
 let audioErrorHandler: StrudelAudioErrorHandler | null = null;
 let didReportSchedulerError = false;
 let latestEvaluationError: unknown = null;
+let preparedAudioContext: AudioContext | null = null;
 
 export function getStrudelRuntimeStatus() {
   return didInitialize ? "ready" : "idle";
@@ -105,6 +113,70 @@ function notifyAudioError(error: unknown) {
   }
 }
 
+function getCurrentAudioContext(module: StrudelWebModule) {
+  const moduleWithAudio = module as StrudelWebAudioModule;
+
+  if (typeof moduleWithAudio.getAudioContext !== "function") {
+    return null;
+  }
+
+  return moduleWithAudio.getAudioContext();
+}
+
+function resetClosedAudioRuntime(module: StrudelWebModule) {
+  const moduleWithAudio = module as StrudelWebAudioModule;
+
+  try {
+    if (didInitialize) {
+      module.hush();
+    }
+  } catch (error) {
+    console.warn("StruJam8 could not hush the closed Strudel runtime", error);
+  }
+
+  if (typeof moduleWithAudio.setAudioContext === "function") {
+    moduleWithAudio.setAudioContext(null);
+  } else if (typeof moduleWithAudio.setDefaultAudioContext === "function") {
+    moduleWithAudio.setDefaultAudioContext();
+  } else {
+    throw new Error("Strudel audio context cannot be recovered");
+  }
+
+  initPromise = null;
+  didInitialize = false;
+  didReportSchedulerError = false;
+  latestEvaluationError = null;
+  preparedAudioContext = null;
+}
+
+async function prepareAudioContext(module: StrudelWebModule) {
+  const moduleWithAudio = module as StrudelWebAudioModule;
+  const audioContext = getCurrentAudioContext(module);
+
+  if (!audioContext) {
+    return;
+  }
+
+  if (audioContext.state === "closed") {
+    resetClosedAudioRuntime(module);
+    return;
+  }
+
+  if (audioContext.state === "suspended" && typeof audioContext.resume === "function") {
+    await audioContext.resume();
+  }
+
+  if (preparedAudioContext === audioContext) {
+    return;
+  }
+
+  if (typeof moduleWithAudio.initAudio === "function") {
+    await moduleWithAudio.initAudio();
+  }
+
+  preparedAudioContext = audioContext;
+}
+
 async function loadStrudelModule() {
   if (!strudelModulePromise) {
     strudelModulePromise = import("@strudel/web").then((module) => {
@@ -124,6 +196,12 @@ async function loadStrudelModule() {
 
 async function ensureStrudelInitialized() {
   const module = await loadStrudelModule();
+
+  const currentAudioContext = getCurrentAudioContext(module);
+
+  if (currentAudioContext?.state === "closed") {
+    resetClosedAudioRuntime(module);
+  }
 
   if (!initPromise) {
     const moduleWithOutput = module as StrudelWebModuleWithOutput;
@@ -172,6 +250,13 @@ async function ensureStrudelInitialized() {
 
   try {
     await initPromise;
+    await prepareAudioContext(module);
+
+    if (getCurrentAudioContext(module)?.state === "closed") {
+      resetClosedAudioRuntime(module);
+      return ensureStrudelInitialized();
+    }
+
     return module;
   } catch (error) {
     initPromise = null;
@@ -258,4 +343,5 @@ export function resetStrudelEngineForTests() {
   audioErrorHandler = null;
   didReportSchedulerError = false;
   latestEvaluationError = null;
+  preparedAudioContext = null;
 }

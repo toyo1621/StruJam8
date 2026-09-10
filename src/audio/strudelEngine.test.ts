@@ -7,17 +7,31 @@ import {
   stopStrudelAudio,
 } from "./strudelEngine";
 
-const { evaluateMock, hushMock, initStrudelMock, webaudioOutputMock } = vi.hoisted(() => ({
+const {
+  evaluateMock,
+  getAudioContextMock,
+  hushMock,
+  initAudioMock,
+  initStrudelMock,
+  setAudioContextMock,
+  webaudioOutputMock,
+} = vi.hoisted(() => ({
   evaluateMock: vi.fn(),
+  getAudioContextMock: vi.fn(),
   hushMock: vi.fn(),
+  initAudioMock: vi.fn(),
   initStrudelMock: vi.fn(),
+  setAudioContextMock: vi.fn(),
   webaudioOutputMock: vi.fn(),
 }));
 
 vi.mock("@strudel/web", () => ({
   evaluate: evaluateMock,
+  getAudioContext: getAudioContextMock,
   hush: hushMock,
+  initAudio: initAudioMock,
   initStrudel: initStrudelMock,
+  setAudioContext: setAudioContextMock,
   webaudioOutput: webaudioOutputMock,
 }));
 
@@ -33,9 +47,14 @@ describe("strudel engine", () => {
   beforeEach(() => {
     resetStrudelEngineForTests();
     evaluateMock.mockReset();
+    getAudioContextMock.mockReset();
     hushMock.mockReset();
+    initAudioMock.mockReset();
     initStrudelMock.mockReset();
+    setAudioContextMock.mockReset();
     webaudioOutputMock.mockReset();
+    getAudioContextMock.mockReturnValue(undefined);
+    initAudioMock.mockResolvedValue(undefined);
     initStrudelMock.mockResolvedValue({});
     evaluateMock.mockResolvedValue({});
     webaudioOutputMock.mockResolvedValue(undefined);
@@ -49,6 +68,51 @@ describe("strudel engine", () => {
     expect(evaluateMock).toHaveBeenNthCalledWith(1, starterAudioCode, true);
     expect(evaluateMock).toHaveBeenNthCalledWith(2, 'note("c3").s("sawtooth")', true);
     expect(getStrudelRuntimeStatus()).toBe("ready");
+  });
+
+  it("resumes a suspended audio context before initializing audio", async () => {
+    const resumeMock = vi.fn().mockResolvedValue(undefined);
+    const audioContext = {
+      resume: resumeMock,
+      state: "suspended",
+    } as unknown as AudioContext;
+    getAudioContextMock.mockReturnValue(audioContext);
+
+    await startStrudelAudio(starterAudioCode);
+
+    expect(resumeMock).toHaveBeenCalledTimes(1);
+    expect(initAudioMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("recreates a closed audio context before starting the next pattern", async () => {
+    const firstContext = {
+      state: "running",
+    } as unknown as AudioContext;
+    const replacementContext = {
+      state: "running",
+    } as unknown as AudioContext;
+    let currentContext: AudioContext | null = firstContext;
+
+    getAudioContextMock.mockImplementation(() => {
+      if (!currentContext) {
+        currentContext = replacementContext;
+      }
+
+      return currentContext;
+    });
+    setAudioContextMock.mockImplementation((context: AudioContext | null) => {
+      currentContext = context ?? replacementContext;
+      return currentContext;
+    });
+
+    await startStrudelAudio("note(\"first\")");
+    currentContext = { state: "closed" } as unknown as AudioContext;
+
+    await startStrudelAudio("note(\"recovered\")");
+
+    expect(setAudioContextMock).toHaveBeenCalledWith(null);
+    expect(initStrudelMock).toHaveBeenCalledTimes(2);
+    expect(evaluateMock).toHaveBeenLastCalledWith("note(\"recovered\")", true);
   });
 
   it("forwards Strudel event locations from the audio output to the UI", async () => {
