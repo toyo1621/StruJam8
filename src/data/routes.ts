@@ -218,6 +218,29 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "ランダム感",
     description: "コードの発音、上下の層、反転、明暗を揺らして、和音に予想外の変化を作るルート。",
   },
+  {
+    targetId: "bass",
+    intentId: "widen",
+    target: "ベース",
+    intent: "広げる",
+    description: "ベースの空間、倍音、余韻を広げて、低音を土台から周囲へ展開するルート。",
+  },
+
+  {
+    targetId: "chords",
+    intentId: "dance",
+    target: "コード",
+    intent: "踊らせる",
+    description: "コードの刻み、裏拍、アルペジオを動かして、和音に身体的なノリを作るルート。",
+  },
+
+  {
+    targetId: "keys",
+    intentId: "forward",
+    target: "キーボード",
+    intent: "前に出す",
+    description: "キーボードの明るさ、音量、輪郭、細かな動きを足して、前景へ押し出すルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {

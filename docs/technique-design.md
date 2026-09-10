@@ -60,6 +60,7 @@ Implemented concrete routes:
 - ベース -> チル
 - ベース -> 前に出す
 - ベース -> ランダム感
+- ベース -> 広げる
 - コード -> 盛り上げる
 - コード -> チル
 - コード -> 広げる
@@ -67,9 +68,11 @@ Implemented concrete routes:
 - コード -> 崩す
 - コード -> 前に出す
 - コード -> ランダム感
+- コード -> 踊らせる
 - キーボード -> チル
 - キーボード -> ランダム感
 - キーボード -> 広げる
+- キーボード -> 前に出す
 - ストリングス -> 広げる
 - ベル -> ランダム感
 - ベル -> 広げる
@@ -77,7 +80,7 @@ Implemented concrete routes:
 - ボイス -> 前に出す
 - ボイス -> 広げる
 
-This gives every target at least one concrete route and every intent at least one concrete route.
+This gives every target at least one concrete route and every intent at least one concrete route. The current catalog contains 34 concrete routes and 272 techniques.
 
 ## Route Priority
 
