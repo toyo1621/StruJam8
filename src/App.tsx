@@ -38,6 +38,7 @@ import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./
 import {
   getActiveCodeLineIndexesFromLocations,
   getCodeLineOffsets,
+  getCodeTokenOffsets,
   getCodeTokenSegments,
 } from "./lib/codeLocations";
 import { tokenizeCodeLine } from "./lib/codeTokens";
@@ -199,6 +200,12 @@ function App() {
   const codeLineOffsets = useMemo(
     () => getCodeLineOffsets(audibleCodeTextLines),
     [audibleCodeTextLines],
+  );
+  const codeTokenOffsets = useMemo(
+    () => audibleCodeTokens.map((tokens, index) =>
+      getCodeTokenOffsets(codeLineOffsets[index] ?? 0, tokens),
+    ),
+    [audibleCodeTokens, codeLineOffsets],
   );
   const activeCodeLineIndexes = useMemo(() => {
     if (!isPlaying) {
@@ -780,7 +787,7 @@ function App() {
                   >
                     {(audibleCodeTokens[index] ?? []).map((token, tokenIndex) => {
                       const tokenSegments = getCodeTokenSegments(
-                        codeLineOffsets[index] ?? 0,
+                        codeTokenOffsets[index]?.[tokenIndex] ?? codeLineOffsets[index] ?? 0,
                         token.text,
                         isPlaying && activeCodeLocations !== null ? activeCodeLocations : [],
                       );

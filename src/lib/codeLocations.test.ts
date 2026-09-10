@@ -4,12 +4,20 @@ import {
   getActiveCodeLineIndexesFromLocations,
   getActiveCodeTokenIndexes,
   getCodeLineOffsets,
+  getCodeTokenOffsets,
   getCodeTokenSegments,
 } from "./codeLocations";
 
 describe("code location helpers", () => {
   it("calculates source offsets across rendered lines", () => {
     expect(getCodeLineOffsets(["stack(", "  note(\"c2\")", ")"])).toEqual([0, 7, 20]);
+  });
+
+  it("calculates absolute offsets for every token in a line", () => {
+    const tokens = tokenizeCodeLine('  note("c2")');
+    const stringIndex = tokens.findIndex((token) => token.text === '"c2"');
+
+    expect(getCodeTokenOffsets(7, tokens)[stringIndex]).toBe(14);
   });
 
   it("finds the line and token containing a Strudel location", () => {

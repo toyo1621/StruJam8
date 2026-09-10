@@ -22,6 +22,19 @@ export function getCodeLineOffsets(lines: readonly string[]) {
   });
 }
 
+export function getCodeTokenOffsets(
+  lineOffset: number,
+  tokens: readonly Pick<CodeToken, "text">[],
+) {
+  let tokenOffset = lineOffset;
+
+  return tokens.map((token) => {
+    const currentOffset = tokenOffset;
+    tokenOffset += token.text.length;
+    return currentOffset;
+  });
+}
+
 export function getActiveCodeLineIndexesFromLocations(
   lines: readonly string[],
   locations: readonly CodeLocation[],
