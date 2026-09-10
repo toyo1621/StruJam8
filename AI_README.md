@@ -179,36 +179,36 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
   - ドラム -> チル
   - ドラム -> ランダム感
   - ドラム -> 前に出す
-- ドラム -> 広げる
+  - ドラム -> 広げる
   - ベース -> 崩す
   - ベース -> 踊らせる
   - ベース -> 盛り上げる
   - ベース -> 抜く
   - ベース -> チル
   - ベース -> 前に出す
-- ベース -> ランダム感
-- ベース -> 広げる
+  - ベース -> ランダム感
+  - ベース -> 広げる
   - コード -> 盛り上げる
   - コード -> チル
   - コード -> 広げる
   - コード -> 抜く
   - コード -> 崩す
   - コード -> 前に出す
-- コード -> ランダム感
-- コード -> 踊らせる
+  - コード -> ランダム感
+  - コード -> 踊らせる
   - キーボード -> チル
   - キーボード -> ランダム感
   - キーボード -> 広げる
-- キーボード -> 前に出す
+  - キーボード -> 前に出す
   - ストリングス -> 広げる
-- ストリングス -> 前に出す
+  - ストリングス -> 前に出す
   - ベル -> ランダム感
   - ベル -> 広げる
   - ギター -> 前に出す
-- ギター -> 踊らせる
+  - ギター -> 踊らせる
   - ボイス -> 前に出す
   - ボイス -> 広げる
-- ボイス -> ランダム感
+  - ボイス -> ランダム感
 - Learning experience: intent-level route descriptions, technique descriptions, snippets, and plain-language snippet explanations are visible in the pad preview and selected rule detail, but there is no guided mode or full code walkthrough yet.
 - Selection feedback: selected technique pads are outlined for active rules, and rules can be duplicated, removed, toggled on/off, reordered, undone, and redone. Parameter-level editing is not implemented yet.
 - Target and intent coverage: all eight target families and all eight intent families now have at least one concrete target/intent route.
