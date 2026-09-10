@@ -241,6 +241,29 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "前に出す",
     description: "キーボードの明るさ、音量、輪郭、細かな動きを足して、前景へ押し出すルート。",
   },
+  {
+    targetId: "strings",
+    intentId: "forward",
+    target: "ストリングス",
+    intent: "前に出す",
+    description: "ストリングスの音量、明るさ、輪郭、倍音を整えて、背景から前景へ押し出すルート。",
+  },
+
+  {
+    targetId: "guitar",
+    intentId: "dance",
+    target: "ギター",
+    intent: "踊らせる",
+    description: "ギターの刻み、裏拍、小さなフィルを動かして、手触りのあるグルーヴを作るルート。",
+  },
+
+  {
+    targetId: "voice",
+    intentId: "random",
+    target: "ボイス",
+    intent: "ランダム感",
+    description: "ボイス断片の発音、音高、向き、明るさを揺らして、予想外のフックを作るルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {

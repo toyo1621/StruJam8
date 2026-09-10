@@ -69,7 +69,7 @@ stack(
 )
 ```
 
-Concrete routes currently include 34 route sets, with at least one concrete route for every target and every intent:
+Concrete routes currently include 37 route sets, with at least one concrete route for every target and every intent:
 
 - ドラム -> 踊らせる
 - ドラム -> 盛り上げる
@@ -100,11 +100,14 @@ Concrete routes currently include 34 route sets, with at least one concrete rout
 - キーボード -> 広げる
 - キーボード -> 前に出す
 - ストリングス -> 広げる
+- ストリングス -> 前に出す
 - ベル -> ランダム感
 - ベル -> 広げる
 - ギター -> 前に出す
+- ギター -> 踊らせる
 - ボイス -> 前に出す
 - ボイス -> 広げる
+- ボイス -> ランダム感
 
 When techniques are selected, StruJam8 groups them by track and appends a readable Strudel-like chain:
 
