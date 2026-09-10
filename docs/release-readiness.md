@@ -7,7 +7,7 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `37cb085`
+- Application checkpoint commit: `c814221`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
