@@ -54,6 +54,7 @@ npm run check
 npm run check:pages
 npm run test:e2e
 npm run test:e2e:pages
+npm run verify:techniques
 npm audit --omit=dev --audit-level=high
 ```
 
