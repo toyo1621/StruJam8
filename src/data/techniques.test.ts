@@ -11,6 +11,15 @@ describe("technique catalog", () => {
     expect(uniqueIds.size).toBe(ids.length);
   });
 
+  it("keeps only runtime-unverified techniques behind TODO", () => {
+    expect(techniques.filter((technique) => technique.needsTodo).map((technique) => technique.id)).toEqual([
+      "bass-break-sometimes-rest",
+      "chords-build-widen-range",
+      "chords-build-arpeggio",
+      "chords-dance-arpeggio",
+    ]);
+  });
+
   it("defines unique concrete route keys", () => {
     const routeKeys = concreteTechniqueRoutes.map((route) =>
       getRouteKey(route.targetId, route.intentId),
@@ -92,7 +101,7 @@ describe("technique catalog", () => {
       "余韻を足す",
       "前で反転",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -143,7 +152,7 @@ describe("technique catalog", () => {
       "遅れを重ねる",
       "左右に揺らす",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -161,7 +170,7 @@ describe("technique catalog", () => {
       "休みを作る",
       "影だけ残す",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete chords remove route", () => {
@@ -178,7 +187,7 @@ describe("technique catalog", () => {
       "高音だけ残す",
       "休みを作る",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete drums chill route", () => {
@@ -212,7 +221,7 @@ describe("technique catalog", () => {
       "休みを作る",
       "影だけ残す",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete bass dance route", () => {
@@ -295,7 +304,7 @@ describe("technique catalog", () => {
       "薄く重ねる",
       "背景へ下げる",
     ]);
-    expect(routeTechniques[4]?.needsTodo).toBe(true);
+    expect(routeTechniques[4]?.needsTodo).toBeUndefined();
   });
 
   it("returns the concrete bells random route", () => {
@@ -312,7 +321,7 @@ describe("technique catalog", () => {
       "左右に散る",
       "余韻を足す",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete guitar forward route", () => {
@@ -345,7 +354,7 @@ describe("technique catalog", () => {
       "エコー返し",
       "叫びを足す",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -380,7 +389,7 @@ describe("technique catalog", () => {
       "明暗を揺らす",
       "たまに休む",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete drums random route", () => {
@@ -397,7 +406,7 @@ describe("technique catalog", () => {
       "粗く光る",
       "たまに休む",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -552,7 +561,7 @@ describe("technique catalog", () => {
       "明暗ゆらぎ",
       "たまに休む",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -571,7 +580,7 @@ describe("technique catalog", () => {
       "ゆっくり開く",
     ]);
     expect(routeTechniques[5]?.strudelSnippet).toBe(".pan(sine.range(0.25, 0.75).slow(8))");
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete chords dance route", () => {
@@ -589,7 +598,7 @@ describe("technique catalog", () => {
       "明るく跳ねる",
     ]);
     expect(routeTechniques[0]?.strudelSnippet).toBe(".arp(\"up\")");
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(2);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
   });
 
   it("returns the concrete keys forward route", () => {
@@ -607,7 +616,7 @@ describe("technique catalog", () => {
       "低い濁りを抜く",
     ]);
     expect(routeTechniques[6]?.strudelSnippet).toBe(".pan(sine.range(0.3, 0.7).slow(8))");
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
 
@@ -642,7 +651,7 @@ describe("technique catalog", () => {
       "左右に揺らす",
       "たまに抜く",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete voice random route", () => {
@@ -659,7 +668,7 @@ describe("technique catalog", () => {
       "明暗を揺らす",
       "時々細かく",
     ]);
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns no concrete techniques for undefined routes", () => {

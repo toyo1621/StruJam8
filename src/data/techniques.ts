@@ -157,8 +157,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "踊らせる",
     description: "小さな反復音を足して、ドラムの隙間を動かす。",
     strudelSnippet: ".echo(2, 1/16, 0.35)",
-    snippetExplanation: "echoで短い反復を足す想定。細かいゴーストノートのような揺れを作るが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "echoで短い反復を足す。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "drums-dance-swing",
@@ -170,8 +169,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "踊らせる",
     description: "機械的なグリッドから少し外して、跳ねたノリを出す。",
     strudelSnippet: ".swing(0.12)",
-    snippetExplanation: "swingで一部のタイミングを揺らす想定。跳ね感を作る表現として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "swingで一部のタイミングを揺らす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "drums-dance-mini-fill",
@@ -195,8 +193,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "踊らせる",
     description: "サンプルの重なりを整理して、ドラムをタイトに聞かせる。",
     strudelSnippet: ".cut(1)",
-    snippetExplanation: "cutで前の音を切るグループを指定する想定。サンプルの重なりを減らすため、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "cutで前の音を切るグループを指定する。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -245,8 +242,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "盛り上げる",
     description: "数小節ごとに細かい動きを入れて、次の展開へつなげる。",
     strudelSnippet: ".every(4, x => x.fast(2))",
-    snippetExplanation: "every(4, ...)で4周期ごとにfast(2)をかける想定。フィルイン表現として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "every(4, ...)で4周期ごとにfast(2)をかける。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "drums-build-raise-volume",
@@ -294,8 +290,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "盛り上げる",
     description: "一定周期で反転を入れて、展開前の引っかかりを作る。",
     strudelSnippet: ".every(8, x => x.rev())",
-    snippetExplanation: "every(8, ...)で8周期ごとにrevをかける想定。ブレイク前の合図として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "every(8, ...)で8周期ごとにrevをかける。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -380,8 +375,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "チル",
     description: "短い反復を薄く足して、余韻を少し増やす。",
     strudelSnippet: ".delay(0.25)",
-    snippetExplanation: "delayで反復を足す想定。チル向けの薄い余韻として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "delayで反復を足す。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "keys-chill-soft-random",
@@ -454,8 +448,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "広げる",
     description: "左右の位置をゆっくり動かして、ステレオ感を作る。",
     strudelSnippet: ".pan(sine.range(0.15, 0.85).slow(6))",
-    snippetExplanation: "panをゆっくり動かして左右に広げる想定。実Strudelで動作確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "panをゆっくり動かして左右に広げる。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "strings-widen-long-bow",
@@ -552,8 +545,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "ランダム感",
     description: "短い反復を足して、ベルが散らばるような余韻を作る。",
     strudelSnippet: ".echo(3, 1/16, 0.35)",
-    snippetExplanation: "echoで短い反復を足す想定。ベル向けのきらめき表現だが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "echoで短い反復を足す。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "bells-random-soft-random",
@@ -577,8 +569,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "ランダム感",
     description: "左右の位置を動かして、ベルが空間に散る印象を作る。",
     strudelSnippet: ".pan(sine.range(0.1, 0.9).fast(3))",
-    snippetExplanation: "panを速めに動かして左右へ散らす想定。実Strudelで動作確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "panを速めに動かして左右へ散らす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "bells-random-air-room",
@@ -675,8 +666,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "前に出す",
     description: "左右の位置をゆっくり動かして、ギターの広がりを作る。",
     strudelSnippet: ".pan(sine.range(0.3, 0.7).slow(8))",
-    snippetExplanation: "panをゆっくり動かして左右の位置を変える想定。広がりの表現として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "panをゆっくり動かして左右の位置を変える。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "guitar-forward-mini-fill",
@@ -737,8 +727,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "前に出す",
     description: "ボイス断片の重なりを整理して、言葉の粒を見えやすくする。",
     strudelSnippet: ".cut(2)",
-    snippetExplanation: "cutで同じグループの古い音を切る想定。声ネタの重なり整理として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "cutで同じグループの古い音を切る。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "voice-forward-double",
@@ -774,8 +763,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "前に出す",
     description: "短い反復を足して、コールアンドレスポンスのような余韻を作る。",
     strudelSnippet: ".echo(2, 1/8, 0.35)",
-    snippetExplanation: "echoで短い反復を足す想定。声ネタの返事のような表現だが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "echoで短い反復を足す。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "voice-forward-accent",
@@ -971,8 +959,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "抜く",
     description: "時々ドラムを休ませて、明確な空白を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。休符化の表現として使うが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
   {
     id: "drums-remove-ghost-only",
@@ -1586,8 +1573,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "広げる",
     description: "パンをゆっくり動かして、コードを左右方向に広げる。",
     strudelSnippet: ".pan(sine.range(0.25, 0.75).slow(6))",
-    snippetExplanation: "panをゆっくり動かす想定。左右の広がり表現として有効だが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "panをゆっくり動かす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "bass-remove-drop-notes",
@@ -1677,8 +1663,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "抜く",
     description: "時々ベースを休ませて、低音が消える瞬間を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。低音を休ませる表現として有効だが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
 
   {
@@ -1795,8 +1780,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "抜く",
     description: "時々コードを休ませて、はっきりした無音の余白を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。コードを休ませる表現として有効だが、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
 
   {
@@ -2107,8 +2091,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "崩す",
     description: "時々コードを止めて、ブレイクのような空白を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。休符化の挙動は実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
 
   {
@@ -2212,8 +2195,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "ランダム感",
     description: "時々ドラムを休ませて、予想外の空白を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。休符化の挙動は実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
   {
     id: "drums-forward-raise-volume",
@@ -3146,8 +3128,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "ランダム感",
     description: "時々コードを休ませて、和音が消える予想外の間を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。休符化の挙動は実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
   {
     id: "bass-widen-room",
@@ -3224,8 +3205,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "広げる",
     description: "ベースの左右位置をゆっくり動かして、ステレオの広がりを作る。",
     strudelSnippet: ".pan(sine.range(0.25, 0.75).slow(8))",
-    snippetExplanation: "panをゆっくり動かす想定。低音の左右移動は再生環境への影響が大きいため、実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "panをゆっくり動かす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -3330,8 +3310,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "踊らせる",
     description: "数周期ごとに細かくして、コードに小さなフィルを入れる。",
     strudelSnippet: ".every(4, x => x.fast(2))",
-    snippetExplanation: "every(4, ...)で周期的に細かくする想定。フィル表現として実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "every(4, ...)で周期的に細かくする。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -3449,8 +3428,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "前に出す",
     description: "左右の位置をゆっくり動かして、前景の存在感を広げる。",
     strudelSnippet: ".pan(sine.range(0.3, 0.7).slow(8))",
-    snippetExplanation: "panをゆっくり動かす想定。ステレオ表現は実Strudelで確認が必要なため、再生対象外にする。",
-    needsTodo: true,
+    snippetExplanation: "panをゆっくり動かす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -3657,8 +3635,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "踊らせる",
     description: "左右の位置をゆっくり動かして、ギターのリズムを空間にも広げる。",
     strudelSnippet: ".pan(sine.range(0.2, 0.8).slow(4))",
-    snippetExplanation: "panを動かす想定。ステレオの動きは実Strudelで確認が必要なため、再生対象外にする。",
-    needsTodo: true,
+    snippetExplanation: "panを動かす。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
@@ -3723,8 +3700,7 @@ export const techniques: TechniqueDefinition[] = [
     intent: "ランダム感",
     description: "時々ボイスを休ませて、声が消える印象的な間を作る。",
     strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。休符化の挙動は実Strudelで確認が必要。",
-    needsTodo: true,
+    snippetExplanation: "sometimesで時々silenceをかける。Strudel 1.3.0で評価を確認済み。",
   },
 
   {

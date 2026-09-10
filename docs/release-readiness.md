@@ -24,7 +24,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Show readable generated Strudel-like code | Done | `src/lib/codegen.ts` is tested for track grouping, comments, and snippets. |
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
 | Update the running preview after a rule change | Done | Browser test covers adding a technique while audio is playing. |
-| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted; representative all-eight-target coverage and one verified playback technique per concrete route exist. Exact editor `miniLocations` parity and every technique are not complete. |
+| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted; representative all-eight-target coverage, one verified playback technique per concrete route, and 24 additional runtime-verified techniques are covered. Exact editor `miniLocations` parity and four techniques remain incomplete. |
 | Stop and retry after runtime failure | Done for MVP | Invalid snippet and failed runtime-load recovery are covered in Chromium. This is not full strudel.cc transport parity. |
 | Persist and share a small jam | Done | LocalStorage, JSON export/import, and URL snapshot helpers are tested. URLs above the practical limit are blocked with an Export JSON fallback. |
 | Support all eight target families and intent families | Partial | Concrete routes cover every family, but not all 64 target/intent combinations. Undefined combinations intentionally show fallback techniques. |
@@ -36,7 +36,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 162 unit/component tests, and 15 Chromium tests pass in both root and Pages previews at the checkpoint. |
+| Regression coverage | Done for MVP | 22 Vitest files, 163 unit/component tests, and 16 Chromium tests pass in both root and Pages previews at the checkpoint. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
