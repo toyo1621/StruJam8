@@ -225,7 +225,9 @@ docs/
 
 ![Rules and highlighted Strudel code](docs/assets/strujam8-rules-code.png)
 
-A tablet-width capture is available at [docs/assets/strujam8-tablet.png](docs/assets/strujam8-tablet.png). See [docs/demo.md](docs/demo.md) for the capture flow and remaining GIF plan. See [docs/technique-design.md](docs/technique-design.md) for how technique routes should be designed.
+A tablet-width capture is available at [docs/assets/strujam8-tablet.png](docs/assets/strujam8-tablet.png). See [docs/demo.md](docs/demo.md) for the capture flow and sharing-controls screenshot plan. See [docs/technique-design.md](docs/technique-design.md) for how technique routes should be designed.
+
+![StruJam8 pad-to-code demo](docs/assets/strujam8-demo.gif)
 
 ## Contributing
 

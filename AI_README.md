@@ -64,7 +64,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `.github/workflows/ci.yml`: GitHub Actions workflow running `npm run check` and the Playwright browser checks.
 - `.github/workflows/pages.yml`: GitHub Pages deployment workflow.
 - `CONTRIBUTING.md`: contributor setup, validation, PR checklist, and scope guidance.
-- `docs/demo.md`: screenshot and demo GIF capture plan for release assets.
+- `docs/demo.md`: screenshot and demo GIF capture instructions for release assets.
 - `docs/deployment.md`: GitHub Pages deployment runbook and post-deploy QA checklist.
 - `docs/release-readiness.md`: current functional/non-functional requirement evaluation, release evidence, and development order.
 - `docs/license-review.md`: AGPL license decision notes and upstream Strudel license check.
@@ -498,7 +498,7 @@ Tasks:
 - Add contribution guidelines: done in `CONTRIBUTING.md`.
 - Add automated checks in GitHub Actions: done for unit/build validation via `npm run check`, development Chromium validation via `npm run test:e2e`, and Pages-base-path production validation via `npm run test:e2e:pages`.
 - Add GitHub Pages deployment workflow: done in `.github/workflows/pages.yml`; it runs `npm run check:pages`, and repository Pages settings still need to allow GitHub Actions deployment. Runbook added in `docs/deployment.md`.
-- Add screenshots or demo GIF: desktop/rules/tablet PNG assets are committed under `docs/assets/`; the short demo GIF remains pending.
+- Add screenshots or demo GIF: desktop/rules/tablet PNG assets and the short pad-to-code demo GIF are committed under `docs/assets/`; a sharing-controls screenshot remains pending.
 - Add visible Source and License links in the app header: done via `src/data/projectLinks.ts`.
 - Add deployment target: GitHub Pages selected; expected URL is `https://toyo1621.github.io/StruJam8/` after repository Pages settings are enabled.
 
