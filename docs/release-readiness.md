@@ -7,11 +7,11 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `526b2fb`
+- Application checkpoint commit: `102ab01`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34474543827`)
+- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34475614337`)
 - Public HTTP smoke: `200 OK`
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
 
@@ -24,6 +24,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Show readable generated Strudel-like code | Done | `src/lib/codegen.ts` is tested for track grouping, comments, and snippets. |
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
 | Update the running preview after a rule change | Done | Browser test covers adding a technique while audio is playing. |
+| Evaluate every catalog technique snippet | Done for installed runtime | `npm run verify:techniques` evaluated all 296 catalog snippets in a real Chromium page against the installed Strudel runtime in 175ms; this does not replace event-by-event audio/highlight coverage. |
 | Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted at token level; selecting a rule also scrolls its generated code chain into view. Representative all-eight-target coverage, one verified playback technique per concrete route, and 28 additional runtime-verified techniques are covered. Exact editor `miniLocations` parity remains incomplete. |
 | Stop and retry after runtime failure | Done for MVP | Invalid snippet and failed runtime-load recovery are covered in Chromium. This is not full strudel.cc transport parity. |
 | Persist and share a small jam | Done | LocalStorage, JSON export/import, and URL snapshot helpers are tested. URLs above the practical limit are blocked with an Export JSON fallback. |
@@ -71,7 +72,7 @@ Then verify:
 
 1. Verify the highest-use safe snippets against the installed Strudel version.
 2. Keep unverified snippets marked with `needsTodo` and excluded from Play.
-3. Maintain route reachability coverage and add runtime-highlight coverage for the remaining safe technique families.
+3. Maintain route reachability coverage and add runtime-highlight coverage for the remaining safe technique families; the full catalog evaluator check is now available as `npm run verify:techniques`.
 4. Test Safari/iPad audio start, stop, context suspension, and retry on real hardware.
 
 ### 2. Finish code highlighting parity
