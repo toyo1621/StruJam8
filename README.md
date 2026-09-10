@@ -54,10 +54,11 @@ Implemented:
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
 - Playwright browser checks for route navigation, all concrete route reachability, one verified playback technique from every concrete route, 28 additional runtime-verified technique playbacks, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, and live code highlighting across a representative route for all eight target tracks
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
+- All 296 catalog technique snippets pass the installed Strudel evaluator through `npm run verify:techniques` (full event-by-event highlight coverage remains a separate check)
 
 Not implemented yet:
 
-- Editor-level exact `miniLocations` parity and full all-technique audio/runtime coverage
+- Editor-level exact `miniLocations` parity and full all-technique runtime event/highlight coverage
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing

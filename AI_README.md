@@ -44,10 +44,11 @@ npm run check
 npm run check:pages
 npm run test:e2e
 npm run test:e2e:pages
+npm run verify:techniques
 ```
 
 The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location merging and mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, all concrete route reachability, one verified playback technique from every concrete route, the 28-technique runtime-verified playback batch, code update, RESET behavior, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, live code highlighting across a representative route for all eight target tracks, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same flows against a Pages-base-path production preview.
-Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
+Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Use `npm run verify:techniques` with the local Vite server running to evaluate every technique definition against the installed Strudel runtime. Reducer behavior is covered by unit tests.
 
 ## Architecture
 
@@ -182,7 +183,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 - Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, suspends the current AudioContext on Stop, resumes it before the next evaluation, recreates a fresh context when the browser has already closed the old one, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
-- Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with a representative browser smoke covering all eight target tracks, a playback smoke covering one verified technique from every concrete route, and a 28-technique runtime-verified playback batch; exact editor-level `miniLocations` state parity remains pending.
+- Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with a representative browser smoke covering all eight target tracks, a playback smoke covering one verified technique from every concrete route, and a 28-technique runtime-verified playback batch. All 296 catalog snippets also pass the installed Strudel evaluator through `npm run verify:techniques`; exact editor-level `miniLocations` parity and full event-by-event highlight coverage remain pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
@@ -234,7 +235,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - User-defined presets and named preset saving.
 - URL sharing of large jams beyond the practical length limit; the UI intentionally directs those jams to JSON export.
 - MIDI/controller input.
-- Full all-technique runtime-highlight coverage; the representative all-eight-target smoke, one-verified-technique-per-route playback smoke, safe-exclusion checks, real invalid-snippet failure/recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by Playwright in development and Pages-base-path previews.
+- Full all-technique runtime event-highlight coverage; the representative all-eight-target smoke, one-verified-technique-per-route playback smoke, 296-snippet evaluator verification, safe-exclusion checks, real invalid-snippet failure/recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by the documented checks.
 - Accessibility pass beyond basic semantic buttons and labels.
 - Full error telemetry or remote crash reporting; the current boundary logs locally and offers reload.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors remains pending; real invalid snippets stop playback and expose Retry, runtime-load Retry bypasses a failed module cache, and closed AudioContexts are recreated before the next Play attempt.

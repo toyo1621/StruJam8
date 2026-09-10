@@ -10,6 +10,7 @@
     "build:pages": "tsc -b && vite build --base=/StruJam8/",
     "preview": "vite preview",
     "demo:capture": "node scripts/capture-demo.mjs",
+    "verify:techniques": "node scripts/verify-techniques.mjs",
     "test": "vitest run",
     "check": "npm test && npm run build",
     "check:pages": "npm test && npm run build:pages",
