@@ -54,6 +54,22 @@ test.describe("StruJam8 browser flow", () => {
     );
   });
 
+  test("loads the Strudel runtime only after Play", async ({ page }) => {
+    await page.goto("/");
+
+    const hasStrudelRuntime = () =>
+      page.evaluate(() =>
+        performance
+          .getEntriesByType("resource")
+          .some((entry) => entry.name.includes("@strudel_web")),
+      );
+
+    expect(await hasStrudelRuntime()).toBe(false);
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect.poll(hasStrudelRuntime, { timeout: 15_000 }).toBe(true);
+  });
+
   test("keeps the main surfaces inside a tablet viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/");

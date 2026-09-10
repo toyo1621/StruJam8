@@ -45,7 +45,7 @@ npm run check:pages
 npm run test:e2e
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, and live code highlighting.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, live code highlighting, and the lazy-loading boundary that keeps the Strudel runtime out of the initial page load.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -103,7 +103,7 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play button initializes Strudel from a user click and evaluates conservative playable code. Stop calls `hush()` through the audio boundary. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. Stop calls `hush()` through the audio boundary. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
