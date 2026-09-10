@@ -66,6 +66,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `CONTRIBUTING.md`: contributor setup, validation, PR checklist, and scope guidance.
 - `docs/demo.md`: screenshot and demo GIF capture plan for release assets.
 - `docs/deployment.md`: GitHub Pages deployment runbook and post-deploy QA checklist.
+- `docs/release-readiness.md`: current functional/non-functional requirement evaluation, release evidence, and development order.
 - `docs/license-review.md`: AGPL license decision notes and upstream Strudel license check.
 - `docs/technique-design.md`: technique design principles, route priority, and route expansion rules.
 - `LICENSE`: GNU Affero General Public License version 3 text.

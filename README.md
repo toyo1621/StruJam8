@@ -176,6 +176,7 @@ The app is configured for GitHub Pages at:
 https://toyo1621.github.io/StruJam8/
 
 The deployment workflow is defined in `.github/workflows/pages.yml`. It runs `npm run check:pages`, uploads `dist/`, and deploys through GitHub Pages. Local development still runs at the Vite root path. See [docs/deployment.md](docs/deployment.md) for the deployment runbook.
+See [docs/release-readiness.md](docs/release-readiness.md) for the current functional/non-functional requirement evaluation and release gate.
 
 ## Project Structure
 
