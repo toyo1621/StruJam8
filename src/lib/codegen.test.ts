@@ -131,8 +131,8 @@ describe("formatGeneratedCode", () => {
 });
 
 describe("formatPlayableCode", () => {
-  it("keeps rule ids on playable snippet lines for code highlighting", () => {
-    const snippetLine = formatPlayableCodeLines([makeRule()]).find((line) => line.ruleId);
+  it("keeps rule ids on playable rule lines for code highlighting", () => {
+    const snippetLine = formatPlayableCodeLines([makeRule()]).find((line) => line.text.includes(".degradeBy"));
 
     expect(snippetLine?.ruleId).toBe("rule-1");
     expect(snippetLine?.targetId).toBe("bass");
@@ -147,6 +147,7 @@ describe("formatPlayableCode", () => {
     const output = formatPlayableCode([makeRule()]);
 
     expect(output).toContain("stack(");
+    expect(output).toContain("/* ベース ＞ 崩す ＞ 音を抜く */");
     expect(output).toContain('note("c2 ~ eb2 g2").s("sawtooth").lpf(900).gain(0.45)');
     expect(output).toContain(".degradeBy(0.2)");
     expect(output).not.toContain("gm_strings");
@@ -154,7 +155,6 @@ describe("formatPlayableCode", () => {
     expect(output).not.toContain('note("c3 ~ eb3 g3")');
     expect(output).not.toContain("[ah oh]");
     expect(output).not.toContain("bass:");
-    expect(output).not.toContain("/*");
   });
 
   it("adds a playable rule target when it is outside the preset base tracks", () => {

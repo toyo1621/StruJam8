@@ -23,4 +23,13 @@ describe("code tokenization", () => {
 
     expect(tokens[tokens.length - 1]).toEqual({ text: "// TODO: verify", kind: "comment" });
   });
+
+  it("keeps block comments as one non-executable token", () => {
+    const tokens = tokenizeCodeLine("  /* ベース ＞ 崩す ＞ 音を抜く */");
+
+    expect(tokens[tokens.length - 1]).toEqual({
+      text: "/* ベース ＞ 崩す ＞ 音を抜く */",
+      kind: "comment",
+    });
+  });
 });

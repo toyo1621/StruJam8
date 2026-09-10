@@ -31,6 +31,7 @@ Implemented:
 - JSON export/import for jam snapshots
 - Shareable URL snapshots for small jams through the Share URL control
 - Audible Strudel code display from the same code string used by Play
+- Playable snippets include readable route comments immediately above each technique chain
 - First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
 - Token-colored Strudel-like code with runtime event-location highlighting while playing, plus a fallback pulse when no location is available

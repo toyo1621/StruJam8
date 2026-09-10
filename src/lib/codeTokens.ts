@@ -50,6 +50,14 @@ export function tokenizeCodeLine(line: string): CodeToken[] {
       break;
     }
 
+    if (character === "/" && line[index + 1] === "*") {
+      const end = line.indexOf("*/", index + 2);
+      const commentEnd = end === -1 ? line.length : end + 2;
+      pushToken(tokens, line.slice(index, commentEnd), "comment");
+      index = commentEnd;
+      continue;
+    }
+
     if (isWhitespace(character)) {
       const start = index;
       while (isWhitespace(line[index])) {

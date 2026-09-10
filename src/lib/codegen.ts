@@ -78,11 +78,18 @@ function getPlayableRules(rules: Rule[]) {
 function formatPlayableTrackLines(track: TrackDefinition, rules: Rule[], preset: PresetDefinition): PlayableCodeLine[] {
   const snippetChain = rules
     .filter((rule) => rule.targetId === track.targetId)
-    .map((rule) => ({
-      text: `    ${rule.strudelSnippet}`,
-      targetId: track.targetId,
-      ruleId: rule.id,
-    }));
+    .flatMap((rule) => [
+      {
+        text: `    ${formatRuleComment(rule)}`,
+        targetId: track.targetId,
+        ruleId: rule.id,
+      },
+      {
+        text: `    ${rule.strudelSnippet}`,
+        targetId: track.targetId,
+        ruleId: rule.id,
+      },
+    ]);
 
   return [
     {

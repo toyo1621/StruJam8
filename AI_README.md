@@ -160,7 +160,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Track-composed audible Strudel output for implemented techniques.
 - First Strudel audio preview through Play/Stop using `@strudel/web`.
 - Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
-- The right code panel, copied code, and Play input all use the same audible code string.
+- The right code panel, copied code, and Play input all use the same audible code string, including route comments immediately above playable technique chains.
 - Active playback re-evaluates when the audible code string changes, keeping sound and displayed code closer during live edits.
 - The code panel tokenizes functions, strings, numbers, punctuation, and comments, then highlights runtime Strudel event locations at token level while playing, with a target/rule pulse fallback.
 - Audible code can be copied to the clipboard from the code panel.
