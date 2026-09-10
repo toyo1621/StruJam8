@@ -36,6 +36,7 @@ Implemented:
 - First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
 - Token-colored Strudel-like code with runtime event-location highlighting while playing, including merged highlights for simultaneous tracks, plus a fallback pulse when no location is available
+- Selecting a rule detail keeps its generated code chain in view, so the rule list and code panel stay connected while learning
 - Copy audible Strudel code to clipboard
 - Concrete technique routes covering all eight targets and all eight intents at least once
 - Track templates for all eight targets

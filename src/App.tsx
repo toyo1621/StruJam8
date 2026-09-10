@@ -158,6 +158,7 @@ function App() {
   const pendingAudioFlushIdRef = useRef<number | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
+  const codeViewRef = useRef<HTMLPreElement | null>(null);
   const lastPlayedCodeRef = useRef<string | null>(null);
   const {
     currentLevel,
@@ -362,6 +363,20 @@ function App() {
       setSelectedRuleId(rules[rules.length - 1]?.id ?? null);
     }
   }, [rules, selectedRuleId]);
+
+  useEffect(() => {
+    if (!selectedRuleId || !codeViewRef.current) {
+      return;
+    }
+
+    const selectedCodeLine = [...codeViewRef.current.querySelectorAll<HTMLElement>(".code-line")].find(
+      (line) => line.dataset.ruleId === selectedRuleId,
+    );
+
+    if (selectedCodeLine && typeof selectedCodeLine.scrollIntoView === "function") {
+      selectedCodeLine.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }, [audibleCode, selectedRuleId]);
 
   const handlePadPress = useCallback((pad: PadOption) => {
     if (currentLevel === "target") {
@@ -892,7 +907,7 @@ function App() {
               </button>
             </div>
           </div>
-          <pre className="code-view" aria-label="Audible Strudel code">
+          <pre ref={codeViewRef} className="code-view" aria-label="Audible Strudel code">
             <code>
               {audibleCodeLines.map((line, index) => {
                 const isLineActive = activeCodeLineIndexes.has(index);

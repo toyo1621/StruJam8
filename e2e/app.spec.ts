@@ -224,6 +224,18 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.locator("footer.pad-dock button.live-pad")).toHaveCount(8);
   });
 
+  test("connects rule detail selection to the matching generated code lines", async ({ page }) => {
+    await page.goto("./");
+    await chooseBassBreakTechnique(page);
+
+    const rule = page.locator(".rule-block").filter({ hasText: "音を抜く" });
+    await rule.getByRole("button", { name: "ベース ＞ 崩す ＞ 音を抜く の詳細を表示" }).click();
+
+    const selectedCode = page.locator(".code-line.is-rule-selected");
+    await expect(selectedCode).toHaveCount(2);
+    await expect(selectedCode.filter({ hasText: ".degradeBy(0.2)" })).toHaveCount(1);
+  });
+
   test("resets added rules while keeping the current navigation context", async ({ page }) => {
     await page.goto("./");
     await chooseBassBreakTechnique(page);

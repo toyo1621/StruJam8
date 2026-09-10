@@ -7,7 +7,7 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `d8c5732`
+- Application checkpoint commit: `89848d3`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
@@ -24,7 +24,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Show readable generated Strudel-like code | Done | `src/lib/codegen.ts` is tested for track grouping, comments, and snippets. |
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
 | Update the running preview after a rule change | Done | Browser test covers adding a technique while audio is playing. |
-| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted; representative all-eight-target coverage, one verified playback technique per concrete route, and 28 additional runtime-verified techniques are covered. Exact editor `miniLocations` parity remains incomplete. |
+| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted at token level; selecting a rule also scrolls its generated code chain into view. Representative all-eight-target coverage, one verified playback technique per concrete route, and 28 additional runtime-verified techniques are covered. Exact editor `miniLocations` parity remains incomplete. |
 | Stop and retry after runtime failure | Done for MVP | Invalid snippet and failed runtime-load recovery are covered in Chromium. This is not full strudel.cc transport parity. |
 | Persist and share a small jam | Done | LocalStorage, JSON export/import, and URL snapshot helpers are tested. URLs above the practical limit are blocked with an Export JSON fallback. |
 | Support all eight target families and intent families | Partial | Concrete routes cover every family, but not all 64 target/intent combinations. Undefined combinations intentionally show fallback techniques. |

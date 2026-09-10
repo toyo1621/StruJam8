@@ -719,6 +719,7 @@ button:focus-visible {
   min-height: 1.65em;
   border-radius: 6px;
   padding: 0 4px;
+  scroll-margin-block: 14px;
   transition:
     background 120ms ease,
     color 120ms ease,
