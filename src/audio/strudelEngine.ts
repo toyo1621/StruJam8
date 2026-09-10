@@ -88,7 +88,7 @@ function toEvaluationError(error: unknown, fallbackMessage: string) {
 }
 
 function notifyAudioTrigger(locations: StrudelCodeLocation[]) {
-  if (!audioTriggerHandler || locations.length === 0) {
+  if (!audioTriggerHandler) {
     return;
   }
 

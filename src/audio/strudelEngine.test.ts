@@ -129,8 +129,9 @@ describe("strudel engine", () => {
     await options.defaultOutput?.(hap, 0, 0.25, 1, 0);
     await options.defaultOutput?.({}, 0, 0.25, 1, 0);
 
-    expect(onTrigger).toHaveBeenCalledTimes(1);
+    expect(onTrigger).toHaveBeenCalledTimes(2);
     expect(onTrigger).toHaveBeenCalledWith(hap.context.locations);
+    expect(onTrigger).toHaveBeenNthCalledWith(2, []);
     expect(webaudioOutputMock).toHaveBeenNthCalledWith(1, hap, 0, 0.25, 1, 0);
     expect(webaudioOutputMock).toHaveBeenNthCalledWith(2, {}, 0, 0.25, 1, 0);
   });

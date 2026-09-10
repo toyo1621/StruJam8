@@ -236,7 +236,7 @@ function App() {
   }, []);
 
   const handleAudioTrigger = useCallback<StrudelAudioTriggerHandler>((locations) => {
-    setActiveCodeLocations(locations);
+    setActiveCodeLocations(locations.length > 0 ? locations : null);
   }, []);
 
   const handleAudioRuntimeError = useCallback<StrudelAudioErrorHandler>((error) => {
