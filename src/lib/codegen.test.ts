@@ -70,6 +70,24 @@ describe("formatGeneratedCode", () => {
     expect(output).toContain('bass:\n  note("c2 ~ c2 bb1").s("sawtooth").lpf(750).gain(0.5)\n    .degradeBy(0.2)');
   });
 
+  it("switches the chord base to chord symbols before applying voicing", () => {
+    const output = formatGeneratedCode([
+      makeRule({
+        targetId: "chords",
+        intentId: "build",
+        techniqueId: "chords-build-widen-range",
+        target: "コード",
+        intent: "盛り上げる",
+        technique: "音域を広げる",
+        strudelSnippet: ".voicing()",
+        playbackTransform: "chordVoicing",
+      }),
+    ]);
+
+    expect(output).toContain('chords:\n  chord("<C Am F G>").s("triangle").slow(2).room(0.35).gain(0.38)\n    .voicing()');
+    expect(output).not.toContain('chords:\n  note("c4 eb4 g4 bb4")');
+  });
+
   it("uses target ids to choose guitar track names and base patterns", () => {
     const output = formatGeneratedCode([
       makeRule({

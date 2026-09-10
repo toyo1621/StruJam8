@@ -65,6 +65,8 @@ export interface RouteDefinition {
   description: string;
 }
 
+export type PlaybackTransform = "chordVoicing";
+
 export interface TechniqueDefinition {
   id: string;
   label: string;
@@ -76,6 +78,7 @@ export interface TechniqueDefinition {
   description: string;
   strudelSnippet: string;
   snippetExplanation: string;
+  playbackTransform?: PlaybackTransform;
   needsTodo?: boolean;
 }
 
@@ -89,6 +92,7 @@ export interface Rule {
   technique: string;
   shortLabel: string;
   strudelSnippet: string | null;
+  playbackTransform?: PlaybackTransform;
   needsTodo: boolean;
   enabled: boolean;
 }

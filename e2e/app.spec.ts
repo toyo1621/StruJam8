@@ -17,13 +17,6 @@ async function chooseBassBreakTechnique(page: Page) {
   await pads.filter({ hasText: "音を抜く" }).click();
 }
 
-async function chooseUnverifiedBassBreakTechnique(page: Page) {
-  const pads = livePads(page);
-  await pads.filter({ hasText: "ベース" }).click();
-  await pads.filter({ hasText: "崩す" }).click();
-  await pads.filter({ hasText: "たまに休む" }).click();
-}
-
 function invalidSnippetJamUrl() {
   const snapshot = {
     version: 1,
@@ -43,6 +36,34 @@ function invalidSnippetJamUrl() {
         enabled: true,
       },
     ],
+  };
+
+  return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
+}
+
+function unverifiedTechniqueJamUrl() {
+  const technique = getTechniqueById("bass-break-sometimes-rest");
+
+  if (!technique) {
+    throw new Error("Missing technique for TODO safety test");
+  }
+
+  const snapshot = {
+    version: 1,
+    selectedPresetId: "toy-house",
+    rules: [{
+      id: "e2e-unverified-snippet",
+      targetId: technique.targetId,
+      intentId: technique.intentId,
+      techniqueId: technique.id,
+      target: technique.target,
+      intent: technique.intent,
+      technique: technique.label,
+      shortLabel: technique.shortLabel,
+      strudelSnippet: technique.strudelSnippet,
+      needsTodo: true,
+      enabled: true,
+    }],
   };
 
   return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
@@ -79,6 +100,7 @@ function allTargetCoverageJamUrl() {
       technique: technique.label,
       shortLabel: technique.shortLabel,
       strudelSnippet: technique.strudelSnippet,
+      playbackTransform: technique.playbackTransform,
       needsTodo: technique.needsTodo ?? false,
       enabled: true,
     };
@@ -113,6 +135,7 @@ function allConcreteRoutePlaybackSnapshot() {
       technique: technique.label,
       shortLabel: technique.shortLabel,
       strudelSnippet: technique.strudelSnippet,
+      playbackTransform: technique.playbackTransform,
       needsTodo: false,
       enabled: true,
     };
@@ -152,6 +175,10 @@ const runtimeVerifiedTechniqueIds = [
   "keys-forward-pan-motion",
   "guitar-dance-pan-sweep",
   "voice-random-rest",
+  "bass-break-sometimes-rest",
+  "chords-build-widen-range",
+  "chords-build-arpeggio",
+  "chords-dance-arpeggio",
 ] as const;
 
 function runtimeVerifiedTechniquePlaybackSnapshot() {
@@ -172,6 +199,7 @@ function runtimeVerifiedTechniquePlaybackSnapshot() {
       technique: technique.label,
       shortLabel: technique.shortLabel,
       strudelSnippet: technique.strudelSnippet,
+      playbackTransform: technique.playbackTransform,
       needsTodo: false,
       enabled: true,
     };
@@ -229,8 +257,7 @@ test.describe("StruJam8 browser flow", () => {
   });
 
   test("shows unverified techniques as TODO without sending them to Play", async ({ page }) => {
-    await page.goto("./");
-    await chooseUnverifiedBassBreakTechnique(page);
+    await page.goto(unverifiedTechniqueJamUrl());
 
     await expect(page.getByText("ベース ＞ 崩す ＞ たまに休む", { exact: true }).first()).toBeVisible();
     await expect(page.getByText("TODO", { exact: true }).first()).toBeVisible();

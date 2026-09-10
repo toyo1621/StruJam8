@@ -12,12 +12,7 @@ describe("technique catalog", () => {
   });
 
   it("keeps only runtime-unverified techniques behind TODO", () => {
-    expect(techniques.filter((technique) => technique.needsTodo).map((technique) => technique.id)).toEqual([
-      "bass-break-sometimes-rest",
-      "chords-build-widen-range",
-      "chords-build-arpeggio",
-      "chords-dance-arpeggio",
-    ]);
+    expect(techniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("defines unique concrete route keys", () => {
@@ -597,8 +592,8 @@ describe("technique catalog", () => {
       "たまに抜く",
       "明るく跳ねる",
     ]);
-    expect(routeTechniques[0]?.strudelSnippet).toBe(".arp(\"up\")");
-    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(1);
+    expect(routeTechniques[0]?.strudelSnippet).toBe(".arp(\"0 1 2 3\")");
+    expect(routeTechniques.filter((technique) => technique.needsTodo)).toHaveLength(0);
   });
 
   it("returns the concrete keys forward route", () => {

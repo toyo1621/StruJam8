@@ -117,6 +117,7 @@ function createRuleFromTechnique(technique: TechniqueDefinition): Rule {
     technique: technique.label,
     shortLabel: technique.shortLabel,
     strudelSnippet: technique.strudelSnippet,
+    playbackTransform: technique.playbackTransform,
     needsTodo: technique.needsTodo ?? false,
     enabled: true,
   };

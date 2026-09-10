@@ -36,6 +36,7 @@ Rules for snippets:
 
 - Prefer simple, already-used operators first: `gain`, `lpf`, `hpf`, `room`, `slow`, `fast`, `rev`, `degradeBy`, `off`, `sometimes`, `add(note(...))`, `distort`, `legato`, `release`, `decay`.
 - If a snippet is musically useful but not confirmed in the current runtime, keep it visible but set `needsTodo: true`.
+- If a snippet needs a different input shape, use an explicit `playbackTransform` instead of hiding a second pattern in the UI. The current `chordVoicing` transform changes the chord track from note names to chord symbols before applying `.voicing()`.
 - The audible code generator skips disabled rules, missing snippets, and `needsTodo` snippets.
 - The UI should explain skipped snippets so users do not think Play is broken.
 

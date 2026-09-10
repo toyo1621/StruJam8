@@ -63,6 +63,21 @@ function getPresetTrackPattern(track: TrackDefinition, preset: PresetDefinition)
   return preset.trackPatterns[track.targetId] ?? track.basePattern;
 }
 
+function getTrackPattern(
+  track: TrackDefinition,
+  rules: Rule[],
+  preset: PresetDefinition,
+) {
+  const pattern = getPresetTrackPattern(track, preset);
+
+  // Strudel's voicing() expects chord symbols, while the starter track uses note names.
+  if (rules.some((rule) => rule.playbackTransform === "chordVoicing") && track.targetId === "chords") {
+    return pattern.replace(/^note\("c4 eb4 g4 bb4"\)/, 'chord("<C Am F G>")');
+  }
+
+  return pattern;
+}
+
 function formatSnippetChainLine(rule: Rule) {
   if (!rule.strudelSnippet) {
     return `    // TODO: ${rule.technique} snippet`;
@@ -93,7 +108,7 @@ function formatPlayableTrackLines(track: TrackDefinition, rules: Rule[], preset:
 
   return [
     {
-      text: `  ${getPresetTrackPattern(track, preset)}`,
+      text: `  ${getTrackPattern(track, rules, preset)}`,
       targetId: track.targetId,
     },
     ...snippetChain,
@@ -140,9 +155,10 @@ export function formatComposedTrackSnippet(group: TrackRuleGroup, preset: Preset
   const routeComments = group.rules.map(formatRuleComment);
   const todoComments = group.rules.map(formatTodoComment).filter((comment) => comment !== null);
   const snippetChain = group.rules.map(formatSnippetChainLine);
+  const playableRules = getPlayableRules(group.rules);
   const composedTrack = [
     `${group.track.codeName}:`,
-    `  ${getPresetTrackPattern(group.track, preset)}`,
+    `  ${getTrackPattern(group.track, playableRules, preset)}`,
     ...snippetChain,
   ].join("\n");
 

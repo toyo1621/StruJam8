@@ -46,9 +46,8 @@ export const techniques: TechniqueDefinition[] = [
     target: "ベース",
     intent: "崩す",
     description: "一定確率で休符化し、ベースに抜けを作る。",
-    strudelSnippet: ".sometimes(silence)",
-    snippetExplanation: "sometimesで時々silenceをかける想定。音を鳴らさない瞬間を作るため、実Strudelで要確認。",
-    needsTodo: true,
+    strudelSnippet: ".sometimes(x => silence)",
+    snippetExplanation: "sometimesで時々silenceに置き換える。Strudel 1.3.0のWebAudio出力で、発音と休符が混ざることを確認済み。",
   },
   {
     id: "bass-break-reverse",
@@ -800,8 +799,8 @@ export const techniques: TechniqueDefinition[] = [
     intent: "盛り上げる",
     description: "ボイシングを広げ、コードの存在感を強める。",
     strudelSnippet: ".voicing()",
-    snippetExplanation: "voicingでコードの積み方を変える想定。音域を広げる表現として使うが実Strudelで要確認。",
-    needsTodo: true,
+    snippetExplanation: "コード記号へ変換したトラックにvoicingを適用し、複数音の積み方を広げる。Strudel 1.3.0のWebAudio出力で確認済み。",
+    playbackTransform: "chordVoicing",
   },
   {
     id: "chords-build-deep-reverb",
@@ -836,9 +835,8 @@ export const techniques: TechniqueDefinition[] = [
     target: "コード",
     intent: "盛り上げる",
     description: "コードを上昇アルペジオ風にして、動きを増やす。",
-    strudelSnippet: ".arp(\"up\")",
-    snippetExplanation: "arp(\"up\")でコードを上向きアルペジオにする想定。実Strudelで挙動確認が必要。",
-    needsTodo: true,
+    strudelSnippet: ".arp(\"0 1 2 3\")",
+    snippetExplanation: "arpで音を0→1→2→3の順に選び、上向きの動きを作る。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
   {
     id: "chords-build-longer",
@@ -3243,9 +3241,8 @@ export const techniques: TechniqueDefinition[] = [
     target: "コード",
     intent: "踊らせる",
     description: "コードを上向きに分解して、和音に足取りを作る。",
-    strudelSnippet: ".arp(\"up\")",
-    snippetExplanation: "arp(\"up\")でコードを上向きに動かす想定。和音の分解方法は実Strudelで確認が必要。",
-    needsTodo: true,
+    strudelSnippet: ".arp(\"0 1 2 3\")",
+    snippetExplanation: "arpで音を0→1→2→3の順に選び、コードに足取りを作る。Strudel 1.3.0のWebAudio出力で確認済み。",
   },
 
   {
