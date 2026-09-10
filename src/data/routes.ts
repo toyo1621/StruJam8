@@ -197,6 +197,27 @@ export const concreteTechniqueRoutes: RouteDefinition[] = [
     intent: "広げる",
     description: "ボイス断片の上下、長さ、薄い重なりを広げて、声っぽい空間の層を作るルート。",
   },
+  {
+    targetId: "drums",
+    intentId: "widen",
+    target: "ドラム",
+    intent: "広げる",
+    description: "ドラムの余韻、反射、高域の空気感を広げて、リズムの周囲に空間を作るルート。",
+  },
+  {
+    targetId: "bass",
+    intentId: "random",
+    target: "ベース",
+    intent: "ランダム感",
+    description: "ベースの発音、音高、明暗、タイミングを揺らして、低音に偶然性を作るルート。",
+  },
+  {
+    targetId: "chords",
+    intentId: "random",
+    target: "コード",
+    intent: "ランダム感",
+    description: "コードの発音、上下の層、反転、明暗を揺らして、和音に予想外の変化を作るルート。",
+  },
 ];
 
 export function getRouteKey(targetId: TargetId, intentId: IntentId) {
