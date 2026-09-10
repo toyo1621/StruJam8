@@ -33,7 +33,7 @@ Implemented:
 - Audible Strudel code display from the same code string used by Play
 - First Play/Stop audio preview through `@strudel/web`, with live re-evaluation when the audible code changes
 - Playback code generation that follows the preset base tracks and skips disabled, missing, and unverified snippets
-- Token-colored Strudel-like code with active rule-snippet highlighting while playing
+- Token-colored Strudel-like code with runtime event-location highlighting while playing, plus a fallback pulse when no location is available
 - Copy audible Strudel code to clipboard
 - Concrete technique routes covering all eight targets and all eight intents at least once
 - Track templates for all eight targets
@@ -48,7 +48,7 @@ Implemented:
 
 Not implemented yet:
 
-- Exact token-level Strudel playback highlighting using strudel.cc miniLocations
+- Editor-level exact `miniLocations` parity and full browser-level interaction tests
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
@@ -193,6 +193,7 @@ src/
     codegen.ts           Audible Strudel code formatting
     codeHighlight.ts      Active target and rule-snippet highlighting
     codeTokens.ts        Syntax-colored Strudel-like code tokenization
+    codeLocations.ts     Runtime Strudel event range mapping
     keyboard.ts        Keyboard shortcut helpers
     persistence.ts     Local storage and JSON snapshot helpers
     shareUrl.ts        URL snapshot sharing helpers

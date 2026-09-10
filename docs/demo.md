@@ -28,7 +28,7 @@ localStorage.removeItem("strujam8:jam:v1")
 Save captured files under `docs/assets/` with these names:
 
 - `strujam8-home.png`: first view with Toy House selected and no rules.
-- `strujam8-rules-code.png`: rules added, rule detail visible, audible code populated, and active line highlighting visible during playback.
+- `strujam8-rules-code.png`: rules added, rule detail visible, audible code populated, and active code-token highlighting visible during playback.
 - `strujam8-sharing.png`: header showing Export JSON, Import JSON, Share URL, and Copy controls.
 - `strujam8-tablet.png`: tablet-width layout check.
 - `strujam8-demo.gif`: short interaction loop.

@@ -610,6 +610,14 @@ button:focus-visible {
   transition: color 120ms ease;
 }
 
+.code-token.is-location-active {
+  border-radius: 3px;
+  color: #111317;
+  background: #fff0a8;
+  box-shadow: 0 0 0 1px rgba(231, 111, 81, 0.38);
+  font-weight: 900;
+}
+
 .code-token--function {
   color: #6d28d9;
 }

@@ -1,4 +1,15 @@
 type StrudelWebModule = typeof import("@strudel/web");
+type StrudelOutputArgs = [hap: unknown, deadline: number, duration: number, cps: number, time: number];
+type StrudelWebModuleWithOutput = StrudelWebModule & {
+  webaudioOutput: (...args: StrudelOutputArgs) => unknown;
+};
+
+export interface StrudelCodeLocation {
+  start: number;
+  end: number;
+}
+
+export type StrudelAudioTriggerHandler = (locations: StrudelCodeLocation[]) => void;
 
 export const starterAudioCode = 'note("c2 eb2 g2 bb2").s("sawtooth").slow(2).gain(0.35)';
 
@@ -9,9 +20,71 @@ let didInitialize = false;
 let playbackGeneration = 0;
 let latestEvaluationRequest = 0;
 let evaluationQueue: Promise<void> = Promise.resolve();
+let audioTriggerHandler: StrudelAudioTriggerHandler | null = null;
+let latestEvaluationError: unknown = null;
 
 export function getStrudelRuntimeStatus() {
   return didInitialize ? "ready" : "idle";
+}
+
+function getHapLocations(hap: unknown): StrudelCodeLocation[] {
+  if (!hap || typeof hap !== "object") {
+    return [];
+  }
+
+  const locations = (hap as { context?: { locations?: unknown } }).context?.locations;
+
+  if (!Array.isArray(locations)) {
+    return [];
+  }
+
+  return locations.flatMap((location) => {
+    if (!location || typeof location !== "object") {
+      return [];
+    }
+
+    const { start, end } = location as { start?: unknown; end?: unknown };
+
+    if (
+      typeof start !== "number" ||
+      typeof end !== "number" ||
+      !Number.isFinite(start) ||
+      !Number.isFinite(end) ||
+      end <= start
+    ) {
+      return [];
+    }
+
+    return [{ start, end }];
+  });
+}
+
+function toEvaluationError(error: unknown, fallbackMessage: string) {
+  if (error instanceof Error) {
+    return error;
+  }
+
+  if (typeof error === "string" && error.length > 0) {
+    return new Error(error);
+  }
+
+  if (error && typeof error === "object" && "message" in error) {
+    return new Error(String(error.message));
+  }
+
+  return new Error(fallbackMessage);
+}
+
+function notifyAudioTrigger(locations: StrudelCodeLocation[]) {
+  if (!audioTriggerHandler || locations.length === 0) {
+    return;
+  }
+
+  try {
+    audioTriggerHandler(locations);
+  } catch (error) {
+    console.error("StruJam8 audio trigger handler failed", error);
+  }
 }
 
 async function loadStrudelModule() {
@@ -35,7 +108,20 @@ async function ensureStrudelInitialized() {
   const module = await loadStrudelModule();
 
   if (!initPromise) {
-    initPromise = Promise.resolve(module.initStrudel()).then((runtime) => {
+    const moduleWithOutput = module as StrudelWebModuleWithOutput;
+    const defaultOutput = (...args: StrudelOutputArgs) => {
+      notifyAudioTrigger(getHapLocations(args[0]));
+      return moduleWithOutput.webaudioOutput(...args);
+    };
+
+    initPromise = Promise.resolve(
+      module.initStrudel({
+        defaultOutput,
+        onEvalError: (error: unknown) => {
+          latestEvaluationError = error;
+        },
+      }),
+    ).then((runtime) => {
       didInitialize = true;
       return runtime;
     });
@@ -51,7 +137,14 @@ async function ensureStrudelInitialized() {
   }
 }
 
-export async function startStrudelAudio(code: string = starterAudioCode) {
+export async function startStrudelAudio(
+  code: string = starterAudioCode,
+  onTrigger?: StrudelAudioTriggerHandler,
+) {
+  if (onTrigger) {
+    audioTriggerHandler = onTrigger;
+  }
+
   const requestId = ++latestEvaluationRequest;
   const generation = playbackGeneration;
   const module = await ensureStrudelInitialized();
@@ -62,11 +155,24 @@ export async function startStrudelAudio(code: string = starterAudioCode) {
       return;
     }
 
-    await module.evaluate(code, true);
+    latestEvaluationError = null;
+    const evaluatedPattern = await module.evaluate(code, true);
+    const evaluationError = latestEvaluationError;
+    latestEvaluationError = null;
 
     if (generation !== playbackGeneration || requestId !== latestEvaluationRequest) {
       module.hush();
       return;
+    }
+
+    if (evaluationError) {
+      module.hush();
+      throw toEvaluationError(evaluationError, "Strudel could not evaluate the current code");
+    }
+
+    if (evaluatedPattern === undefined || evaluatedPattern === null) {
+      module.hush();
+      throw new Error("Strudel did not return a playable pattern");
     }
 
     didEvaluate = true;
@@ -80,6 +186,8 @@ export async function startStrudelAudio(code: string = starterAudioCode) {
 export function stopStrudelAudio() {
   playbackGeneration += 1;
   latestEvaluationRequest += 1;
+  audioTriggerHandler = null;
+  latestEvaluationError = null;
 
   if (!didInitialize || !strudelModule) {
     return;
@@ -96,4 +204,6 @@ export function resetStrudelEngineForTests() {
   playbackGeneration = 0;
   latestEvaluationRequest = 0;
   evaluationQueue = Promise.resolve();
+  audioTriggerHandler = null;
+  latestEvaluationError = null;
 }

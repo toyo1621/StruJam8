@@ -44,7 +44,7 @@ npm run check
 npm run check:pages
 ```
 
-A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, and the Strudel audio engine boundary.
+A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, and the Strudel audio engine boundary.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -52,7 +52,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 ### Main Files
 
 - `src/App.tsx`: React state, navigation, rule creation, generated code output, transport calls, and pad preview UI.
-- `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush.
+- `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush, runtime event locations, and evaluation errors.
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
 - `src/App.css`: visual layout, dark theme, colorful pads, responsive behavior.
 - `vite.config.ts`: Vite React config; GitHub Pages uses the `build:pages` script for the `/StruJam8/` base path.
@@ -79,6 +79,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/lib/codegen.ts`: pure formatting helpers for audible Strudel code and conservative runtime playback code.
 - `src/lib/codeHighlight.ts`: pure helpers for active target and rule-snippet highlighting.
 - `src/lib/codeTokens.ts`: lossless tokenization for syntax-colored Strudel-like code.
+- `src/lib/codeLocations.ts`: maps Strudel event source ranges to rendered code lines and tokens.
 - `src/lib/keyboard.ts`: pure keyboard shortcut helpers and editing-control guards.
 - `src/lib/persistence.ts`: localStorage and JSON snapshot parse/serialize helpers.
 - `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter.
@@ -156,7 +157,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
 - The right code panel, copied code, and Play input all use the same audible code string.
 - Active playback re-evaluates when the audible code string changes, keeping sound and displayed code closer during live edits.
-- The code panel tokenizes functions, strings, numbers, punctuation, and comments, then pulses the active target and rule snippet while playing.
+- The code panel tokenizes functions, strings, numbers, punctuation, and comments, then highlights runtime Strudel event locations at token level while playing, with a target/rule pulse fallback.
 - Audible code can be copied to the clipboard from the code panel.
 - Fallback technique pads for undefined target/intent combinations.
 - Basic responsive layout for desktop, tablet, and narrow screens.
@@ -171,7 +172,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 - Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
-- Active code highlighting: syntax-colored tokens plus target/rule-snippet pulse are implemented; exact Strudel `miniLocations` parity is still pending.
+- Active code highlighting: syntax-colored tokens plus runtime Hap source-location highlighting are implemented; exact editor-level `miniLocations` state parity and non-mini technique coverage are still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
@@ -216,8 +217,8 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Missing
 
-- Exact active token locations using Strudel `miniLocations` metadata.
-- Audio graph disposal and runtime error recovery beyond the serialized update path.
+- Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
+- Audio graph disposal and runtime scheduler error recovery beyond evaluation error handling.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
@@ -225,7 +226,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - MIDI/controller input.
 - Full browser-rendered UI interaction tests.
 - Accessibility pass beyond basic semantic buttons and labels.
-- Error handling for invalid snippets or future runtime failures.
+- Full recovery UI for invalid snippets, audio-context failures, and future runtime scheduler errors.
 
 ## Non-Functional Requirements Evaluation
 
@@ -457,7 +458,7 @@ Tasks:
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
 - Implement serialized latest-request update lifecycle: done; implement dispose lifecycle: pending.
-- Handle invalid code safely: partial; UI catches start failures, but runtime validation is still shallow.
+- Handle invalid code safely: partial; evaluation errors and missing patterns are surfaced to the UI, while audio-context and scheduler recovery remain pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.

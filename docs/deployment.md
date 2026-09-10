@@ -59,7 +59,7 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 - Changing preset or importing a jam stops current playback.
 - Share URL copies a URL that restores the current small jam.
 - LocalStorage restore still works after refresh.
-- Play starts the first Strudel audio preview after a user click, Stop hushes playback, and active code lines pulse while playing.
+- Play starts the first Strudel audio preview after a user click, Stop hushes playback, and runtime Strudel event locations highlight the corresponding code tokens while playing; a line pulse is used as fallback.
 
 ## Troubleshooting
 

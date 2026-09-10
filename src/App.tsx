@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import { startStrudelAudio, stopStrudelAudio } from "./audio/strudelEngine";
+import {
+  startStrudelAudio,
+  stopStrudelAudio,
+  type StrudelAudioTriggerHandler,
+  type StrudelCodeLocation,
+} from "./audio/strudelEngine";
 import { RuleDetailPanel } from "./components/RuleDetailPanel";
 import {
   formatRedoAnnouncement,
@@ -30,6 +35,11 @@ import { getRouteDefinition } from "./data/routes";
 import { getTechniqueById } from "./data/techniques";
 import { formatPlayableCodeLines } from "./lib/codegen";
 import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./lib/codeHighlight";
+import {
+  getActiveCodeLineIndexesFromLocations,
+  getCodeLineOffsets,
+  getCodeTokenSegments,
+} from "./lib/codeLocations";
 import { tokenizeCodeLine } from "./lib/codeTokens";
 import {
   copyTextToClipboard,
@@ -107,6 +117,7 @@ function App() {
   const [fileStatusMessage, setFileStatusMessage] = useState("");
   const [audioStatusMessage, setAudioStatusMessage] = useState("");
   const [codePulseIndex, setCodePulseIndex] = useState(0);
+  const [activeCodeLocations, setActiveCodeLocations] = useState<StrudelCodeLocation[] | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
   const lastPlayedCodeRef = useRef<string | null>(null);
@@ -177,14 +188,36 @@ function App() {
     [rules, selectedPreset],
   );
   const audibleCode = useMemo(() => joinCodeLines(audibleCodeLines), [audibleCodeLines]);
-  const activeCodeLineIndexes = useMemo(
-    () => (isPlaying ? getActiveCodeLineIndexes(audibleCodeLines, codePulseIndex) : new Set<number>()),
-    [audibleCodeLines, codePulseIndex, isPlaying],
+  const audibleCodeTextLines = useMemo(
+    () => audibleCodeLines.map((line) => line.text),
+    [audibleCodeLines],
   );
-  const activeCodeRuleId = useMemo(
-    () => (isPlaying ? getActiveCodeRuleId(audibleCodeLines, codePulseIndex) : null),
-    [audibleCodeLines, codePulseIndex, isPlaying],
+  const audibleCodeTokens = useMemo(
+    () => audibleCodeLines.map((line) => tokenizeCodeLine(line.text || " ")),
+    [audibleCodeLines],
   );
+  const codeLineOffsets = useMemo(
+    () => getCodeLineOffsets(audibleCodeTextLines),
+    [audibleCodeTextLines],
+  );
+  const activeCodeLineIndexes = useMemo(() => {
+    if (!isPlaying) {
+      return new Set<number>();
+    }
+
+    if (activeCodeLocations !== null) {
+      return getActiveCodeLineIndexesFromLocations(audibleCodeTextLines, activeCodeLocations);
+    }
+
+    return getActiveCodeLineIndexes(audibleCodeLines, codePulseIndex);
+  }, [activeCodeLocations, audibleCodeLines, audibleCodeTextLines, codePulseIndex, isPlaying]);
+  const activeCodeRuleId = useMemo(() => {
+    if (!isPlaying || activeCodeLocations !== null) {
+      return null;
+    }
+
+    return getActiveCodeRuleId(audibleCodeLines, codePulseIndex);
+  }, [activeCodeLocations, audibleCodeLines, codePulseIndex, isPlaying]);
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
   const copyStatusLabel = getCopyStatusLabel(copyStatus);
 
@@ -193,13 +226,24 @@ function App() {
     window.setTimeout(() => setStatusMessage(message), 0);
   }, []);
 
+  const handleAudioTrigger = useCallback<StrudelAudioTriggerHandler>((locations) => {
+    setActiveCodeLocations(locations);
+  }, []);
+
   const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
+    setActiveCodeLocations(null);
     dispatch({ type: "setPlaying", isPlaying: false });
     setAudioStatusMessage(statusMessage);
     announce(announcement);
   }, [announce]);
+
+  useEffect(() => {
+    return () => {
+      stopStrudelAudio();
+    };
+  }, []);
 
   useEffect(() => {
     saveJamSnapshot(getBrowserStorage(), {
@@ -326,9 +370,10 @@ function App() {
 
   const handlePlay = useCallback(async () => {
     setAudioStatusMessage("Starting audio...");
+    setActiveCodeLocations(null);
 
     try {
-      const didEvaluate = await startStrudelAudio(audibleCode);
+      const didEvaluate = await startStrudelAudio(audibleCode, handleAudioTrigger);
       if (!didEvaluate) {
         return;
       }
@@ -341,11 +386,12 @@ function App() {
       console.error(error);
       stopStrudelAudio();
       lastPlayedCodeRef.current = null;
+      setActiveCodeLocations(null);
       dispatch({ type: "setPlaying", isPlaying: false });
       setAudioStatusMessage("Audio start failed");
       announce("Audio playback could not start");
     }
-  }, [announce, audibleCode]);
+  }, [announce, audibleCode, handleAudioTrigger]);
 
   const handleStop = useCallback(() => {
     stopAudioPreview("Audio stopped", "Audio playback stopped");
@@ -357,9 +403,10 @@ function App() {
     }
 
     let didCancel = false;
+    setActiveCodeLocations(null);
     setAudioStatusMessage("Updating audio...");
 
-    startStrudelAudio(audibleCode)
+    startStrudelAudio(audibleCode, handleAudioTrigger)
       .then((didEvaluate) => {
         if (didCancel || !didEvaluate) {
           return;
@@ -378,6 +425,7 @@ function App() {
 
         stopStrudelAudio();
         lastPlayedCodeRef.current = null;
+        setActiveCodeLocations(null);
         dispatch({ type: "setPlaying", isPlaying: false });
         setAudioStatusMessage("Audio update failed");
         announce("Audio playback could not update");
@@ -386,7 +434,7 @@ function App() {
     return () => {
       didCancel = true;
     };
-  }, [announce, audibleCode, isPlaying]);
+  }, [announce, audibleCode, handleAudioTrigger, isPlaying]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
@@ -730,14 +778,26 @@ function App() {
                     ].filter(Boolean).join(" ")}
                     key={index + "-" + line.text}
                   >
-                    {tokenizeCodeLine(line.text || " ").map((token, tokenIndex) => (
-                      <span
-                        className={"code-token code-token--" + token.kind}
-                        key={tokenIndex + "-" + token.text}
-                      >
-                        {token.text}
-                      </span>
-                    ))}
+                    {(audibleCodeTokens[index] ?? []).map((token, tokenIndex) => {
+                      const tokenSegments = getCodeTokenSegments(
+                        codeLineOffsets[index] ?? 0,
+                        token.text,
+                        isPlaying && activeCodeLocations !== null ? activeCodeLocations : [],
+                      );
+
+                      return tokenSegments.map((segment, segmentIndex) => (
+                        <span
+                          className={[
+                            "code-token",
+                            "code-token--" + token.kind,
+                            segment.isActive ? "is-location-active" : "",
+                          ].filter(Boolean).join(" ")}
+                          key={tokenIndex + "-" + segmentIndex + "-" + segment.text}
+                        >
+                          {segment.text}
+                        </span>
+                      ));
+                    })}
                   </span>
                 );
               })}
