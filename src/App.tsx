@@ -33,6 +33,7 @@ import { livePadTextColor } from "./data/padColors";
 import { getPresetDefinition, presets } from "./data/presets";
 import { projectLinks } from "./data/projectLinks";
 import { getRouteDefinition } from "./data/routes";
+import { starterJam } from "./data/starterJam";
 import { getTechniqueById } from "./data/techniques";
 import { formatPlayableCodeLines } from "./lib/codegen";
 import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./lib/codeHighlight";
@@ -59,7 +60,16 @@ import {
   serializeJamSnapshot,
 } from "./lib/persistence";
 import { appReducer, createInitialAppState, initialAppState } from "./state/appReducer";
-import type { CurrentLevel, IntentId, PadOption, PresetId, RouteSelection, Rule, TargetId } from "./types";
+import type {
+  CurrentLevel,
+  IntentId,
+  PadOption,
+  PresetId,
+  RouteSelection,
+  Rule,
+  TargetId,
+  TechniqueDefinition,
+} from "./types";
 
 function getPathLabel(
   level: CurrentLevel,
@@ -88,6 +98,22 @@ function createRuleId(targetId: TargetId, intentId: IntentId, techniqueId: strin
   }
 
   return `${targetId}-${intentId}-${techniqueId}-${Date.now()}`;
+}
+
+function createRuleFromTechnique(technique: TechniqueDefinition): Rule {
+  return {
+    id: createRuleId(technique.targetId, technique.intentId, technique.id),
+    targetId: technique.targetId,
+    intentId: technique.intentId,
+    techniqueId: technique.id,
+    target: technique.target,
+    intent: technique.intent,
+    technique: technique.label,
+    shortLabel: technique.shortLabel,
+    strudelSnippet: technique.strudelSnippet,
+    needsTodo: technique.needsTodo ?? false,
+    enabled: true,
+  };
 }
 
 function loadInitialAppState() {
@@ -321,24 +347,41 @@ function App() {
     }
 
     const techniqueDefinition = getTechniqueById(pad.id);
-    const nextRule: Rule = {
-      id: createRuleId(selectedTarget.id, selectedIntent.id, pad.id),
-      targetId: selectedTarget.id,
-      intentId: selectedIntent.id,
-      techniqueId: pad.id,
-      target: selectedTarget.label,
-      intent: selectedIntent.label,
-      technique: pad.label,
-      shortLabel: techniqueDefinition?.shortLabel ?? pad.label,
-      strudelSnippet: techniqueDefinition?.strudelSnippet ?? null,
-      needsTodo: techniqueDefinition?.needsTodo ?? false,
-      enabled: true,
-    };
+    const nextRule = techniqueDefinition
+      ? createRuleFromTechnique(techniqueDefinition)
+      : {
+          id: createRuleId(selectedTarget.id, selectedIntent.id, pad.id),
+          targetId: selectedTarget.id,
+          intentId: selectedIntent.id,
+          techniqueId: pad.id,
+          target: selectedTarget.label,
+          intent: selectedIntent.label,
+          technique: pad.label,
+          shortLabel: pad.label,
+          strudelSnippet: null,
+          needsTodo: false,
+          enabled: true,
+        };
 
     dispatch({ type: "addRule", rule: nextRule });
     setSelectedRuleId(nextRule.id);
     announce(formatRuleAddedAnnouncement(nextRule));
   }, [announce, currentLevel, selectedIntent, selectedTarget]);
+
+  const handleStarterJam = useCallback(() => {
+    const starterRules = starterJam.techniqueIds
+      .map((techniqueId) => getTechniqueById(techniqueId))
+      .filter((technique): technique is TechniqueDefinition => Boolean(technique))
+      .map(createRuleFromTechnique);
+
+    if (starterRules.length === 0) {
+      return;
+    }
+
+    dispatch({ type: "addRules", rules: starterRules });
+    setSelectedRuleId(starterRules[starterRules.length - 1]?.id ?? null);
+    announce(`${starterJam.label}を追加しました。コードパネルで変化を確認できます。`);
+  }, [announce]);
 
   const handleToggleRule = useCallback((rule: Rule) => {
     dispatch({ type: "toggleRuleEnabled", ruleId: rule.id });
@@ -772,6 +815,16 @@ function App() {
               <span>{selectedPreset.name}</span>
               <strong>初期コードのみ</strong>
               <p>{selectedPreset.description}</p>
+              <button
+                className="starter-jam-button"
+                type="button"
+                aria-label="おすすめセットを試す"
+                onClick={handleStarterJam}
+              >
+                <span>おすすめセットを試す</span>
+                <strong>{starterJam.label}</strong>
+                <small>{starterJam.description}</small>
+              </button>
             </div>
           )}
         </section>

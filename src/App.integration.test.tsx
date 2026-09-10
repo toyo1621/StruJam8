@@ -92,6 +92,25 @@ describe("App interactions", () => {
     expect(screen.getByLabelText("Audible Strudel code")).toHaveTextContent('.sometimes(add(note("12")))');
   });
 
+  it("offers a starter jam that updates code and can be undone as one change", () => {
+    render(<App />);
+
+    clickButton("おすすめセットを試す");
+
+    const ruleTexts = screen.getAllByRole("listitem").map((rule) => rule.textContent ?? "");
+    expect(ruleTexts).toEqual(expect.arrayContaining([
+      expect.stringContaining("ベース＞崩す＞音を抜く"),
+      expect.stringContaining("コード＞盛り上げる＞高い音を足す"),
+    ]));
+    expect(screen.getByLabelText("Audible Strudel code")).toHaveTextContent(".degradeBy(0.2)");
+    expect(screen.getByLabelText("Audible Strudel code")).toHaveTextContent('.sometimes(add(note("12")))');
+
+    clickButton("UNDO");
+
+    expect(screen.queryAllByRole("listitem")).toHaveLength(0);
+    expect(screen.getByLabelText("Audible Strudel code")).not.toHaveTextContent(".degradeBy(0.2)");
+  });
+
   it("supports number-key pad shortcuts", () => {
     render(<App />);
 

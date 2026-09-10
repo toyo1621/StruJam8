@@ -73,6 +73,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/data/pads.ts`: target and intent pad definitions plus route-specific technique pad lookup.
 - `src/data/padColors.ts`: shared live pad palette, text color, and minimum contrast target.
 - `src/data/presets.ts`: static preset metadata, base code, and preset track patterns.
+- `src/data/starterJam.ts`: the beginner starter rule recipe shown in the empty rule state.
 - `src/data/projectLinks.ts`: source and license links shown in the app header.
 - `src/data/routes.ts`: explicit concrete target/intent route definitions and route lookup helpers.
 - `src/data/tracks.ts`: track metadata and starter pattern templates for all eight targets.
@@ -146,6 +147,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Eight visible pads at each level.
 - Back, Home, Undo, Redo, and Reset controls; RESET clears added rules, preserves the current navigation location and preset, and can be undone/redone.
 - Rule creation when a technique is selected.
+- Beginner starter jam action that adds two safe example rules as one undoable change.
 - Rule list display.
 - Rule deletion, duplication, ON/OFF toggling, reordering, undo, and redo for rule changes.
 - Intent-level route guide plus technique preview and compact rule detail panels with descriptions, snippets, plain-language snippet explanations, short labels, and TODO badges.
@@ -216,7 +218,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
   - ボイス -> 前に出す
   - ボイス -> 広げる
   - ボイス -> ランダム感
-- Learning experience: intent-level route descriptions, technique descriptions, snippets, and plain-language snippet explanations are visible in the pad preview and selected rule detail, but there is no guided mode or full code walkthrough yet.
+- Learning experience: intent-level route descriptions, technique descriptions, snippets, and plain-language snippet explanations are visible in the pad preview and selected rule detail. A first starter jam connects two explanations to the generated code, but there is no full guided mode or code walkthrough yet.
 - Selection feedback: selected technique pads are outlined for active rules, and rules can be duplicated, removed, toggled on/off, reordered, undone, and redone. Parameter-level editing is not implemented yet.
 - Target and intent coverage: all eight target families and all eight intent families now have at least one concrete target/intent route.
 
@@ -328,6 +330,7 @@ Strengths:
 - The 8-pad model is simple.
 - The current path display makes hierarchy understandable.
 - The code panel gives immediate feedback.
+- The empty rule state offers a safe two-rule starter jam that can be undone as one action.
 - Technique preview makes concrete technique meaning inspectable before selection on pointer and keyboard focus.
 - Selected rule detail makes added rules readable after selection.
 - Snippet explanations translate small Strudel fragments into plain Japanese.
@@ -343,7 +346,7 @@ Recommended direction:
 
 - Keep improving fallback explanations as real routes are added.
 - Consider per-rule parameter editing once duplication and undo/redo feel stable in real use.
-- Add guided examples that connect the snippet explanation to the generated code panel.
+- Expand the starter jam into guided examples that connect more snippet explanations to the generated code panel.
 
 ### Accessibility
 
@@ -438,6 +441,7 @@ Tasks:
 - Show concrete/prototype route descriptions before choosing an intent: done.
 - Show short labels on pads where useful, but preserve full labels for readability: done.
 - Add plain-language explanations beside snippets: done in the pad preview.
+- Add a first guided example: done with the starter jam action; broader guided examples remain pending.
 - Add TODO badges for unverified snippets: done in the pad preview, rule list, and rule detail panel; unverified snippets are skipped by Play.
 - Add a compact rule detail view: done.
 

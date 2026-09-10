@@ -27,7 +27,7 @@ localStorage.removeItem("strujam8:jam:v1")
 
 Captured files live under `docs/assets/`:
 
-- `strujam8-home.png`: first view with Toy House selected and no rules.
+- `strujam8-home.png`: first view with Toy House selected, no rules, and the starter jam action visible.
 - `strujam8-rules-code.png`: one bass rule, rule detail visible, audible code populated, and the selected code line highlighted.
 - `strujam8-tablet.png`: 1024 x 768 tablet-width layout.
 

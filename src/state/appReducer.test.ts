@@ -73,6 +73,21 @@ describe("appReducer", () => {
     expect(removedState.rules).toEqual([]);
   });
 
+  it("adds a batch of starter rules as one undoable change", () => {
+    const firstRule = makeRule({ id: "first" });
+    const secondRule = makeRule({ id: "second", technique: "音を反転", strudelSnippet: ".rev()" });
+
+    const addedState = appReducer(initialAppState, {
+      type: "addRules",
+      rules: [firstRule, secondRule],
+    });
+    const undoneState = appReducer(addedState, { type: "undoRuleChange" });
+
+    expect(addedState.rules.map((rule) => rule.id)).toEqual(["first", "second"]);
+    expect(addedState.ruleHistory).toHaveLength(1);
+    expect(undoneState.rules).toEqual([]);
+  });
+
   it("duplicates a rule below its source and keeps it undoable", () => {
     const firstRule = makeRule({ id: "first", technique: "音を抜く" });
     const secondRule = makeRule({ id: "second", technique: "音を反転" });

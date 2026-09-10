@@ -622,6 +622,7 @@ button:focus-visible {
   min-height: 180px;
   place-content: center;
   gap: 8px;
+  padding: 18px;
   border: 1px dashed rgba(255, 255, 255, 0.16);
   border-radius: 8px;
   color: #aab2c2;
@@ -643,6 +644,58 @@ button:focus-visible {
   margin: 0;
   color: #aeb6c4;
   line-height: 1.6;
+}
+
+.starter-jam-button {
+  display: grid;
+  gap: 4px;
+  width: min(100%, 320px);
+  min-height: 72px;
+  margin: 8px auto 0;
+  border: 1px solid rgba(76, 201, 240, 0.64);
+  border-radius: 8px;
+  padding: 10px 14px;
+  color: #111317;
+  background: #4cc9f0;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    transform 160ms ease,
+    border-color 160ms ease,
+    background 160ms ease;
+}
+
+.starter-jam-button:hover {
+  transform: translateY(-1px);
+  border-color: #b6efff;
+  background: #71d8f6;
+}
+
+.starter-jam-button:focus-visible {
+  outline: 3px solid #ffffff;
+  outline-offset: 3px;
+}
+
+.starter-jam-button span,
+.starter-jam-button strong,
+.starter-jam-button small {
+  color: inherit;
+}
+
+.starter-jam-button span {
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.starter-jam-button strong {
+  font-size: 1rem;
+}
+
+.starter-jam-button small {
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.4;
 }
 
 .code-view {

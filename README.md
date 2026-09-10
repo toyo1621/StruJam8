@@ -26,6 +26,7 @@ Implemented:
 - 8-pad navigation across three levels: target, intent, technique
 - Rule list generated from selected techniques
 - Rule ON/OFF toggling, duplication, deletion, reordering, reset, undo, and redo for rule changes
+- Beginner starter jam action that adds two safe example rules as one undoable change
 - Toy House and Neon Dub preset selection
 - Local browser persistence for rules and preset selection
 - JSON export/import for jam snapshots
@@ -49,7 +50,7 @@ Implemented:
 - Recoverable audio failures expose a visible Retry state
 - Unexpected UI rendering failures show a reloadable fallback instead of a blank screen
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
-- Playwright browser checks for route navigation, code updates, RESET, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, browser audio start/stop, and live code highlighting
+- Playwright browser checks for route navigation, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, browser audio start/stop, and live code highlighting
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
 
 Not implemented yet:

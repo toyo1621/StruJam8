@@ -28,6 +28,7 @@ export type AppAction =
   | { type: "selectTarget"; target: RouteSelection<TargetId> }
   | { type: "selectIntent"; intent: RouteSelection<IntentId> }
   | { type: "addRule"; rule: Rule }
+  | { type: "addRules"; rules: Rule[] }
   | { type: "duplicateRule"; sourceRuleId: string; rule: Rule }
   | { type: "toggleRuleEnabled"; ruleId: string }
   | { type: "moveRule"; ruleId: string; direction: MoveDirection }
@@ -129,6 +130,11 @@ export function appReducer(state: AppState, action: AppAction): AppState {
 
     case "addRule":
       return commitRuleChange(state, [...state.rules, action.rule]);
+
+    case "addRules":
+      return action.rules.length > 0
+        ? commitRuleChange(state, [...state.rules, ...action.rules])
+        : state;
 
     case "duplicateRule":
       return commitRuleChange(

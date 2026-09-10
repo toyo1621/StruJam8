@@ -71,6 +71,25 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.getByText("ベース ＞ 崩す", { exact: true }).first()).toBeVisible();
   });
 
+  test("offers a starter jam from the empty rule state", async ({ page }) => {
+    await page.goto("./");
+
+    await expect(page.getByRole("button", { name: "おすすめセットを試す" })).toBeVisible();
+    await page.getByRole("button", { name: "おすすめセットを試す" }).click();
+
+    await expect(page.locator(".rule-block")).toHaveCount(2);
+    await expect(page.locator(".rule-block").filter({ hasText: "音を抜く" })).toBeVisible();
+    await expect(page.locator(".rule-block").filter({ hasText: "高い音を足す" })).toBeVisible();
+
+    const code = page.getByLabel("Audible Strudel code");
+    await expect(code).toContainText(".degradeBy(0.2)");
+    await expect(code).toContainText('.sometimes(add(note("12")))');
+
+    await page.getByRole("button", { name: "UNDO", exact: true }).click();
+    await expect(page.locator(".rule-block")).toHaveCount(0);
+    await expect(page.getByRole("button", { name: "おすすめセットを試す" })).toBeVisible();
+  });
+
   test("shows unverified techniques as TODO without sending them to Play", async ({ page }) => {
     await page.goto("./");
     await chooseUnverifiedBassBreakTechnique(page);
