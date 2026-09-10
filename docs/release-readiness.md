@@ -41,7 +41,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
 | Performance | Partial | Strudel is lazy-loaded. Two audio chunks are about 651 kB minified each; investigate further before adding more runtime dependencies. |
-| Runtime resilience | Partial | Retry, closed AudioContext recreation, stale evaluation cancellation, and error boundaries exist. Full audio-graph disposal is intentionally not guessed and needs browser-specific validation. |
+| Runtime resilience | Partial | Retry, closed AudioContext recreation, stale evaluation cancellation, stale Superdough controller/effect reset during closed-context recovery, and error boundaries exist. Full normal-stop audio-graph disposal is intentionally not guessed and needs browser-specific validation. |
 | License and provenance | Partial | The app is AGPL-3.0-or-later and the current runtime review is documented. Re-check before adding samples, fonts, or hosted services. |
 
 ## Release Gate

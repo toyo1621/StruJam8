@@ -13,7 +13,9 @@ const {
   hushMock,
   initAudioMock,
   initStrudelMock,
+  resetGlobalEffectsMock,
   setAudioContextMock,
+  setSuperdoughAudioControllerMock,
   webaudioOutputMock,
 } = vi.hoisted(() => ({
   evaluateMock: vi.fn(),
@@ -21,7 +23,9 @@ const {
   hushMock: vi.fn(),
   initAudioMock: vi.fn(),
   initStrudelMock: vi.fn(),
+  resetGlobalEffectsMock: vi.fn(),
   setAudioContextMock: vi.fn(),
+  setSuperdoughAudioControllerMock: vi.fn(),
   webaudioOutputMock: vi.fn(),
 }));
 
@@ -31,7 +35,9 @@ vi.mock("@strudel/web", () => ({
   hush: hushMock,
   initAudio: initAudioMock,
   initStrudel: initStrudelMock,
+  resetGlobalEffects: resetGlobalEffectsMock,
   setAudioContext: setAudioContextMock,
+  setSuperdoughAudioController: setSuperdoughAudioControllerMock,
   webaudioOutput: webaudioOutputMock,
 }));
 
@@ -51,7 +57,9 @@ describe("strudel engine", () => {
     hushMock.mockReset();
     initAudioMock.mockReset();
     initStrudelMock.mockReset();
+    resetGlobalEffectsMock.mockReset();
     setAudioContextMock.mockReset();
+    setSuperdoughAudioControllerMock.mockReset();
     webaudioOutputMock.mockReset();
     getAudioContextMock.mockReturnValue(undefined);
     initAudioMock.mockResolvedValue(undefined);
@@ -111,6 +119,8 @@ describe("strudel engine", () => {
     await startStrudelAudio("note(\"recovered\")");
 
     expect(setAudioContextMock).toHaveBeenCalledWith(null);
+    expect(setSuperdoughAudioControllerMock).toHaveBeenCalledWith(null);
+    expect(resetGlobalEffectsMock).toHaveBeenCalledTimes(1);
     expect(initStrudelMock).toHaveBeenCalledTimes(2);
     expect(evaluateMock).toHaveBeenLastCalledWith("note(\"recovered\")", true);
   });

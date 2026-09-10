@@ -179,7 +179,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, resumes suspended AudioContexts, recreates closed AudioContexts before the next evaluation, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
+- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, resumes suspended AudioContexts, recreates closed AudioContexts before the next evaluation, clears the stale Superdough controller and global effects during closed-context recovery, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with a representative browser smoke covering all eight target tracks; exact editor-level `miniLocations` state parity and full route coverage are still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -469,7 +469,7 @@ Tasks:
 - Research the current Strudel web/runtime integration path: done for `@strudel/web@1.3.0`.
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
-- Implement serialized latest-request update lifecycle: done; implement full audio graph dispose lifecycle: pending.
+- Implement serialized latest-request update lifecycle: done; closed-context recovery now clears the stale Superdough controller and global effects, while full normal-stop audio graph disposal remains pending.
 - Handle invalid code safely: unverified snippets are excluded before Play, while evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Real invalid-snippet evaluation and recovery are covered by browser E2E; error-specific recovery and full audio graph disposal remain pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.

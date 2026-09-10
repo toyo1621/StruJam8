@@ -8,6 +8,8 @@ type StrudelWebAudioModule = StrudelWebModuleWithOutput & {
   getAudioContext?: () => AudioContext;
   setAudioContext?: (context: AudioContext | null) => AudioContext | null;
   setDefaultAudioContext?: () => AudioContext;
+  setSuperdoughAudioController?: (controller: unknown) => unknown;
+  resetGlobalEffects?: () => void;
   initAudio?: () => Promise<unknown>;
 };
 
@@ -141,6 +143,13 @@ function resetClosedAudioRuntime(module: StrudelWebModule) {
     moduleWithAudio.setDefaultAudioContext();
   } else {
     throw new Error("Strudel audio context cannot be recovered");
+  }
+
+  try {
+    moduleWithAudio.setSuperdoughAudioController?.(null);
+    moduleWithAudio.resetGlobalEffects?.();
+  } catch (error) {
+    console.warn("StruJam8 could not reset the closed Strudel audio graph", error);
   }
 
   initPromise = null;
