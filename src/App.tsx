@@ -29,7 +29,8 @@ import { projectLinks } from "./data/projectLinks";
 import { getRouteDefinition } from "./data/routes";
 import { getTechniqueById } from "./data/techniques";
 import { formatPlayableCodeLines } from "./lib/codegen";
-import { getActiveCodeLineIndexes, joinCodeLines } from "./lib/codeHighlight";
+import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./lib/codeHighlight";
+import { tokenizeCodeLine } from "./lib/codeTokens";
 import {
   copyTextToClipboard,
   getBrowserClipboard,
@@ -178,6 +179,10 @@ function App() {
   const audibleCode = useMemo(() => joinCodeLines(audibleCodeLines), [audibleCodeLines]);
   const activeCodeLineIndexes = useMemo(
     () => (isPlaying ? getActiveCodeLineIndexes(audibleCodeLines, codePulseIndex) : new Set<number>()),
+    [audibleCodeLines, codePulseIndex, isPlaying],
+  );
+  const activeCodeRuleId = useMemo(
+    () => (isPlaying ? getActiveCodeRuleId(audibleCodeLines, codePulseIndex) : null),
     [audibleCodeLines, codePulseIndex, isPlaying],
   );
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
@@ -706,14 +711,32 @@ function App() {
           </div>
           <pre className="code-view" aria-label="Audible Strudel code">
             <code>
-              {audibleCodeLines.map((line, index) => (
-                <span
-                  className={`code-line ${activeCodeLineIndexes.has(index) ? "is-active" : ""}`}
-                  key={`${index}-${line.text}`}
-                >
-                  {line.text || " "}
-                </span>
-              ))}
+              {audibleCodeLines.map((line, index) => {
+                const isLineActive = activeCodeLineIndexes.has(index);
+                const isRuleActive = activeCodeRuleId === line.ruleId;
+                const isRuleSelected = selectedRuleId === line.ruleId;
+
+                return (
+                  <span
+                    className={[
+                      "code-line",
+                      isLineActive ? "is-active" : "",
+                      isRuleActive ? "is-rule-active" : "",
+                      isRuleSelected ? "is-rule-selected" : "",
+                    ].filter(Boolean).join(" ")}
+                    key={index + "-" + line.text}
+                  >
+                    {tokenizeCodeLine(line.text || " ").map((token, tokenIndex) => (
+                      <span
+                        className={"code-token code-token--" + token.kind}
+                        key={tokenIndex + "-" + token.text}
+                      >
+                        {token.text}
+                      </span>
+                    ))}
+                  </span>
+                );
+              })}
             </code>
           </pre>
         </section>

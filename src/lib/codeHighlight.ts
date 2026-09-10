@@ -30,3 +30,35 @@ export function getActiveCodeLineIndexes(lines: PlayableCodeLine[], pulseIndex: 
 
   return new Set(activeIndexes);
 }
+
+export function getHighlightableRuleIds(lines: Pick<PlayableCodeLine, "ruleId">[]) {
+  const ruleIds: string[] = [];
+
+  lines.forEach((line) => {
+    if (line.ruleId && !ruleIds.includes(line.ruleId)) {
+      ruleIds.push(line.ruleId);
+    }
+  });
+
+  return ruleIds;
+}
+
+export function getActiveCodeRuleId(lines: PlayableCodeLine[], pulseIndex: number) {
+  const targetIds = getHighlightableTargets(lines);
+
+  if (targetIds.length === 0) {
+    return null;
+  }
+
+  const activeTargetId = targetIds[pulseIndex % targetIds.length];
+  const ruleIds = getHighlightableRuleIds(
+    lines.filter((line) => line.targetId === activeTargetId),
+  );
+
+  if (ruleIds.length === 0) {
+    return null;
+  }
+
+  const ruleIndex = Math.floor(pulseIndex / targetIds.length) % ruleIds.length;
+  return ruleIds[ruleIndex] ?? null;
+}

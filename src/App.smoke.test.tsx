@@ -12,5 +12,8 @@ describe("App shell", () => {
     expect(html).toContain("Share URL");
     expect(html).toContain("Play");
     expect(html).toContain("Strudel Code");
+    expect(html).toContain("code-token--function");
+    expect(html).toContain("code-token--string");
+    expect(html).toContain("code-token--number");
   });
 });

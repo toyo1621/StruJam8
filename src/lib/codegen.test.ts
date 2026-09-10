@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { getPresetDefinition } from "../data/presets";
 import {
   formatGeneratedCode,
+  formatPlayableCodeLines,
   formatPlayableCode,
   getEnabledRules,
   groupRulesByTrack,
@@ -130,6 +131,13 @@ describe("formatGeneratedCode", () => {
 });
 
 describe("formatPlayableCode", () => {
+  it("keeps rule ids on playable snippet lines for code highlighting", () => {
+    const snippetLine = formatPlayableCodeLines([makeRule()]).find((line) => line.ruleId);
+
+    expect(snippetLine?.ruleId).toBe("rule-1");
+    expect(snippetLine?.targetId).toBe("bass");
+  });
+
   it("returns the visible preset base code when there are no playable rules", () => {
     expect(formatPlayableCode([])).toBe(initialCode);
     expect(formatPlayableCode([makeRule({ enabled: false })])).toBe(initialCode);

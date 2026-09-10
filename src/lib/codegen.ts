@@ -12,6 +12,7 @@ export interface TrackRuleGroup {
 export interface PlayableCodeLine {
   text: string;
   targetId?: TargetId;
+  ruleId?: string;
 }
 
 export function getTrackCodeName(targetId: TargetId) {
@@ -80,6 +81,7 @@ function formatPlayableTrackLines(track: TrackDefinition, rules: Rule[], preset:
     .map((rule) => ({
       text: `    ${rule.strudelSnippet}`,
       targetId: track.targetId,
+      ruleId: rule.id,
     }));
 
   return [

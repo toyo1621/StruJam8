@@ -606,10 +606,57 @@ button:focus-visible {
     box-shadow 120ms ease;
 }
 
+.code-token {
+  transition: color 120ms ease;
+}
+
+.code-token--function {
+  color: #6d28d9;
+}
+
+.code-token--string {
+  color: #047857;
+}
+
+.code-token--number {
+  color: #b45309;
+}
+
+.code-token--punctuation {
+  color: #475569;
+}
+
+.code-token--operator {
+  color: #be123c;
+}
+
+.code-token--comment {
+  color: #64748b;
+  font-style: italic;
+}
+
+.code-line.is-rule-active {
+  background: rgba(255, 214, 102, 0.72);
+  box-shadow: inset 3px 0 0 #e76f51;
+}
+
+.code-line.is-rule-active .code-token {
+  font-weight: 700;
+}
+
+.code-line.is-rule-selected {
+  outline: 2px solid rgba(76, 201, 240, 0.82);
+  outline-offset: -2px;
+}
 .code-line.is-active {
   color: #0f1720;
   background: rgba(128, 237, 153, 0.72);
   box-shadow: inset 3px 0 0 #4cc9f0;
+}
+
+.code-line.is-active.is-rule-active {
+  background: rgba(255, 214, 102, 0.82);
+  box-shadow: inset 3px 0 0 #e76f51;
 }
 
 .pad-dock {

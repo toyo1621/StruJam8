@@ -44,7 +44,7 @@ npm run check
 npm run check:pages
 ```
 
-A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, and the Strudel audio engine boundary.
+A small Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, and the Strudel audio engine boundary.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -77,7 +77,8 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/lib/clipboard.ts`: clipboard copy helpers with success/failure states.
 - `src/lib/colorContrast.ts`: pure WCAG-style contrast helpers used by pad palette tests.
 - `src/lib/codegen.ts`: pure formatting helpers for audible Strudel code and conservative runtime playback code.
-- `src/lib/codeHighlight.ts`: pure helpers for active code line highlighting.
+- `src/lib/codeHighlight.ts`: pure helpers for active target and rule-snippet highlighting.
+- `src/lib/codeTokens.ts`: lossless tokenization for syntax-colored Strudel-like code.
 - `src/lib/keyboard.ts`: pure keyboard shortcut helpers and editing-control guards.
 - `src/lib/persistence.ts`: localStorage and JSON snapshot parse/serialize helpers.
 - `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter.
@@ -142,7 +143,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Rule list display.
 - Rule deletion, duplication, ON/OFF toggling, reordering, undo, and redo for rule changes.
 - Intent-level route guide plus technique preview and compact rule detail panels with descriptions, snippets, plain-language snippet explanations, short labels, and TODO badges.
-- Drum dance, drum build, keyboard chill, strings widen, bells random, guitar forward, and voice forward routes expand concrete musical coverage while keeping at least one concrete route for every target family.
+- The data-driven technique catalog has 37 concrete routes across all eight target families and all eight intent families; route expansion is documented in `docs/technique-design.md`.
 - Concrete route definitions are centralized in `src/data/routes.ts`.
 - Track templates exist for all eight target tracks and avoid sample/soundfont names by default.
 - Enabled safe rules are grouped by track and chained against track templates in the audible code panel.
@@ -155,7 +156,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Conservative playback code generation starts from the preset playback tracks and skips disabled rules, missing snippets, and snippets marked `needsTodo`.
 - The right code panel, copied code, and Play input all use the same audible code string.
 - Active playback re-evaluates when the audible code string changes, keeping sound and displayed code closer during live edits.
-- Active code line highlighting pulses through audible track lines while playing.
+- The code panel tokenizes functions, strings, numbers, punctuation, and comments, then pulses the active target and rule snippet while playing.
 - Audible code can be copied to the clipboard from the code panel.
 - Fallback technique pads for undefined target/intent combinations.
 - Basic responsive layout for desktop, tablet, and narrow screens.
@@ -170,7 +171,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 - Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
-- Active code highlighting: implemented at rendered track-line level, not yet token-level `miniLocations` parity with strudel.cc.
+- Active code highlighting: syntax-colored tokens plus target/rule-snippet pulse are implemented; exact Strudel `miniLocations` parity is still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
@@ -215,7 +216,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Missing
 
-- Token-level active code highlighting using Strudel mini location metadata.
+- Exact active token locations using Strudel `miniLocations` metadata.
 - Audio graph lifecycle beyond basic start/stop: update, dispose, and runtime error recovery.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
