@@ -7,11 +7,11 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `89848d3`
+- Application checkpoint commit: `526b2fb`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit
+- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34474543827`)
 - Public HTTP smoke: `200 OK`
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
 
@@ -36,7 +36,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 165 unit/component tests, and 17 Chromium tests pass in root preview. Pages-base-path verification is run separately before each release. |
+| Regression coverage | Done for MVP | 22 Vitest files, 165 unit/component tests, and 18 Chromium tests pass in root preview. Pages-base-path verification also passes 18 Chromium tests for the production-shaped build. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
