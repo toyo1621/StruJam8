@@ -22,6 +22,30 @@ async function chooseUnverifiedBassBreakTechnique(page: Page) {
   await pads.filter({ hasText: "たまに休む" }).click();
 }
 
+function invalidSnippetJamUrl() {
+  const snapshot = {
+    version: 1,
+    selectedPresetId: "toy-house",
+    rules: [
+      {
+        id: "e2e-invalid-snippet",
+        targetId: "bass",
+        intentId: "break",
+        techniqueId: "e2e-invalid-snippet",
+        target: "ベース",
+        intent: "崩す",
+        technique: "不正なsnippet",
+        shortLabel: "Invalid",
+        strudelSnippet: ".definitelyNotAStrudelFunction(1)",
+        needsTodo: false,
+        enabled: true,
+      },
+    ],
+  };
+
+  return `./?jam=${encodeURIComponent(JSON.stringify(snapshot))}`;
+}
+
 test.describe("StruJam8 browser flow", () => {
   test("navigates through the three pad levels and updates audible code", async ({ page }) => {
     await page.goto("./");
@@ -59,6 +83,32 @@ test.describe("StruJam8 browser flow", () => {
     await expect(code).not.toContainText("TODO");
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
+  test("recovers after a real invalid snippet evaluation failure", async ({ page }) => {
+    await page.goto(invalidSnippetJamUrl());
+
+    const code = page.getByLabel("Audible Strudel code");
+    await expect(code).toContainText(".definitelyNotAStrudelFunction(1)");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio start failed. Retry available.", {
+      timeout: 15_000,
+    });
+    await expect(page.getByRole("button", { name: "Retry Strudel audio preview" })).toBeVisible();
+    await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+
+    await page.getByRole("button", { name: /^RESET:/ }).click();
+    await expect(code).not.toContainText(".definitelyNotAStrudelFunction(1)");
+
+    await page.getByRole("button", { name: "Retry Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
