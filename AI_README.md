@@ -170,6 +170,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Basic responsive layout for desktop, tablet, and narrow screens.
 - Number-key shortcuts for live pads 1-8, with tested guards for editable controls and modified key events.
 - Visible focus states for keyboard navigation.
+- Named control groups, 44px touch targets for primary controls, and reduced-motion CSS support.
 - Screen reader status announcements for rule changes.
 - Rule action buttons include full-route accessible labels, and Play/Stop/Retry labels describe the Strudel audio preview.
 - Live pad text color contrast is guarded by tests against the shared target, intent, and technique palette.

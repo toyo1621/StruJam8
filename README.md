@@ -42,6 +42,7 @@ Implemented:
 - Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, TODO badges, and playback-safety notes for unverified snippets
 - Number-key shortcuts for live pads 1-8, with guards for editable controls
 - Visible keyboard focus states
+- Named control groups, touch-sized controls, and reduced-motion preference support
 - Screen reader status announcements and full-route labels for rule actions, including reset semantics
 - Live pad color contrast guarded by tests
 - Visible source and license links for release readiness

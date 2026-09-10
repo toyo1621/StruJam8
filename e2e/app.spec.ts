@@ -321,4 +321,15 @@ test.describe("StruJam8 browser flow", () => {
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(minimumControlHeight).toBeGreaterThanOrEqual(44);
   });
+
+  test("respects reduced-motion preferences", async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("./");
+
+    const transitionDuration = await page.locator("footer.pad-dock button.live-pad").first().evaluate(
+      (element) => getComputedStyle(element).transitionDuration,
+    );
+
+    expect(Number.parseFloat(transitionDuration)).toBeLessThanOrEqual(0.001);
+  });
 });
