@@ -7,7 +7,7 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Commit: `0f61d06`
+- Application checkpoint commit: `74fad00`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
@@ -19,7 +19,7 @@ next. Update the checkpoint and evidence links when a release changes.
 
 | Requirement | Status | Evidence or limit |
 | --- | --- | --- |
-| Select target, intent, and technique with eight pads | Done | Playwright covers the three-level flow and route data tests cover the catalog. |
+| Select target, intent, and technique with eight pads | Done | Playwright covers the three-level flow and all 37 concrete routes; route data tests cover the catalog. |
 | Add a technique to the rule list | Done | React integration and browser tests cover rule creation. |
 | Show readable generated Strudel-like code | Done | `src/lib/codegen.ts` is tested for track grouping, comments, and snippets. |
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
@@ -36,7 +36,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 160 unit/component tests, and 13 Chromium tests pass in both root and Pages previews at the checkpoint. |
+| Regression coverage | Done for MVP | 22 Vitest files, 160 unit/component tests, and 14 Chromium tests pass in both root and Pages previews at the checkpoint. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
@@ -71,7 +71,7 @@ Then verify:
 
 1. Verify the highest-use safe snippets against the installed Strudel version.
 2. Keep unverified snippets marked with `needsTodo` and excluded from Play.
-3. Add route-focused browser coverage for the remaining safe technique families.
+3. Maintain route reachability coverage and add runtime-highlight coverage for the remaining safe technique families.
 4. Test Safari/iPad audio start, stop, context suspension, and retry on real hardware.
 
 ### 2. Finish code highlighting parity
