@@ -7,13 +7,13 @@ next. Update the checkpoint and evidence links when a release changes.
 ## Current Checkpoint
 
 - Date: 2026-09-10
-- Application checkpoint commit: `6d6c1f2`
+- Application checkpoint commit: `ba8c6a3`
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34492604463`)
+- Pages deployment: GitHub Actions workflow succeeded for the checkpoint commit (`34492854104`)
 - Public HTTP smoke: not validated in this local environment (DNS blocked)
-- Local working commit pushed: `6d6c1f2`
+- Local working commit pushed: `ba8c6a3`
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
 
 ## Functional Requirements
