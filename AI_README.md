@@ -159,7 +159,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - Concrete route definitions are centralized in `src/data/routes.ts`.
 - Track templates exist for all eight target tracks and avoid sample/soundfont names by default.
 - Enabled safe rules are grouped by track and chained against track templates in the audible code panel.
-- Toy House and Neon Dub preset selection with synth-safe preset-specific base code.
+- Toy House, Neon Dub, and Indietronica preset selection with synth-safe preset-specific base code. Indietronica is an original built-in synth/noise palette inspired by the broad rhythmic and atmospheric qualities of alt-J's "Tessellate", without copying its melody, recording, or samples.
 - Local browser persistence restores rules and selected preset on reload.
 - Jam snapshots can be exported and imported as validated JSON files.
 - Small jams can be shared through a copied URL containing a validated `jam` parameter; oversized jams are directed to JSON export.
@@ -285,7 +285,7 @@ Recommended direction:
 
 ### Scalability
 
-Current level: fine for 296 techniques, 8 track templates, 2 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
+Current level: fine for 296 techniques, 8 track templates, 3 static presets, one local jam snapshot, JSON import/export, and small URL snapshots; fragile for hundreds.
 
 Strengths:
 
@@ -460,7 +460,7 @@ Tasks:
 - Define real techniques for more target/intent routes: first target coverage pass done, then intent coverage pass added ドラム -> 抜く, ベース -> 踊らせる, コード -> チル, and キーボード -> ランダム感. Core expansion then added ドラム -> 崩す, ベース -> 盛り上げる, and コード -> 広げる. Reduction expansion then added ベース -> 抜く, コード -> 抜く, and ドラム -> チル. Core contrast/surprise expansion then added ベース -> チル, コード -> 崩す, and ドラム -> ランダム感. Forward expansion then added ドラム -> 前に出す, ベース -> 前に出す, and コード -> 前に出す. Upper-layer widen expansion then added キーボード -> 広げる, ベル -> 広げる, and ボイス -> 広げる. Core space/surprise expansion then added ドラム -> 広げる, ベース -> ランダム感, and コード -> ランダム感. Core movement expansion then added ベース -> 広げる, コード -> 踊らせる, and キーボード -> 前に出す. Decorative movement expansion then added ストリングス -> 前に出す, ギター -> 踊らせる, and ボイス -> ランダム感. Current catalog has 37 concrete routes and 296 techniques.
 - Create track templates for drums, bass, chords, keys, strings, bells, guitar, and voice: done.
 - Decide how multiple snippets compose for the same track: done for preview output with ordered per-track chaining.
-- Add presets beyond Toy House: done with a second static preset, Neon Dub.
+- Add presets beyond Toy House: done with Neon Dub and the original Indietronica preset.
 
 ### Phase 4: Strudel Runtime Integration
 

@@ -268,6 +268,22 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.getByRole("button", { name: "おすすめセットを試す" })).toBeVisible();
   });
 
+  test("loads the Indietronica preset and plays its original synth palette", async ({ page }) => {
+    await page.goto("./");
+
+    await page.getByLabel("Preset", { exact: true }).selectOption("indietronica");
+
+    await expect(page.getByLabel("Preset", { exact: true })).toHaveValue("indietronica");
+    await expect(page.getByLabel("Audible Strudel code")).toContainText('s("sbd ~ [~ sbd] ~")');
+    await expect(page.getByText("原曲のメロディや録音は使用しません。", { exact: false })).toBeVisible();
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
   test("shows unverified techniques as TODO without sending them to Play", async ({ page }) => {
     await page.goto(unverifiedTechniqueJamUrl());
 
@@ -426,13 +442,25 @@ test.describe("StruJam8 browser flow", () => {
 
     await expect(page.getByLabel("Audible Strudel code")).toContainText(".degradeBy(0.2)");
     await expect(page.locator(".audio-status")).toHaveText("Audio playing");
-    await expect
-      .poll(() => page.locator('.rule-block[data-live="true"]').count(), { timeout: 10_000 })
-      .toBeGreaterThan(0);
     await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
       "aria-pressed",
       "false",
     );
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
+  test("marks the producing rule LIVE during playback", async ({ page }) => {
+    await page.goto(allTargetCoverageJamUrl());
+    await expect(page.locator(".rule-block")).toHaveCount(targetCoverageIds.length);
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+    await expect(page.getByLabel("Audible Strudel code")).toHaveAttribute("data-location-map", "ready");
+    await expect
+      .poll(() => page.locator('.rule-block[data-live="true"]').count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");

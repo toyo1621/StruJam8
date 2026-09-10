@@ -126,7 +126,7 @@ Suggested flow:
 2. Click `ベース` -> `崩す` -> `音を抜く`.
 3. Show the rule appearing and code updating.
 4. Add `歪ませる`.
-5. Switch preset to Neon Dub.
+5. Switch presets between Neon Dub and Indietronica.
 6. Click `Share URL` or `Copy` to show feedback.
 
 If showing Play/Stop, describe it as a first built-in synth/noise preview. Avoid implying that remote sample packs or every generated snippet is fully verified.

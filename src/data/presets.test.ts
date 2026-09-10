@@ -32,4 +32,11 @@ describe("preset catalog", () => {
       name: "Neon Dub",
     });
   });
+
+  it("returns Indietronica preset metadata", () => {
+    expect(getPresetDefinition("indietronica")).toMatchObject({
+      name: "Indietronica",
+      playbackTrackIds: targets.map((target) => target.id),
+    });
+  });
 });

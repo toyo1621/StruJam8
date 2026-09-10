@@ -1,6 +1,6 @@
 export type CurrentLevel = "target" | "intent" | "technique";
 
-export type PresetId = "toy-house" | "neon-dub";
+export type PresetId = "toy-house" | "neon-dub" | "indietronica";
 
 export type TargetId =
   | "drums"

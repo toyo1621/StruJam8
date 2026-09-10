@@ -27,7 +27,7 @@ Implemented:
 - Rule list generated from selected techniques
 - Rule ON/OFF toggling, duplication, deletion, reordering, reset, undo, and redo for rule changes
 - Beginner starter jam action that adds two safe example rules as one undoable change
-- Toy House and Neon Dub preset selection
+- Toy House, Neon Dub, and Indietronica preset selection
 - Local browser persistence for rules and preset selection
 - JSON export/import for jam snapshots
 - Shareable URL snapshots for small jams through the Share URL control, with oversized jams directed to JSON export
@@ -68,7 +68,7 @@ Not implemented yet:
 
 ## Presets
 
-The first preset is **Toy House**. A second static preset, **Neon Dub**, is available from the header selector.
+The first preset is **Toy House**. **Neon Dub** and **Indietronica** are also available from the header selector. Indietronica is an original built-in synth/noise palette inspired by the clicking rhythms and atmospheric contrast associated with alt-J's "Tessellate"; it does not reproduce the song's melody, recording, or samples.
 
 Toy House starts with this base code:
 

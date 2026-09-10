@@ -36,6 +36,16 @@ StruJam8 now bundles `@strudel/web` for a first browser audio preview. Keeping S
 
 Default presets use built-in synth/noise sounds registered by the installed Strudel audio stack. The app does not load external Strudel sample packs by default in this playback phase. External sample packs, soundfonts, hosted audio assets, and third-party contributions still need separate review before they are enabled or redistributed.
 
+## Indietronica Preset Provenance
+
+The `Indietronica` preset is an original Strudel code composition that uses
+only the existing built-in synth/noise vocabulary. Its description names
+alt-J's "Tessellate" as a broad creative reference for clicking rhythms and
+atmospheric contrast, but the repository does not include the song's
+recording, samples, lyrics, transcription, or a deliberate reproduction of
+its melody. This is a provenance record, not a legal conclusion; review any
+future public marketing language or closer musical adaptation separately.
+
 ## Follow-Up
 
 Re-check license compatibility before loading external sample packs, changing Strudel runtime packages, deploying a hosted public service, or accepting large third-party contributions.
