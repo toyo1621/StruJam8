@@ -61,7 +61,7 @@ button:focus-visible {
 .app-error-panel h1 {
   margin: 0 0 12px;
   color: #ffffff;
-  font-size: clamp(1.45rem, 4vw, 2rem);
+  font-size: 1.75rem;
 }
 
 .app-error-panel p:not(.eyebrow) {
