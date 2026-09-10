@@ -19,7 +19,7 @@ StruJam8は、Strudelのためのオープンソースなビジュアル・ジ�
 ## Current Status
 
 StruJam8 is currently an MVP focused on UI, state management, generated-code feedback, and a first Strudel audio preview.
-Play/Stop can start and stop a conservative `@strudel/web` preview. Stop closes the current browser audio context, and the next Play creates a fresh one. While playing, changes to the audible code are re-evaluated so the right-side code panel stays aligned with playback. External sample packs are not loaded by default yet.
+Play/Stop can start and stop a conservative `@strudel/web` preview. Stop suspends the current browser audio context, and the next Play resumes it. While playing, changes to the audible code are re-evaluated so the right-side code panel stays aligned with playback. External sample packs are not loaded by default yet.
 
 Implemented:
 

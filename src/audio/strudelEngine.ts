@@ -36,7 +36,7 @@ let audioErrorHandler: StrudelAudioErrorHandler | null = null;
 let didReportSchedulerError = false;
 let latestEvaluationError: unknown = null;
 let preparedAudioContext: AudioContext | null = null;
-let audioContextClosePromise: Promise<void> | null = null;
+let audioContextSuspendPromise: Promise<void> | null = null;
 
 export function getStrudelRuntimeStatus() {
   return didInitialize ? "ready" : "idle";
@@ -147,8 +147,8 @@ function resetClosedAudioRuntime(module: StrudelWebModule) {
   }
 
   try {
-    moduleWithAudio.setSuperdoughAudioController?.(null);
     moduleWithAudio.resetGlobalEffects?.();
+    moduleWithAudio.setSuperdoughAudioController?.(null);
   } catch (error) {
     console.warn("StruJam8 could not reset the closed Strudel audio graph", error);
   }
@@ -160,44 +160,48 @@ function resetClosedAudioRuntime(module: StrudelWebModule) {
   preparedAudioContext = null;
 }
 
-async function waitForAudioContextClose() {
-  const pendingClose = audioContextClosePromise;
+async function waitForAudioContextSuspend() {
+  const pendingSuspend = audioContextSuspendPromise;
 
-  if (!pendingClose) {
+  if (!pendingSuspend) {
     return;
   }
 
-  await pendingClose;
+  await pendingSuspend;
 
-  if (audioContextClosePromise === pendingClose) {
-    audioContextClosePromise = null;
+  if (audioContextSuspendPromise === pendingSuspend) {
+    audioContextSuspendPromise = null;
   }
 }
 
-function closeAudioContextAfterStop(module: StrudelWebModule) {
-  if (audioContextClosePromise) {
+function suspendAudioContextAfterStop(module: StrudelWebModule) {
+  if (audioContextSuspendPromise) {
     return;
   }
 
   const moduleWithAudio = module as StrudelWebAudioModule;
   const audioContext = getCurrentAudioContext(module);
 
-  if (!audioContext || audioContext.state === "closed" || typeof audioContext.close !== "function") {
+  if (!audioContext || audioContext.state !== "running" || typeof audioContext.suspend !== "function") {
     return;
   }
 
-  audioContextClosePromise = Promise.resolve()
-    .then(() => audioContext.close())
+  audioContextSuspendPromise = Promise.resolve()
+    .then(() => audioContext.suspend?.())
     .then(() => {
       if (getCurrentAudioContext(module) !== audioContext) {
         return;
       }
 
-      resetClosedAudioRuntime(module);
+      try {
+        moduleWithAudio.resetGlobalEffects?.();
+        moduleWithAudio.setSuperdoughAudioController?.(null);
+      } catch (error) {
+        console.warn("StruJam8 could not reset the suspended Strudel audio graph", error);
+      }
     })
     .catch((error) => {
-      console.warn("StruJam8 could not close the audio context after stop", error);
-      moduleWithAudio.setSuperdoughAudioController?.(null);
+      console.warn("StruJam8 could not suspend the audio context after stop", error);
     });
 }
 
@@ -337,7 +341,7 @@ export async function startStrudelAudio(
 
   const requestId = ++latestEvaluationRequest;
   const generation = playbackGeneration;
-  await waitForAudioContextClose();
+  await waitForAudioContextSuspend();
   const module = await ensureStrudelInitialized();
   let didEvaluate = false;
 
@@ -387,7 +391,7 @@ export function stopStrudelAudio() {
   }
 
   strudelModule.hush();
-  closeAudioContextAfterStop(strudelModule);
+  suspendAudioContextAfterStop(strudelModule);
 }
 
 export function resetStrudelEngineForTests() {
@@ -404,5 +408,5 @@ export function resetStrudelEngineForTests() {
   didReportSchedulerError = false;
   latestEvaluationError = null;
   preparedAudioContext = null;
-  audioContextClosePromise = null;
+  audioContextSuspendPromise = null;
 }

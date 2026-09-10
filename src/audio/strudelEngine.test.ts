@@ -264,35 +264,32 @@ describe("strudel engine", () => {
     expect(hushMock).toHaveBeenCalledTimes(1);
   });
 
-  it("closes the audio context on stop and recreates the runtime before the next start", async () => {
-    let firstContextState: AudioContextState = "running";
+  it("suspends the audio context on stop and resumes it before the next start", async () => {
+    let audioContextState: AudioContextState = "running";
     const firstContext = {
       get state() {
-        return firstContextState;
+        return audioContextState;
       },
-      close: vi.fn(async () => {
-        firstContextState = "closed";
+      suspend: vi.fn(async () => {
+        audioContextState = "suspended";
+      }),
+      resume: vi.fn(async () => {
+        audioContextState = "running";
       }),
     } as unknown as AudioContext;
-    const replacementContext = {
-      state: "running",
-    } as unknown as AudioContext;
-    let currentContext: AudioContext | null = firstContext;
 
-    getAudioContextMock.mockImplementation(() => currentContext);
-    setAudioContextMock.mockImplementation((context: AudioContext | null) => {
-      currentContext = context ?? replacementContext;
-      return currentContext;
-    });
+    getAudioContextMock.mockReturnValue(firstContext);
 
     await startStrudelAudio("note(\"first\")");
     stopStrudelAudio();
 
-    await vi.waitFor(() => expect(firstContext.close).toHaveBeenCalledTimes(1));
+    await vi.waitFor(() => expect(firstContext.suspend).toHaveBeenCalledTimes(1));
     await startStrudelAudio("note(\"second\")");
 
-    expect(setAudioContextMock).toHaveBeenCalledWith(null);
-    expect(initStrudelMock).toHaveBeenCalledTimes(2);
+    expect(firstContext.resume).toHaveBeenCalledTimes(1);
+    expect(resetGlobalEffectsMock).toHaveBeenCalledTimes(1);
+    expect(setSuperdoughAudioControllerMock).toHaveBeenCalledWith(null);
+    expect(initStrudelMock).toHaveBeenCalledTimes(1);
     expect(evaluateMock).toHaveBeenLastCalledWith("note(\"second\")", true);
   });
 });

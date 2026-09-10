@@ -107,7 +107,7 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. If the first module load fails, the next Retry uses a separate query-keyed module URL to bypass the browser's failed ES-module cache. Stop calls `hush()` through the audio boundary, then closes the current browser AudioContext and resets the stale Superdough controller/effect state; the next Play waits for close completion and creates a fresh context. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. If the first module load fails, the next Retry uses a separate query-keyed module URL to bypass the browser's failed ES-module cache. Stop calls `hush()` through the audio boundary, suspends the current browser AudioContext, and resets the Superdough controller/effect state; the next Play waits for suspension and resumes the same context. If a browser has already closed the context, the next Play still follows the closed-context recovery path and creates a fresh one. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
@@ -180,7 +180,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, resumes suspended AudioContexts, closes the current AudioContext on Stop, recreates a fresh context before the next evaluation, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
+- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, suspends the current AudioContext on Stop, resumes it before the next evaluation, recreates a fresh context when the browser has already closed the old one, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with a representative browser smoke covering all eight target tracks, a playback smoke covering one verified technique from every concrete route, and a 28-technique runtime-verified playback batch; exact editor-level `miniLocations` state parity remains pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -228,7 +228,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
-- Error-specific recovery for invalid snippets and unrecoverable runtime failures; real invalid-snippet failure/recovery and runtime-load failure recovery are covered by browser E2E.
+- Full normal-stop AudioContext disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures; normal Stop suspends the context and resets the global audio graph, while real invalid-snippet failure/recovery and runtime-load failure recovery are covered by browser E2E.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
@@ -470,7 +470,7 @@ Tasks:
 - Research the current Strudel web/runtime integration path: done for `@strudel/web@1.3.0`.
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
-- Implement serialized latest-request update lifecycle: done; Stop hushes playback, closes the current AudioContext, waits for close completion before a new Play, and resets the stale Superdough controller and global effects.
+- Implement serialized latest-request update lifecycle: done; Stop hushes playback, suspends the current AudioContext, waits for suspension before a new Play, and resets the stale Superdough controller and global effects.
 - Handle invalid code safely: unverified snippets are excluded before Play, while evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Real invalid-snippet evaluation and recovery are covered by browser E2E; error-specific recovery beyond the current retry behavior remains pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.

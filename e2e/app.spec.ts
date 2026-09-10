@@ -320,7 +320,7 @@ test.describe("StruJam8 browser flow", () => {
     );
   });
 
-  test("closes the AudioContext on Stop and recreates it on the next Play", async ({ page }) => {
+  test("suspends the AudioContext on Stop and resumes it on the next Play", async ({ page }) => {
     await page.goto("./");
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
@@ -339,7 +339,12 @@ test.describe("StruJam8 browser flow", () => {
       }
 
       const runtimeChunk = await import(runtimeUrl);
-      const runtime = runtimeChunk.n ?? runtimeChunk.t ?? runtimeChunk;
+      const runtime = [runtimeChunk.n, runtimeChunk.t, runtimeChunk].find(
+        (candidate) =>
+          candidate &&
+          typeof candidate === "object" &&
+          typeof candidate.getAudioContext === "function",
+      ) ?? runtimeChunk;
       (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext =
         runtime.getAudioContext?.();
     });
@@ -356,7 +361,7 @@ test.describe("StruJam8 browser flow", () => {
       .poll(() => page.evaluate(() =>
         (window as Window & { __strujam8AudioContext?: AudioContext }).__strujam8AudioContext?.state ?? null,
       ), { timeout: 5_000 })
-      .toBe("closed");
+      .toBe("suspended");
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
@@ -374,7 +379,12 @@ test.describe("StruJam8 browser flow", () => {
       }
 
       const runtimeChunk = await import(runtimeUrl);
-      const runtime = runtimeChunk.n ?? runtimeChunk.t ?? runtimeChunk;
+      const runtime = [runtimeChunk.n, runtimeChunk.t, runtimeChunk].find(
+        (candidate) =>
+          candidate &&
+          typeof candidate === "object" &&
+          typeof candidate.getAudioContext === "function",
+      ) ?? runtimeChunk;
       const currentContext = runtime.getAudioContext?.();
       return {
         state: currentContext?.state ?? null,
@@ -383,7 +393,7 @@ test.describe("StruJam8 browser flow", () => {
       };
     });
 
-    expect(replacementContext).toEqual({ state: "running", isSameContext: false });
+    expect(replacementContext).toEqual({ state: "running", isSameContext: true });
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
