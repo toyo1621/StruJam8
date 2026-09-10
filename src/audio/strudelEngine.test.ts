@@ -39,6 +39,32 @@ describe("strudel engine", () => {
     expect(getStrudelRuntimeStatus()).toBe("ready");
   });
 
+  it("skips stale evaluation requests and keeps the latest code", async () => {
+    const first = startStrudelAudio('note("first")');
+    const second = startStrudelAudio('note("second")');
+
+    await expect(first).resolves.toBe(false);
+    await expect(second).resolves.toBe(true);
+    expect(evaluateMock).toHaveBeenCalledTimes(1);
+    expect(evaluateMock).toHaveBeenCalledWith('note("second")', true);
+  });
+
+  it("hushes an evaluation that becomes stale while running", async () => {
+    let resolveEvaluate: () => void = () => {};
+    evaluateMock.mockImplementationOnce(() => new Promise<void>((resolve) => {
+      resolveEvaluate = resolve;
+    }));
+
+    const pending = startStrudelAudio("note(\"stale\")");
+    await vi.waitFor(() => expect(evaluateMock).toHaveBeenCalledTimes(1));
+
+    stopStrudelAudio();
+    resolveEvaluate();
+
+    await expect(pending).resolves.toBe(false);
+    expect(hushMock).toHaveBeenCalledTimes(2);
+  });
+
   it("does not call hush before the runtime has been initialized", () => {
     stopStrudelAudio();
 

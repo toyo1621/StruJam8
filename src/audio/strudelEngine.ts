@@ -6,6 +6,9 @@ let strudelModulePromise: Promise<StrudelWebModule> | null = null;
 let strudelModule: StrudelWebModule | null = null;
 let initPromise: Promise<unknown> | null = null;
 let didInitialize = false;
+let playbackGeneration = 0;
+let latestEvaluationRequest = 0;
+let evaluationQueue: Promise<void> = Promise.resolve();
 
 export function getStrudelRuntimeStatus() {
   return didInitialize ? "ready" : "idle";
@@ -49,12 +52,36 @@ async function ensureStrudelInitialized() {
 }
 
 export async function startStrudelAudio(code: string = starterAudioCode) {
+  const requestId = ++latestEvaluationRequest;
+  const generation = playbackGeneration;
   const module = await ensureStrudelInitialized();
-  await module.evaluate(code, true);
+  let didEvaluate = false;
+
+  const evaluation = evaluationQueue.then(async () => {
+    if (generation !== playbackGeneration || requestId !== latestEvaluationRequest) {
+      return;
+    }
+
+    await module.evaluate(code, true);
+
+    if (generation !== playbackGeneration || requestId !== latestEvaluationRequest) {
+      module.hush();
+      return;
+    }
+
+    didEvaluate = true;
+  });
+
+  evaluationQueue = evaluation.catch(() => {});
+  await evaluation;
+  return didEvaluate;
 }
 
 export function stopStrudelAudio() {
-  if (!initPromise || !strudelModule) {
+  playbackGeneration += 1;
+  latestEvaluationRequest += 1;
+
+  if (!didInitialize || !strudelModule) {
     return;
   }
 
@@ -66,4 +93,7 @@ export function resetStrudelEngineForTests() {
   strudelModule = null;
   initPromise = null;
   didInitialize = false;
+  playbackGeneration = 0;
+  latestEvaluationRequest = 0;
+  evaluationQueue = Promise.resolve();
 }

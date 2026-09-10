@@ -328,7 +328,11 @@ function App() {
     setAudioStatusMessage("Starting audio...");
 
     try {
-      await startStrudelAudio(audibleCode);
+      const didEvaluate = await startStrudelAudio(audibleCode);
+      if (!didEvaluate) {
+        return;
+      }
+
       lastPlayedCodeRef.current = audibleCode;
       dispatch({ type: "setPlaying", isPlaying: true });
       setAudioStatusMessage("Audio playing");
@@ -356,8 +360,8 @@ function App() {
     setAudioStatusMessage("Updating audio...");
 
     startStrudelAudio(audibleCode)
-      .then(() => {
-        if (didCancel) {
+      .then((didEvaluate) => {
+        if (didCancel || !didEvaluate) {
           return;
         }
 

@@ -169,7 +169,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
+- Play/Stop: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, and re-evaluates on audible code changes while playing. It is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus target/rule-snippet pulse are implemented; exact Strudel `miniLocations` parity is still pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -217,7 +217,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact active token locations using Strudel `miniLocations` metadata.
-- Audio graph lifecycle beyond basic start/stop: update, dispose, and runtime error recovery.
+- Audio graph disposal and runtime error recovery beyond the serialized update path.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
@@ -456,7 +456,7 @@ Tasks:
 - Research the current Strudel web/runtime integration path: done for `@strudel/web@1.3.0`.
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
-- Implement update and dispose lifecycle: pending.
+- Implement serialized latest-request update lifecycle: done; implement dispose lifecycle: pending.
 - Handle invalid code safely: partial; UI catches start failures, but runtime validation is still shallow.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
 - Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
