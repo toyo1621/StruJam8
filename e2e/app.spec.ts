@@ -1,5 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
-import { getTechniqueById } from "../src/data/techniques";
+import { concreteTechniqueRoutes } from "../src/data/routes";
+import { getTechniqueById, getTechniquesByRoute } from "../src/data/techniques";
 
 function livePads(page: Page) {
   return page.locator("footer.pad-dock button.live-pad");
@@ -218,6 +219,38 @@ test.describe("StruJam8 browser flow", () => {
 
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+  });
+
+  test("reaches every concrete route through the eight-pad UI", async ({ page }) => {
+    await page.goto("./");
+
+    const pads = livePads(page);
+
+    for (const route of concreteTechniqueRoutes) {
+      const firstTechnique = getTechniquesByRoute(route.targetId, route.intentId)[0];
+
+      if (!firstTechnique) {
+        throw new Error(`Missing technique for ${route.targetId}:${route.intentId}`);
+      }
+
+      await page.getByRole("button", { name: "HOME", exact: true }).click();
+      await pads.filter({ hasText: route.target }).click();
+      await pads.filter({ hasText: route.intent }).click();
+
+      await expect(pads).toHaveCount(8);
+      await pads.filter({ hasText: firstTechnique.label }).click();
+
+      await expect(page.getByText(
+        `${route.target} ＞ ${route.intent} ＞ ${firstTechnique.label}`,
+        { exact: true },
+      ).last()).toBeVisible();
+
+      if (firstTechnique.needsTodo) {
+        await expect(page.getByLabel("Audible Strudel code")).not.toContainText(firstTechnique.strudelSnippet);
+      } else {
+        await expect(page.getByLabel("Audible Strudel code")).toContainText(firstTechnique.strudelSnippet);
+      }
+    }
   });
 
   test("highlights runtime code locations across all eight target tracks", async ({ page }) => {
