@@ -316,6 +316,11 @@ test.describe("StruJam8 browser flow", () => {
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+    await expect(page.getByLabel("Audible Strudel code")).toHaveAttribute("data-location-map", "ready");
+    await expect(page.getByLabel("Audible Strudel code")).toHaveAttribute(
+      "data-source-location-count",
+      /[1-9]/,
+    );
 
     await expect
       .poll(() => page.locator(".code-line.is-active").count(), { timeout: 10_000 })

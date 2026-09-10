@@ -20,6 +20,7 @@ export interface StrudelCodeLocation {
 
 export type StrudelAudioTriggerHandler = (locations: StrudelCodeLocation[]) => void;
 export type StrudelAudioErrorHandler = (error: Error) => void;
+export type StrudelCodeLocationMetadataHandler = (locations: StrudelCodeLocation[]) => void;
 
 export const starterAudioCode = 'note("c2 eb2 g2 bb2").s("sawtooth").slow(2).gain(0.35)';
 
@@ -33,6 +34,7 @@ let latestEvaluationRequest = 0;
 let evaluationQueue: Promise<void> = Promise.resolve();
 let audioTriggerHandler: StrudelAudioTriggerHandler | null = null;
 let audioErrorHandler: StrudelAudioErrorHandler | null = null;
+let codeLocationMetadataHandler: StrudelCodeLocationMetadataHandler | null = null;
 let didReportSchedulerError = false;
 let latestEvaluationError: unknown = null;
 let preparedAudioContext: AudioContext | null = null;
@@ -54,6 +56,54 @@ function getHapLocations(hap: unknown): StrudelCodeLocation[] {
   }
 
   return locations.flatMap((location) => {
+    if (!location || typeof location !== "object") {
+      return [];
+    }
+
+    const { start, end } = location as { start?: unknown; end?: unknown };
+
+    if (
+      typeof start !== "number" ||
+      typeof end !== "number" ||
+      !Number.isFinite(start) ||
+      !Number.isFinite(end) ||
+      end <= start
+    ) {
+      return [];
+    }
+
+    return [{ start, end }];
+  });
+}
+
+function getMiniLocations(state: unknown): StrudelCodeLocation[] {
+  if (!state || typeof state !== "object") {
+    return [];
+  }
+
+  const miniLocations = (state as { miniLocations?: unknown }).miniLocations;
+
+  if (!Array.isArray(miniLocations)) {
+    return [];
+  }
+
+  return miniLocations.flatMap((location) => {
+    if (Array.isArray(location)) {
+      const [start, end] = location;
+
+      if (
+        typeof start === "number" &&
+        typeof end === "number" &&
+        Number.isFinite(start) &&
+        Number.isFinite(end) &&
+        end > start
+      ) {
+        return [{ start, end }];
+      }
+
+      return [];
+    }
+
     if (!location || typeof location !== "object") {
       return [];
     }
@@ -114,6 +164,18 @@ function notifyAudioError(error: unknown) {
     audioErrorHandler(toEvaluationError(error, "Strudel audio runtime failed"));
   } catch (handlerError) {
     console.error("StruJam8 audio error handler failed", handlerError);
+  }
+}
+
+function notifyCodeLocationMetadata(locations: StrudelCodeLocation[]) {
+  if (!codeLocationMetadataHandler) {
+    return;
+  }
+
+  try {
+    codeLocationMetadataHandler(locations);
+  } catch (error) {
+    console.error("StruJam8 code location metadata handler failed", error);
   }
 }
 
@@ -288,6 +350,10 @@ async function ensureStrudelInitialized() {
             return;
           }
 
+          if ("miniLocations" in state) {
+            notifyCodeLocationMetadata(getMiniLocations(state));
+          }
+
           const schedulerError = (state as { schedulerError?: unknown }).schedulerError;
 
           if (!schedulerError) {
@@ -330,6 +396,7 @@ export async function startStrudelAudio(
   code: string = starterAudioCode,
   onTrigger?: StrudelAudioTriggerHandler,
   onError?: StrudelAudioErrorHandler,
+  onCodeLocationMetadata?: StrudelCodeLocationMetadataHandler,
 ) {
   if (onTrigger) {
     audioTriggerHandler = onTrigger;
@@ -337,6 +404,10 @@ export async function startStrudelAudio(
 
   if (onError) {
     audioErrorHandler = onError;
+  }
+
+  if (onCodeLocationMetadata) {
+    codeLocationMetadataHandler = onCodeLocationMetadata;
   }
 
   const requestId = ++latestEvaluationRequest;
@@ -383,6 +454,7 @@ export function stopStrudelAudio() {
   latestEvaluationRequest += 1;
   audioTriggerHandler = null;
   audioErrorHandler = null;
+  codeLocationMetadataHandler = null;
   didReportSchedulerError = false;
   latestEvaluationError = null;
 
@@ -405,6 +477,7 @@ export function resetStrudelEngineForTests() {
   evaluationQueue = Promise.resolve();
   audioTriggerHandler = null;
   audioErrorHandler = null;
+  codeLocationMetadataHandler = null;
   didReportSchedulerError = false;
   latestEvaluationError = null;
   preparedAudioContext = null;

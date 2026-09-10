@@ -203,6 +203,25 @@ describe("strudel engine", () => {
     expect(onError).toHaveBeenNthCalledWith(2, schedulerError);
   });
 
+  it("forwards evaluator mini source locations to the UI boundary", async () => {
+    const onMetadata = vi.fn();
+    let onUpdateState: ((state: unknown) => void) | undefined;
+    initStrudelMock.mockImplementation((options: { onUpdateState?: (state: unknown) => void }) => {
+      onUpdateState = options.onUpdateState;
+      return Promise.resolve({});
+    });
+
+    await startStrudelAudio('note("c2 eb2")', undefined, undefined, onMetadata);
+    onUpdateState?.({
+      miniLocations: [[8, 10], [14, 18], ["invalid", 2]],
+    });
+
+    expect(onMetadata).toHaveBeenCalledWith([
+      { start: 8, end: 10 },
+      { start: 14, end: 18 },
+    ]);
+  });
+
   it("surfaces Strudel evaluation errors instead of reporting playback success", async () => {
     let onEvalError: ((error: unknown) => void) | undefined;
     initStrudelMock.mockImplementation((options: { onEvalError?: (error: unknown) => void }) => {

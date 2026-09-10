@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tokenizeCodeLine } from "./codeTokens";
 import {
+  expandCodeLocationsToMiniLocations,
   getActiveCodeLineIndexesFromLocations,
   getActiveCodeTokenIndexes,
   getCodeLineOffsets,
@@ -61,5 +62,26 @@ describe("code location helpers", () => {
       { start: 18, end: 20 },
       { start: 30, end: 34 },
     ]);
+  });
+
+  it("expands a broad runtime range to matching mini source leaves", () => {
+    expect(
+      expandCodeLocationsToMiniLocations(
+        [{ start: 0, end: 20 }],
+        [{ start: 2, end: 4 }, { start: 10, end: 12 }, { start: 30, end: 32 }],
+      ),
+    ).toEqual([
+      { start: 2, end: 4 },
+      { start: 10, end: 12 },
+    ]);
+  });
+
+  it("keeps runtime locations when no mini source leaf overlaps", () => {
+    expect(
+      expandCodeLocationsToMiniLocations(
+        [{ start: 40, end: 44 }],
+        [{ start: 2, end: 4 }],
+      ),
+    ).toEqual([{ start: 40, end: 44 }]);
   });
 });

@@ -25,7 +25,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | Keep the visible code and Play input identical | Done | Both use the same `audibleCode` value. |
 | Update the running preview after a rule change | Done | Browser test covers adding a technique while audio is playing. |
 | Evaluate every catalog technique snippet | Done for installed runtime | `npm run verify:techniques` evaluated all 296 catalog snippets in a real Chromium page against the installed Strudel runtime in 175ms; this does not replace event-by-event audio/highlight coverage. |
-| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted at token level; selecting a rule also scrolls its generated code chain into view. Representative all-eight-target coverage, one verified playback technique per concrete route, and 28 additional runtime-verified techniques are covered. Exact editor `miniLocations` parity remains incomplete. |
+| Highlight the code currently producing sound | Partial | Runtime Hap locations are merged and highlighted at token level; evaluator `miniLocations` are forwarded to refine the active source leaves; selecting a rule also scrolls its generated code chain into view. Representative all-eight-target coverage, one verified playback technique per concrete route, and 28 additional runtime-verified techniques are covered. Exact strudel.cc editor rendering/state parity and full all-technique event/highlight coverage remain incomplete. |
 | Stop and retry after runtime failure | Done for MVP | Invalid snippet and failed runtime-load recovery are covered in Chromium. This is not full strudel.cc transport parity. |
 | Persist and share a small jam | Done | LocalStorage, JSON export/import, and URL snapshot helpers are tested. URLs above the practical limit are blocked with an Export JSON fallback. |
 | Support all eight target families and intent families | Partial | Concrete routes cover every family, but not all 64 target/intent combinations. Undefined combinations intentionally show fallback techniques. |
@@ -37,7 +37,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Done for MVP | 22 Vitest files, 165 unit/component tests, and 18 Chromium tests pass in root preview. Pages-base-path verification also passes 18 Chromium tests for the production-shaped build. |
+| Regression coverage | Done for MVP | 22 Vitest files, 168 unit/component tests, and 18 Chromium tests pass in root preview. Pages-base-path verification also passes 18 Chromium tests for the production-shaped build. |
 | Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
 | Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
@@ -80,7 +80,7 @@ Then verify:
 
 1. Compare Strudel Hap locations with rendered token ranges for each track type.
 2. Add a small fixture for every codegen route, including simultaneous events.
-3. Decide whether to expose editor-style `miniLocations` metadata or keep the current token-location contract.
+3. Keep the evaluator `miniLocations` bridge as the current runtime contract, while tracking exact strudel.cc editor metadata/state parity as a later compatibility task.
 4. Preserve a fallback visual pulse when runtime location metadata is unavailable.
 
 ### 3. Improve the learning loop

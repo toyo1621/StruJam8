@@ -5,6 +5,7 @@ import {
   type StrudelAudioErrorHandler,
   type StrudelAudioTriggerHandler,
   type StrudelCodeLocation,
+  type StrudelCodeLocationMetadataHandler,
 } from "./audio/strudelEngine";
 import { RuleDetailPanel } from "./components/RuleDetailPanel";
 import {
@@ -38,6 +39,7 @@ import { getTechniqueById } from "./data/techniques";
 import { formatPlayableCodeLines } from "./lib/codegen";
 import { getActiveCodeLineIndexes, getActiveCodeRuleId, joinCodeLines } from "./lib/codeHighlight";
 import {
+  expandCodeLocationsToMiniLocations,
   getActiveCodeLineIndexesFromLocations,
   getCodeLineOffsets,
   getCodeTokenOffsets,
@@ -154,6 +156,7 @@ function App() {
   const [audioRecoveryAvailable, setAudioRecoveryAvailable] = useState(false);
   const [codePulseIndex, setCodePulseIndex] = useState(0);
   const [activeCodeLocations, setActiveCodeLocations] = useState<StrudelCodeLocation[] | null>(null);
+  const [evaluatedCodeLocations, setEvaluatedCodeLocations] = useState<StrudelCodeLocation[]>([]);
   const pendingAudioLocationsRef = useRef<StrudelCodeLocation[]>([]);
   const pendingAudioFlushIdRef = useRef<number | null>(null);
   const [statusMessage, setStatusMessage] = useState("");
@@ -245,24 +248,31 @@ function App() {
     ),
     [audibleCodeTokens, codeLineOffsets],
   );
+  const renderedCodeLocations = useMemo(
+    () =>
+      activeCodeLocations === null
+        ? null
+        : expandCodeLocationsToMiniLocations(activeCodeLocations, evaluatedCodeLocations),
+    [activeCodeLocations, evaluatedCodeLocations],
+  );
   const activeCodeLineIndexes = useMemo(() => {
     if (!isPlaying) {
       return new Set<number>();
     }
 
-    if (activeCodeLocations !== null) {
-      return getActiveCodeLineIndexesFromLocations(audibleCodeTextLines, activeCodeLocations);
+    if (renderedCodeLocations !== null) {
+      return getActiveCodeLineIndexesFromLocations(audibleCodeTextLines, renderedCodeLocations);
     }
 
     return getActiveCodeLineIndexes(audibleCodeLines, codePulseIndex);
-  }, [activeCodeLocations, audibleCodeLines, audibleCodeTextLines, codePulseIndex, isPlaying]);
+  }, [audibleCodeLines, audibleCodeTextLines, codePulseIndex, isPlaying, renderedCodeLocations]);
   const activeCodeRuleId = useMemo(() => {
-    if (!isPlaying || activeCodeLocations !== null) {
+    if (!isPlaying || renderedCodeLocations !== null) {
       return null;
     }
 
     return getActiveCodeRuleId(audibleCodeLines, codePulseIndex);
-  }, [activeCodeLocations, audibleCodeLines, codePulseIndex, isPlaying]);
+  }, [audibleCodeLines, codePulseIndex, isPlaying, renderedCodeLocations]);
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
   const copyStatusLabel = getCopyStatusLabel(copyStatus);
 
@@ -295,9 +305,14 @@ function App() {
     }, 0);
   }, []);
 
+  const handleCodeLocationMetadata = useCallback<StrudelCodeLocationMetadataHandler>((locations) => {
+    setEvaluatedCodeLocations(mergeCodeLocations(locations));
+  }, []);
+
   const handleAudioRuntimeError = useCallback<StrudelAudioErrorHandler>((error) => {
     console.error(error);
     clearPendingAudioLocations();
+    setEvaluatedCodeLocations([]);
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
@@ -309,6 +324,7 @@ function App() {
 
   const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
     clearPendingAudioLocations();
+    setEvaluatedCodeLocations([]);
     stopStrudelAudio();
     lastPlayedCodeRef.current = null;
     setActiveCodeLocations(null);
@@ -484,9 +500,15 @@ function App() {
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Starting audio...");
     setActiveCodeLocations(null);
+    setEvaluatedCodeLocations([]);
 
     try {
-      const didEvaluate = await startStrudelAudio(audibleCode, handleAudioTrigger, handleAudioRuntimeError);
+      const didEvaluate = await startStrudelAudio(
+        audibleCode,
+        handleAudioTrigger,
+        handleAudioRuntimeError,
+        handleCodeLocationMetadata,
+      );
       if (!didEvaluate) {
         return;
       }
@@ -501,12 +523,20 @@ function App() {
       stopStrudelAudio();
       lastPlayedCodeRef.current = null;
       setActiveCodeLocations(null);
+      setEvaluatedCodeLocations([]);
       dispatch({ type: "setPlaying", isPlaying: false });
       setAudioRecoveryAvailable(true);
       setAudioStatusMessage("Audio start failed. Retry available.");
       announce("Audio playback could not start");
     }
-  }, [announce, audibleCode, clearPendingAudioLocations, handleAudioRuntimeError, handleAudioTrigger]);
+  }, [
+    announce,
+    audibleCode,
+    clearPendingAudioLocations,
+    handleAudioRuntimeError,
+    handleAudioTrigger,
+    handleCodeLocationMetadata,
+  ]);
 
   const handleStop = useCallback(() => {
     stopAudioPreview("Audio stopped", "Audio playback stopped");
@@ -520,10 +550,16 @@ function App() {
     let didCancel = false;
     clearPendingAudioLocations();
     setActiveCodeLocations(null);
+    setEvaluatedCodeLocations([]);
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Updating audio...");
 
-    startStrudelAudio(audibleCode, handleAudioTrigger, handleAudioRuntimeError)
+    startStrudelAudio(
+      audibleCode,
+      handleAudioTrigger,
+      handleAudioRuntimeError,
+      handleCodeLocationMetadata,
+    )
       .then((didEvaluate) => {
         if (didCancel || !didEvaluate || lastPlayedCodeRef.current === null) {
           return;
@@ -544,6 +580,7 @@ function App() {
         stopStrudelAudio();
         lastPlayedCodeRef.current = null;
         setActiveCodeLocations(null);
+        setEvaluatedCodeLocations([]);
         dispatch({ type: "setPlaying", isPlaying: false });
         setAudioRecoveryAvailable(true);
         setAudioStatusMessage("Audio update failed. Retry available.");
@@ -553,7 +590,15 @@ function App() {
     return () => {
       didCancel = true;
     };
-  }, [announce, audibleCode, clearPendingAudioLocations, handleAudioRuntimeError, handleAudioTrigger, isPlaying]);
+  }, [
+    announce,
+    audibleCode,
+    clearPendingAudioLocations,
+    handleAudioRuntimeError,
+    handleAudioTrigger,
+    handleCodeLocationMetadata,
+    isPlaying,
+  ]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
@@ -907,7 +952,13 @@ function App() {
               </button>
             </div>
           </div>
-          <pre ref={codeViewRef} className="code-view" aria-label="Audible Strudel code">
+          <pre
+            ref={codeViewRef}
+            className="code-view"
+            aria-label="Audible Strudel code"
+            data-location-map={isPlaying ? (evaluatedCodeLocations.length > 0 ? "ready" : "pending") : "idle"}
+            data-source-location-count={evaluatedCodeLocations.length}
+          >
             <code>
               {audibleCodeLines.map((line, index) => {
                 const isLineActive = activeCodeLineIndexes.has(index);
@@ -930,7 +981,7 @@ function App() {
                       const tokenSegments = getCodeTokenSegments(
                         codeTokenOffsets[index]?.[tokenIndex] ?? codeLineOffsets[index] ?? 0,
                         token.text,
-                        isPlaying && activeCodeLocations !== null ? activeCodeLocations : [],
+                        isPlaying && renderedCodeLocations !== null ? renderedCodeLocations : [],
                       );
 
                       return tokenSegments.map((segment, segmentIndex) => (

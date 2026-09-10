@@ -26,6 +26,25 @@ export function mergeCodeLocations(
   );
 }
 
+export function expandCodeLocationsToMiniLocations(
+  activeLocations: readonly CodeLocation[],
+  miniLocations: readonly CodeLocation[],
+) {
+  if (miniLocations.length === 0) {
+    return mergeCodeLocations(activeLocations);
+  }
+
+  return mergeCodeLocations(
+    ...activeLocations.map((activeLocation) => {
+      const matchingMiniLocations = miniLocations.filter((miniLocation) =>
+        rangesOverlap(activeLocation.start, activeLocation.end, miniLocation),
+      );
+
+      return matchingMiniLocations.length > 0 ? matchingMiniLocations : [activeLocation];
+    }),
+  );
+}
+
 function rangesOverlap(start: number, end: number, location: CodeLocation) {
   const locationStart = Math.min(location.start, location.end);
   const locationEnd = Math.max(location.start, location.end);

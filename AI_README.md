@@ -183,7 +183,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 - Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, suspends the current AudioContext on Stop, resumes it before the next evaluation, recreates a fresh context when the browser has already closed the old one, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
-- Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with a representative browser smoke covering all eight target tracks, a playback smoke covering one verified technique from every concrete route, and a 28-technique runtime-verified playback batch. All 296 catalog snippets also pass the installed Strudel evaluator through `npm run verify:techniques`; exact editor-level `miniLocations` parity and full event-by-event highlight coverage remain pending.
+- Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with evaluator `miniLocations` forwarded into the UI to refine the active source leaves. A representative browser smoke covers all eight target tracks, a playback smoke covers one verified technique from every concrete route, and a 28-technique runtime-verified playback batch is included. All 296 catalog snippets also pass the installed Strudel evaluator through `npm run verify:techniques`; exact strudel.cc editor rendering/state parity and full event-by-event highlight coverage remain pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
   - ドラム -> 踊らせる
   - ドラム -> 盛り上げる
@@ -228,7 +228,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Missing
 
-- Exact editor-level `miniLocations` metadata/state parity and location coverage for techniques that do not carry mini notation.
+- Exact strudel.cc editor metadata/state parity beyond the currently consumed evaluator `miniLocations`, plus location coverage for techniques that do not carry mini notation.
 - Full normal-stop AudioContext disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures; normal Stop suspends the context and resets the global audio graph, while real invalid-snippet failure/recovery and runtime-load failure recovery are covered by browser E2E.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
