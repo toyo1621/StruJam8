@@ -45,7 +45,7 @@ npm run check:pages
 npm run test:e2e
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, and tablet-width overflow.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom. Playwright adds real-browser checks for the three-level route, code update, RESET behavior, tablet-width overflow, browser audio start/stop, and live code highlighting.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -227,7 +227,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 - User-defined presets and named preset saving.
 - Large jam sharing beyond practical URL length limits.
 - MIDI/controller input.
-- Real-browser WebAudio output, runtime-highlight timing, and audio-recovery checks; route, code-update, RESET, and tablet overflow checks are covered by Playwright.
+- Real-browser error recovery, invalid-snippet behavior, and all-route runtime-highlight coverage; basic browser audio start/stop and live code highlighting are covered by Playwright.
 - Accessibility pass beyond basic semantic buttons and labels.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors; surfaced failures stop playback and expose Retry, while closed AudioContexts are recreated before the next Play attempt.
 

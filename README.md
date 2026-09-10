@@ -47,16 +47,16 @@ Implemented:
 - Responsive layout for desktop and tablet-sized screens
 - Recoverable audio failures expose a visible Retry state
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, and number-key navigation
-- Playwright browser checks for route navigation, code updates, RESET, and tablet-width overflow
+- Playwright browser checks for route navigation, code updates, RESET, tablet-width overflow, browser audio start/stop, and live code highlighting
 
 Not implemented yet:
 
-- Editor-level exact `miniLocations` parity and a full real-browser audio/runtime test matrix
+- Editor-level exact `miniLocations` parity and full real-browser error-recovery and all-route audio/runtime coverage
 - External sample-pack loading and sample-license review
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- Real-browser WebAudio output, runtime-highlight timing, and audio-recovery checks
+- Real-browser error recovery, invalid-snippet behavior, and all-route runtime-highlight coverage
 
 ## Presets
 

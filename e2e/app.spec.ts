@@ -36,6 +36,24 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.getByText("ベース ＞ 崩す", { exact: true }).first()).toBeVisible();
   });
 
+  test("starts and stops the browser audio preview with live code highlighting", async ({ page }) => {
+    await page.goto("/");
+
+    await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+
+    await expect
+      .poll(() => page.locator(".code-line.is-active").count(), { timeout: 10_000 })
+      .toBeGreaterThan(0);
+
+    await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
+    await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
   test("keeps the main surfaces inside a tablet viewport", async ({ page }) => {
     await page.setViewportSize({ width: 1024, height: 768 });
     await page.goto("/");
