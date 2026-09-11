@@ -251,10 +251,6 @@ function App() {
   const selectedRuleTechnique = selectedRule
     ? getTechniqueById(selectedRule.techniqueId)
     : undefined;
-  const indietronicaCompactPlayableCode = useMemo(
-    () => joinCodeLines(formatPlayableCodeLines(rules, indietronicaSafePreset)),
-    [indietronicaSafePreset, rules],
-  );
   const audibleCodeLines = useMemo(
     () => formatPlayableCodeLines(rules, selectedPreset),
     [rules, selectedPreset],
@@ -264,9 +260,20 @@ function App() {
     () => audibleCodeLines.map((line) => line.text),
     [audibleCodeLines],
   );
+  const indietronicaSafeRules = useMemo(
+    () =>
+      isIndietronica
+        ? rules.filter((rule) => indietronicaPlaybackSafeTrackIds.includes(rule.targetId))
+        : rules,
+    [isIndietronica, indietronicaPlaybackSafeTrackIds, rules],
+  );
   const indietronicaCompactBaseCode = useMemo(
     () => joinCodeLines(formatPlayableCodeLines([], indietronicaSafePreset)),
     [indietronicaSafePreset],
+  );
+  const indietronicaCompactSafeRuleCode = useMemo(
+    () => joinCodeLines(formatPlayableCodeLines(indietronicaSafeRules, indietronicaSafePreset)),
+    [indietronicaSafePreset, indietronicaSafeRules],
   );
   const playbackCodeCandidates = useMemo(() => {
     const candidateSet = new Set<string>();
@@ -285,7 +292,7 @@ function App() {
     addCandidate(audibleCode);
 
     if (isIndietronica) {
-      addCandidate(indietronicaCompactPlayableCode);
+      addCandidate(indietronicaCompactSafeRuleCode);
       addCandidate(indietronicaCompactBaseCode);
       addCandidate(selectedPreset.baseCode);
     } else {
@@ -296,7 +303,7 @@ function App() {
   }, [
     audibleCode,
     indietronicaCompactBaseCode,
-    indietronicaCompactPlayableCode,
+    indietronicaCompactSafeRuleCode,
     isIndietronica,
     selectedPreset.baseCode,
   ]);
