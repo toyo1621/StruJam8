@@ -106,6 +106,14 @@ type LivePadStyle = React.CSSProperties & {
   "--pad-text-color": string;
 };
 
+const INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS: PresetDefinition["playbackTrackIds"] = [
+  "drums",
+  "bass",
+  "chords",
+  "keys",
+  "strings",
+];
+
 function createRuleId(targetId: TargetId, intentId: IntentId, techniqueId: string) {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -185,20 +193,13 @@ function App() {
     [selectedPresetId],
   );
 
-  const indietronicaPlaybackSafeTrackIds: PresetDefinition["playbackTrackIds"] = [
-    "drums",
-    "bass",
-    "chords",
-    "keys",
-    "strings",
-  ];
   const isIndietronica = selectedPreset.id === "indietronica";
   const indietronicaSafePreset = useMemo(
     () =>
       isIndietronica
         ? {
             ...selectedPreset,
-            playbackTrackIds: indietronicaPlaybackSafeTrackIds,
+            playbackTrackIds: INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS,
           }
         : selectedPreset,
     [isIndietronica, selectedPreset],
@@ -263,9 +264,9 @@ function App() {
   const indietronicaSafeRules = useMemo(
     () =>
       isIndietronica
-        ? rules.filter((rule) => indietronicaPlaybackSafeTrackIds.includes(rule.targetId))
+        ? rules.filter((rule) => INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS.includes(rule.targetId))
         : rules,
-    [isIndietronica, indietronicaPlaybackSafeTrackIds, rules],
+    [isIndietronica, rules],
   );
   const indietronicaCompactBaseCode = useMemo(
     () => joinCodeLines(formatPlayableCodeLines([], indietronicaSafePreset)),
