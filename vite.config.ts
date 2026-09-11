@@ -167,6 +167,7 @@ function rewriteStrudelRetryImport(): Plugin {
 }
 
 export default defineConfig({
+  cacheDir: "./.vite-temp",
   plugins: [react(), rewriteStrudelRetryImport()],
   resolve: {
     // The package dist bundle embeds one core copy and prebakes another one.
