@@ -77,6 +77,7 @@ import type {
   CurrentLevel,
   IntentId,
   PadOption,
+  PresetDefinition,
   PresetId,
   RouteSelection,
   Rule,
@@ -179,6 +180,30 @@ function App() {
     isPlaying,
   } = state;
 
+  const selectedPreset = useMemo(
+    () => getPresetDefinition(selectedPresetId),
+    [selectedPresetId],
+  );
+
+  const indietronicaPlaybackSafeTrackIds: PresetDefinition["playbackTrackIds"] = [
+    "drums",
+    "bass",
+    "chords",
+    "keys",
+    "strings",
+  ];
+  const isIndietronica = selectedPreset.id === "indietronica";
+  const indietronicaSafePreset = useMemo(
+    () =>
+      isIndietronica
+        ? {
+            ...selectedPreset,
+            playbackTrackIds: indietronicaPlaybackSafeTrackIds,
+          }
+        : selectedPreset,
+    [isIndietronica, selectedPreset],
+  );
+
   const visiblePads = useMemo<PadOption[]>(() => {
     if (currentLevel === "target") {
       return targets;
@@ -226,9 +251,9 @@ function App() {
   const selectedRuleTechnique = selectedRule
     ? getTechniqueById(selectedRule.techniqueId)
     : undefined;
-  const selectedPreset = useMemo(
-    () => getPresetDefinition(selectedPresetId),
-    [selectedPresetId],
+  const indietronicaCompactPlayableCode = useMemo(
+    () => joinCodeLines(formatPlayableCodeLines(rules, indietronicaSafePreset)),
+    [indietronicaSafePreset, rules],
   );
   const audibleCodeLines = useMemo(
     () => formatPlayableCodeLines(rules, selectedPreset),
@@ -239,6 +264,42 @@ function App() {
     () => audibleCodeLines.map((line) => line.text),
     [audibleCodeLines],
   );
+  const indietronicaCompactBaseCode = useMemo(
+    () => joinCodeLines(formatPlayableCodeLines([], indietronicaSafePreset)),
+    [indietronicaSafePreset],
+  );
+  const playbackCodeCandidates = useMemo(() => {
+    const candidateSet = new Set<string>();
+    const addCandidate = (code: string | undefined | null) => {
+      if (!code) {
+        return;
+      }
+
+      const normalizedCode = code.trim();
+
+      if (normalizedCode.length > 0) {
+        candidateSet.add(normalizedCode);
+      }
+    };
+
+    addCandidate(audibleCode);
+
+    if (isIndietronica) {
+      addCandidate(indietronicaCompactPlayableCode);
+      addCandidate(indietronicaCompactBaseCode);
+      addCandidate(selectedPreset.baseCode);
+    } else {
+      addCandidate(selectedPreset.baseCode);
+    }
+
+    return [...candidateSet];
+  }, [
+    audibleCode,
+    indietronicaCompactBaseCode,
+    indietronicaCompactPlayableCode,
+    isIndietronica,
+    selectedPreset.baseCode,
+  ]);
   const audibleCodeTokens = useMemo(
     () => audibleCodeLines.map((line) => tokenizeCodeLine(line.text || " ")),
     [audibleCodeLines],
@@ -507,6 +568,43 @@ function App() {
     dispatch({ type: "selectPreset", presetId });
   }, [isPlaying, stopAudioPreview]);
 
+  const tryStartAudio = useCallback(
+    async (code: string) => {
+      return startStrudelAudio(
+        code,
+        handleAudioTrigger,
+        handleAudioRuntimeError,
+        handleCodeLocationMetadata,
+      );
+    },
+    [handleAudioRuntimeError, handleAudioTrigger, handleCodeLocationMetadata],
+  );
+
+  const startAudioWithFallback = useCallback(
+    async (codes: readonly string[]) => {
+      let evaluatedCode: string | null = null;
+
+      for (const [index, code] of codes.entries()) {
+        try {
+          const didEvaluate = await tryStartAudio(code);
+
+          if (didEvaluate) {
+            evaluatedCode = code;
+            setAudioStatusMessage(
+              index === 0 ? "Audio playing" : "Audio playing (compat mode)",
+            );
+            return evaluatedCode;
+          }
+        } catch (error) {
+          console.error(`Strudel playback candidate ${index + 1} failed`, error);
+        }
+      }
+
+      return evaluatedCode;
+    },
+    [tryStartAudio],
+  );
+
   const handlePlay = useCallback(async () => {
     clearPendingAudioLocations();
     setAudioRecoveryAvailable(false);
@@ -514,24 +612,9 @@ function App() {
     setActiveCodeLocations(null);
     setEvaluatedCodeLocations([]);
 
-    try {
-      const didEvaluate = await startStrudelAudio(
-        audibleCode,
-        handleAudioTrigger,
-        handleAudioRuntimeError,
-        handleCodeLocationMetadata,
-      );
-      if (!didEvaluate) {
-        return;
-      }
+    const playedCode = await startAudioWithFallback(playbackCodeCandidates);
 
-      lastPlayedCodeRef.current = audibleCode;
-      setAudioRecoveryAvailable(false);
-      dispatch({ type: "setPlaying", isPlaying: true });
-      setAudioStatusMessage("Audio playing");
-      announce("Audio playback started");
-    } catch (error) {
-      console.error(error);
+    if (!playedCode) {
       stopStrudelAudio();
       lastPlayedCodeRef.current = null;
       setActiveCodeLocations(null);
@@ -540,14 +623,18 @@ function App() {
       setAudioRecoveryAvailable(true);
       setAudioStatusMessage("Audio start failed. Retry available.");
       announce("Audio playback could not start");
+      return;
     }
+
+    lastPlayedCodeRef.current = playedCode;
+    setAudioRecoveryAvailable(false);
+    dispatch({ type: "setPlaying", isPlaying: true });
+    announce("Audio playback started");
   }, [
     announce,
-    audibleCode,
     clearPendingAudioLocations,
-    handleAudioRuntimeError,
-    handleAudioTrigger,
-    handleCodeLocationMetadata,
+    playbackCodeCandidates,
+    startAudioWithFallback,
   ]);
 
   const handleStop = useCallback(() => {
@@ -555,7 +642,7 @@ function App() {
   }, [stopAudioPreview]);
 
   useEffect(() => {
-    if (!isPlaying || lastPlayedCodeRef.current === audibleCode) {
+    if (!isPlaying || lastPlayedCodeRef.current === playbackCodeCandidates[0]) {
       return;
     }
 
@@ -566,18 +653,13 @@ function App() {
     setAudioRecoveryAvailable(false);
     setAudioStatusMessage("Updating audio...");
 
-    startStrudelAudio(
-      audibleCode,
-      handleAudioTrigger,
-      handleAudioRuntimeError,
-      handleCodeLocationMetadata,
-    )
+    startAudioWithFallback(playbackCodeCandidates)
       .then((didEvaluate) => {
-        if (didCancel || !didEvaluate || lastPlayedCodeRef.current === null) {
+        if (didCancel || didEvaluate === null || lastPlayedCodeRef.current === null) {
           return;
         }
 
-        lastPlayedCodeRef.current = audibleCode;
+        lastPlayedCodeRef.current = didEvaluate;
         setAudioRecoveryAvailable(false);
         setAudioStatusMessage("Audio playing");
         announce("Audio playback updated");
@@ -604,11 +686,9 @@ function App() {
     };
   }, [
     announce,
-    audibleCode,
     clearPendingAudioLocations,
-    handleAudioRuntimeError,
-    handleAudioTrigger,
-    handleCodeLocationMetadata,
+    playbackCodeCandidates,
+    startAudioWithFallback,
     isPlaying,
   ]);
 
