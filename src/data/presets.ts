@@ -24,15 +24,15 @@ const neonDubTrackPatterns = {
 
 const indietronicaTrackPatterns = {
   drums:
-    'stack(s("sbd ~ [sbd sbd] ~").gain(0.72), s("~ pink ~ pink ~").decay(0.052).hpf(4500).gain(0.25), s("white*4").decay(0.028).hpf(6000).gain(0.18), s("white*16").decay(0.022).hpf(8800).gain(0.12))',
-  bass: 'note("c2 ~ c2 eb2 g2").s("sawtooth").lpf(650).distort(0.2).slow(2).gain(0.46)',
+    'stack(s("sbd ~ [~ sbd] ~").gain(0.74), s("~ pink ~ pink").decay(0.045).hpf(5000).room(0.18).gain(0.25), s("white ~ white").decay(0.03).hpf(5600).gain(0.20))',
+  bass: 'note("c2 ~ c2 g2").s("sawtooth").lpf(720).distort(0.16).gain(0.44)',
   chords:
-    'note("c4 eb4 g4 bb4").s("triangle").arp("updown").slow(4).lpf(1450).room(0.72).gain(0.3)',
-  keys: 'note("c5 ~ g5 ~ eb5").s("sawtooth").lpf(2200).slow(3).delay(0.22).room(0.5).gain(0.19)',
-  strings: 'note("g3 c4 eb4").s("triangle").slow(5).lpf(1650).room(0.8).gain(0.22)',
-  bells: 'note("g5 c6 eb6").s("sine").slow(4).release(0.4).room(0.9).gain(0.16)',
-  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1400).decay(0.13).room(0.34).gain(0.2)',
-  voice: 'note("c4 eb4 g4").s("triangle").vowel("a i e").room(0.64).gain(0.17)',
+    'note("c4 eb4 g4 bb4").s("triangle").arp("up").slow(3).lpf(1500).room(0.66).gain(0.3)',
+  keys: 'note("c5 ~ eb5 ~ g5").s("square").lpf(2300).slow(2).room(0.46).gain(0.18)',
+  strings: 'note("c3 g3 eb4").s("triangle").slow(4).lpf(1450).room(0.74).gain(0.2)',
+  bells: 'note("g5 eb6 c6").s("sine").slow(4).release(0.42).room(0.78).gain(0.15)',
+  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1450).decay(0.12).room(0.3).gain(0.19)',
+  voice: 'note("c4 eb4 g4").s("triangle").room(0.56).gain(0.16)',
 };
 
 export const presets: PresetDefinition[] = [
