@@ -24,15 +24,15 @@ const neonDubTrackPatterns = {
 
 const indietronicaTrackPatterns = {
   drums:
-    'stack(s("sbd ~ [~ sbd] ~").gain(0.74), s("~ pink ~ pink").decay(0.045).hpf(5000).room(0.18).gain(0.25), s("white ~ white").decay(0.03).hpf(5600).gain(0.20))',
-  bass: 'note("c2 ~ c2 g2").s("sawtooth").lpf(720).distort(0.16).gain(0.44)',
+    'stack(s("sbd ~ [~ sbd] ~").gain(0.74), s("~ hh ~ hh").fast(2).decay(0.04).hpf(4200).gain(0.2), s("white*8").decay(0.028).hpf(5600).gain(0.16), s("~ pink ~ [~ pink]").decay(0.05).hpf(5200).gain(0.22))',
+  bass: 'note("c2 ~ c2 eb2 g2").s("sawtooth").lpf(700).room(0.28).gain(0.43)',
   chords:
-    'note("c4 eb4 g4 bb4").s("triangle").arp("up").slow(3).lpf(1500).room(0.66).gain(0.3)',
-  keys: 'note("c5 ~ eb5 ~ g5").s("square").lpf(2300).slow(2).room(0.46).gain(0.18)',
+    'note("c4 eb4 g4 bb4").s("triangle").slow(3).lpf(1500).room(0.66).gain(0.3)',
+  keys: 'note("g4 ~ eb5 ~ g5").s("sawtooth").lpf(2450).slow(2).room(0.5).gain(0.18)',
   strings: 'note("c3 g3 eb4").s("triangle").slow(4).lpf(1450).room(0.74).gain(0.2)',
-  bells: 'note("g5 eb6 c6").s("sine").slow(4).release(0.42).room(0.78).gain(0.15)',
-  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1450).decay(0.12).room(0.3).gain(0.19)',
-  voice: 'note("c4 eb4 g4").s("triangle").room(0.56).gain(0.16)',
+  bells: 'note("g5 eb6 c6").s("sine").slow(5).release(0.45).room(0.78).gain(0.14)',
+  guitar: 'note("c3 ~ eb3 g3").s("sawtooth").lpf(1450).decay(0.12).room(0.3).gain(0.18)',
+  voice: 'note("c4 eb4 g4").s("triangle").vowel("i a").room(0.56).gain(0.14)',
 };
 
 export const presets: PresetDefinition[] = [
@@ -65,7 +65,7 @@ export const presets: PresetDefinition[] = [
     id: "indietronica",
     name: "Indietronica",
     description:
-      "alt-J「Tessellate」のクリック感あるリズム、細かい揺れ、透明感のあるシンセレイヤーをモチーフにしたオリジナルプリセット。原曲のメロディや録音は使用していません。",
+      "alt-J「Tessellate」を意識した、クリック系のドラムと少し湿度のあるシンセレイヤーを組み合わせたオリジナルプリセット。原曲のメロディや録音は使用していません。",
     baseCode: `stack(
   ${indietronicaTrackPatterns.drums},
   ${indietronicaTrackPatterns.bass},
