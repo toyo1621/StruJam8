@@ -112,6 +112,9 @@ const INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS: PresetDefinition["playbackTrackIds"]
   "chords",
   "keys",
   "strings",
+  "bells",
+  "guitar",
+  "voice",
 ];
 
 function createRuleId(targetId: TargetId, intentId: IntentId, techniqueId: string) {
