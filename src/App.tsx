@@ -31,7 +31,7 @@ import {
   transportUiDescription,
 } from "./lib/accessibilityLabels";
 import { livePadTextColor } from "./data/padColors";
-import { getPresetDefinition, presets } from "./data/presets";
+import { getPresetDefinition, indietronicaFallbackBaseCode, presets } from "./data/presets";
 import { projectLinks } from "./data/projectLinks";
 import { getRouteDefinition } from "./data/routes";
 import { starterJam } from "./data/starterJam";
@@ -298,6 +298,7 @@ function App() {
     if (isIndietronica) {
       addCandidate(indietronicaCompactSafeRuleCode);
       addCandidate(indietronicaCompactBaseCode);
+      addCandidate(indietronicaFallbackBaseCode);
       addCandidate(selectedPreset.baseCode);
     } else {
       addCandidate(selectedPreset.baseCode);

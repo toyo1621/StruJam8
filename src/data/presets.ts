@@ -35,6 +35,29 @@ const indietronicaTrackPatterns = {
   voice: 'note("c4 eb4 g4").s("triangle").room(0.28).gain(0.08)',
 };
 
+const indietronicaCompatTrackPatterns = {
+  drums:
+    'stack(s("sbd*4").gain(0.8), s("~ pink ~ pink").decay(0.06).gain(0.3), s("white*8").decay(0.028).hpf(5600).gain(0.14))',
+  bass: 'note("c2 ~ c2 g2").s("sawtooth").lpf(700).gain(0.5)',
+  chords: 'note("c4 eb4 g4 bb4").s("triangle").slow(2).room(0.42).gain(0.32)',
+  keys: 'note("g4 eb5 c5").s("sawtooth").slow(2).room(0.36).gain(0.16)',
+  strings: 'note("c3 g3 eb4").s("triangle").slow(4).room(0.56).gain(0.14)',
+  bells: 'note("g5 eb6 c6").s("sine").slow(6).release(0.4).gain(0.08)',
+  guitar: 'note("c3 eb3 g3").s("sawtooth").lpf(1400).decay(0.12).room(0.2).gain(0.12)',
+  voice: 'note("c4 eb4 g4").s("triangle").room(0.22).gain(0.08)',
+};
+
+export const indietronicaFallbackBaseCode = `stack(
+  ${indietronicaCompatTrackPatterns.drums},
+  ${indietronicaCompatTrackPatterns.bass},
+  ${indietronicaCompatTrackPatterns.chords},
+  ${indietronicaCompatTrackPatterns.keys},
+  ${indietronicaCompatTrackPatterns.strings},
+  ${indietronicaCompatTrackPatterns.bells},
+  ${indietronicaCompatTrackPatterns.guitar},
+  ${indietronicaCompatTrackPatterns.voice}
+)`;
+
 export const presets: PresetDefinition[] = [
   {
     id: "toy-house",
