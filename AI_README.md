@@ -317,7 +317,7 @@ Current level: acceptable for early playback MVP.
 
 Risks:
 
-- New rule IDs use `crypto.randomUUID()` in the secure context required by the app.
+- New rule IDs use `crypto.randomUUID()` when available, with a timestamp and per-session sequence fallback for older/local browser contexts. IDs identify UI rules; they are not security tokens.
 - Catalog snippets are trusted application code. URL, JSON and localStorage restore only registered IDs; executable fields and labels are rebuilt from the catalog, never accepted from external snapshots.
 - RESET semantics are tested and announced, but users may still expect it to return home because the visible label is intentionally compact.
 - localStorage access is guarded; save failures show an unsaved warning. Invalid snapshots are rejected atomically; snapshots are capped at 256 KiB and 128 rules.

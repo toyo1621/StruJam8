@@ -3,8 +3,14 @@ import type { Rule, TechniqueDefinition } from "../types";
 export const maxJamRules = 128;
 export const maxJamSnapshotBytes = 256 * 1024;
 
-export function createRuleId() {
-  return crypto.randomUUID();
+let fallbackIdSequence = 0;
+
+export function createRuleId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Older/insecure local browser contexts may not expose randomUUID.
+  return `rule-${Date.now()}-${++fallbackIdSequence}`;
 }
 
 export function createRuleFromTechnique(

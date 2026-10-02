@@ -11,7 +11,7 @@ next. Update the checkpoint and evidence links when a release changes.
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Local evidence: 196 unit/component tests, TypeScript/root build, 26 root Chromium tests and 26 Pages-build Chromium tests passed.
+- Local evidence: 198 unit/component tests, TypeScript/root build, 26 root Chromium tests and 26 Pages-build Chromium tests passed.
 - Catalog evidence: 296/296 snippets evaluate; 296/296 have miniLocations, 295/296 produce event locations in the 500ms observation window.
 - Publication is a separate check: verify the Pages workflow SHA, `release.json`, asset hashes and a browser smoke flow. Local green tests alone do not establish production parity.
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
@@ -39,7 +39,7 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Partial | 23 Vitest files / 196 tests and 26 Chromium tests pass at both root and Pages base paths. Real listening, assistive-technology and Safari checks remain evidence gaps. |
+| Regression coverage | Partial | 24 Vitest files / 198 tests and 26 Chromium tests pass at both root and Pages base paths. Real listening, assistive-technology and Safari checks remain evidence gaps. |
 | Untrusted snapshot execution | Hardened | URL, JSON and localStorage cannot supply executable snippets or labels: IDs are restored through the catalog. Unknown/mismatched techniques, duplicate IDs and invalid snapshots are rejected atomically. Parser tests plus three real-browser injection regression cases cover the trust boundary. |
 | Bounded inputs and storage failure | Hardened | Shared constants cap snapshots at 256 KiB and rules at 128; parser, file import and reducer enforce limits. This is a resource bound, not a musical-complexity or audio-safety guarantee. |
 | Deployment gate and identity | Implemented; verify per release | Pages calls reusable CI; tests, builds, dependency audit, both browser suites and catalog checks must pass before upload. No rebuild follows validation. Only deployment receives write permissions. `release.json` exposes commit and file hashes. |
