@@ -52,6 +52,23 @@ describe("App audio recovery", () => {
 
   afterEach(() => cleanup());
 
+  it.each(["toy-house", "neon-dub", "indietronica"])("keeps display, Copy and playback identical for %s", async (presetId) => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    Object.defineProperty(navigator, "clipboard", { configurable: true, value: { writeText } });
+    const { container } = render(<App />);
+    fireEvent.change(screen.getByLabelText("Preset"), { target: { value: presetId } });
+    fireEvent.click(screen.getByRole("button", { name: "2ベース" }));
+    fireEvent.click(screen.getByRole("button", { name: "2崩す" }));
+    fireEvent.click(screen.getByRole("button", { name: "1抜く音を抜く" }));
+    const displayedCode = Array.from(container.querySelectorAll(".code-line"), (line) => line.textContent).join("\n");
+    fireEvent.click(screen.getByRole("button", { name: "Copy" }));
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith(displayedCode));
+    fireEvent.click(screen.getByRole("button", { name: "Start Strudel audio preview" }));
+    await waitFor(() => expect(screen.getByText("Audio playing")).toBeInTheDocument());
+    expect(startStrudelAudioMock).toHaveBeenCalledTimes(1);
+    expect(startStrudelAudioMock.mock.calls[0][0]).toBe(displayedCode);
+  });
+
   it("shows Retry after a start failure and recovers on the next click", async () => {
     startStrudelAudioMock.mockRejectedValueOnce(new Error("audio start failed"));
     render(<App />);

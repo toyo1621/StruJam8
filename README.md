@@ -53,7 +53,7 @@ Implemented:
 - Recoverable audio failures expose a visible Retry state
 - Unexpected UI rendering failures show a reloadable fallback instead of a blank screen
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
-- Playwright browser checks for route navigation, all concrete route reachability, one verified playback technique from every concrete route, 28 additional runtime-verified technique playbacks, code updates, RESET, starter jam onboarding, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, and live code highlighting across a representative route for all eight target tracks
+- Playwright browser checks for route navigation, all concrete route reachability, one verified playback technique from every concrete route, 28 additional runtime-verified technique playbacks, code updates, RESET, starter jam onboarding, trusted-catalog restoration of imported snippets, rejected unknown techniques, pending-start cancellation, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, and live code highlighting across a representative route for all eight target tracks
 - The Strudel audio runtime is lazy-loaded only after Play, with browser checks guarding that initial-load behavior in both development and GitHub Pages production previews
 - All 296 catalog technique snippets pass the installed Strudel evaluator through `npm run verify:techniques`; `npm run verify:highlighting` confirms `miniLocations` for 296/296 techniques and observes runtime event locations for 295/296 in a 500ms window (the remaining rest-oriented technique can be silent during that window)
 
@@ -64,7 +64,25 @@ Not implemented yet:
 - Blockly or visual programming blocks
 - Pattern editing
 - MIDI or controller input
-- Full all-route runtime-highlight coverage remains; representative all-eight-target coverage, safe-exclusion checks, real invalid-snippet failure recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered
+- Full all-route runtime-highlight coverage remains; representative all-eight-target coverage, trusted-input checks, pending-start cancellation, audio start/stop, lazy loading, and runtime-load Retry recovery are covered
+
+## Snapshot Safety and Playback
+
+Imported JSON, shared URLs, and local browser saves select registered techniques by ID.
+Their labels, snippets and playback settings are restored from the built-in catalog;
+custom JavaScript in a snapshot is never evaluated. Unknown techniques, mismatched routes,
+duplicate rule IDs, and invalid snapshots are rejected as a whole. Existing catalog-based
+version-1 snapshots remain supported. Limits: 128 rules and 256 KiB per snapshot.
+
+After a shared jam is saved locally, its `jam` URL parameter is removed so refresh respects
+later edits or RESET. When browser storage fails, an unsaved warning asks you to Export JSON.
+Jams are kept in this browser, not a server. A shared URL contains the jam itself; avoid
+including private information and share only with intended recipients.
+
+Display, Copy and Play use exactly the same generated code. Failed playback stops with Retry;
+there is no silent substitution with another preset or reduced arrangement. Stop also cancels
+pending initialization and live updates. Chromium automation does not replace listening tests
+or real Safari/iPad testing.
 
 ## Presets
 
@@ -181,7 +199,7 @@ The app is configured for GitHub Pages at:
 
 https://toyo1621.github.io/StruJam8/
 
-The deployment workflow is defined in `.github/workflows/pages.yml`. It runs `npm run check:pages`, uploads `dist/`, and deploys through GitHub Pages. Local development still runs at the Vite root path. See [docs/deployment.md](docs/deployment.md) for the deployment runbook.
+The deployment workflow is defined in `.github/workflows/pages.yml`. It calls the reusable CI workflow and deploys only after unit tests, TypeScript/build, root and Pages browser tests, all-technique/highlighting checks, and the production dependency audit pass. The exact tested Pages artifact is uploaded after removing the preview-only fixture. `release.json` records its commit and file hashes. Local development still runs at the Vite root path. See [docs/deployment.md](docs/deployment.md) for the deployment runbook.
 See [docs/release-readiness.md](docs/release-readiness.md) for the current functional/non-functional requirement evaluation and release gate.
 
 ## Project Structure
@@ -195,6 +213,7 @@ src/
   App.css                Visual design and responsive layout
   audio/
     strudelEngine.ts      Small Strudel runtime boundary for Play/Stop
+    useAudioPlayback.ts   Playback lifecycle, cancellation and retry
   types.ts               Shared TypeScript types
   components/            Focused React UI components
   data/
@@ -214,7 +233,8 @@ src/
     codeTokens.ts        Syntax-colored Strudel-like code tokenization
     codeLocations.ts     Runtime Strudel event range mapping
     keyboard.ts        Keyboard shortcut helpers
-    persistence.ts     Local storage and JSON snapshot helpers
+    persistence.ts     Trusted-catalog restoration and bounded snapshot parsing
+    rules.ts           Canonical rule construction and shared limits
     shareUrl.ts        URL snapshot sharing helpers
   state/
     appReducer.ts        App state transitions and rule actions

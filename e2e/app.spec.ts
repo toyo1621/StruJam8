@@ -1,6 +1,9 @@
 import { expect, test, type Page } from "@playwright/test";
+import { getPresetDefinition } from "../src/data/presets";
 import { concreteTechniqueRoutes } from "../src/data/routes";
 import { getTechniqueById, getTechniquesByRoute } from "../src/data/techniques";
+import { createRuleFromTechnique } from "../src/lib/rules";
+import { jamStorageKey } from "../src/lib/persistence";
 
 function livePads(page: Page) {
   return page.locator("footer.pad-dock button.live-pad");
@@ -213,6 +216,85 @@ function runtimeVerifiedTechniquePlaybackSnapshot() {
 }
 
 test.describe("StruJam8 browser flow", () => {
+  for (const ingress of ["url", "json", "storage"] as const) {
+    test(`rebuilds tampered ${ingress} rules without executing injected code`, async ({ page }) => {
+      const technique = getTechniqueById("bass-break-drop-notes")!;
+      const snapshot = {
+        version: 1,
+        selectedPresetId: "toy-house",
+        rules: [{
+          ...createRuleFromTechnique(technique, "tampered-rule"),
+          target: '*/ globalThis.__injected = true; /*',
+          strudelSnippet: ".gain((globalThis.__injected = true, 0))",
+        }],
+      };
+      const payload = JSON.stringify(snapshot);
+      if (ingress === "storage") {
+        await page.addInitScript(({ key, value }) => localStorage.setItem(key, value), {
+          key: jamStorageKey, value: payload,
+        });
+      }
+      await page.goto(ingress === "url" ? `./?jam=${encodeURIComponent(payload)}` : "./");
+      if (ingress === "json") {
+        await page.getByLabel("Import jam JSON").setInputFiles({
+          name: "tampered.json", mimeType: "application/json", buffer: Buffer.from(payload),
+        });
+      }
+      await expect(page.locator(".rule-block")).toHaveCount(1);
+      const code = page.getByLabel("Audible Strudel code");
+      await expect(code).toContainText(technique.strudelSnippet!);
+      await expect(code).not.toContainText("__injected");
+      await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+      await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
+      expect(await page.evaluate(() => Reflect.get(globalThis, "__injected"))).toBeUndefined();
+      await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+    });
+  }
+
+  test("does not restore an old shared URL after RESET and reload", async ({ page }) => {
+    await page.goto(unverifiedTechniqueJamUrl());
+    await expect(page.locator(".rule-block")).toHaveCount(1);
+    await expect(page).not.toHaveURL(/jam=/);
+    await page.getByRole("button", { name: /^RESET:/ }).click();
+    await expect(page.locator(".rule-block")).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator(".rule-block")).toHaveCount(0);
+  });
+
+  for (const cancellation of ["stop", "preset"] as const) {
+    test(`cancels pending runtime initialization on ${cancellation}`, async ({ page }) => {
+      let releaseRuntime!: () => void;
+      const runtimeGate = new Promise<void>((resolve) => { releaseRuntime = resolve; });
+      let observedRuntime!: () => void;
+      const runtimeRequested = new Promise<void>((resolve) => { observedRuntime = resolve; });
+      await page.route("**/*", async (route) => {
+        if (isStrudelRuntimeRequest(route.request().url())) {
+          observedRuntime();
+          await runtimeGate;
+        }
+        await route.continue();
+      });
+      await page.goto("./");
+      await chooseBassBreakTechnique(page);
+      await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
+      await runtimeRequested;
+      if (cancellation === "stop") {
+        await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
+      } else {
+        await page.getByLabel("Preset", { exact: true }).selectOption("indietronica");
+      }
+      releaseRuntime();
+      await page.waitForLoadState("networkidle");
+      // This delayed assertion guards against a late initialization restarting playback.
+      await page.waitForTimeout(1500);
+      await expect(page.locator(".audio-status")).toHaveText(
+        cancellation === "stop" ? "Audio stopped" : "Audio stopped for preset change",
+      );
+      await expect(page.getByRole("button", { name: "Start Strudel audio preview" })).toBeEnabled();
+      await expect(page.locator(".code-token.is-location-active")).toHaveCount(0);
+    });
+  }
+
   test("navigates through the three pad levels and updates audible code", async ({ page }) => {
     await page.goto("./");
 
@@ -274,7 +356,7 @@ test.describe("StruJam8 browser flow", () => {
     await page.getByLabel("Preset", { exact: true }).selectOption("indietronica");
 
     await expect(page.getByLabel("Preset", { exact: true })).toHaveValue("indietronica");
-    await expect(page.getByLabel("Audible Strudel code")).toContainText(/s\("sbd ~ \[(~ sbd|sbd sbd)\] ~"\)/);
+    expect(await page.locator(".code-line").allTextContents()).toEqual(getPresetDefinition("indietronica").baseCode.split("\n"));
     await expect(
       page.getByText("原曲のメロディや録音は使用していません。", { exact: false }),
     ).toBeVisible();
@@ -286,14 +368,14 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });
 
-  test("shows unverified techniques as TODO without sending them to Play", async ({ page }) => {
+  test("restores safety metadata from the trusted catalog", async ({ page }) => {
     await page.goto(unverifiedTechniqueJamUrl());
 
     await expect(page.getByText("ベース ＞ 崩す ＞ たまに休む", { exact: true }).first()).toBeVisible();
-    await expect(page.getByText("TODO", { exact: true }).first()).toBeVisible();
+    await expect(page.getByText("TODO", { exact: true })).toHaveCount(0);
 
     const code = page.getByLabel("Audible Strudel code");
-    await expect(code).not.toContainText(".sometimes(silence)");
+    await expect(code).toContainText(".sometimes(x => silence)");
     await expect(code).not.toContainText("TODO");
 
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
@@ -303,28 +385,13 @@ test.describe("StruJam8 browser flow", () => {
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });
 
-  test("recovers after a real invalid snippet evaluation failure", async ({ page }) => {
+  test("rejects unknown shared techniques before evaluating any code", async ({ page }) => {
     await page.goto(invalidSnippetJamUrl());
-
-    const code = page.getByLabel("Audible Strudel code");
-    await expect(code).toContainText(".definitelyNotAStrudelFunction(1)");
-
+    await expect(page.locator(".rule-block")).toHaveCount(0);
+    await expect(page.locator(".file-status")).toContainText("共有データを読み込めませんでした");
+    await expect(page.getByLabel("Audible Strudel code")).not.toContainText("definitelyNotAStrudelFunction");
     await page.getByRole("button", { name: "Start Strudel audio preview" }).click();
-    await expect(page.locator(".audio-status")).toHaveText("Audio start failed. Retry available.", {
-      timeout: 15_000,
-    });
-    await expect(page.getByRole("button", { name: "Retry Strudel audio preview" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Stop Strudel audio preview" })).toHaveAttribute(
-      "aria-pressed",
-      "true",
-    );
-
-    await page.getByRole("button", { name: /^RESET:/ }).click();
-    await expect(code).not.toContainText(".definitelyNotAStrudelFunction(1)");
-
-    await page.getByRole("button", { name: "Retry Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio playing", { timeout: 15_000 });
-
     await page.getByRole("button", { name: "Stop Strudel audio preview" }).click();
     await expect(page.locator(".audio-status")).toHaveText("Audio stopped");
   });

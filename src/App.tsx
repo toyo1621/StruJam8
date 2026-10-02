@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
-import {
-  startStrudelAudio,
-  stopStrudelAudio,
-  type StrudelAudioErrorHandler,
-  type StrudelAudioTriggerHandler,
-  type StrudelCodeLocation,
-  type StrudelCodeLocationMetadataHandler,
-} from "./audio/strudelEngine";
+import { useAudioPlayback } from "./audio/useAudioPlayback";
 import { RuleDetailPanel } from "./components/RuleDetailPanel";
 import {
   formatRedoAnnouncement,
@@ -31,7 +24,7 @@ import {
   transportUiDescription,
 } from "./lib/accessibilityLabels";
 import { livePadTextColor } from "./data/padColors";
-import { getPresetDefinition, indietronicaFallbackBaseCode, presets } from "./data/presets";
+import { getPresetDefinition, presets } from "./data/presets";
 import { projectLinks } from "./data/projectLinks";
 import { getRouteDefinition } from "./data/routes";
 import { starterJam } from "./data/starterJam";
@@ -49,7 +42,6 @@ import {
   getCodeLineOffsets,
   getCodeTokenOffsets,
   getCodeTokenSegments,
-  mergeCodeLocations,
 } from "./lib/codeLocations";
 import { tokenizeCodeLine } from "./lib/codeTokens";
 import {
@@ -60,6 +52,7 @@ import {
 } from "./lib/clipboard";
 import { getPadShortcutIndexFromEvent } from "./lib/keyboard";
 import {
+  consumeJamShareUrl,
   createJamShareUrl,
   getBrowserHref,
   isJamShareUrlWithinLimit,
@@ -72,12 +65,12 @@ import {
   saveJamSnapshot,
   serializeJamSnapshot,
 } from "./lib/persistence";
+import { createRuleFromTechnique, createRuleId, maxJamRules, maxJamSnapshotBytes } from "./lib/rules";
 import { appReducer, createInitialAppState, initialAppState } from "./state/appReducer";
 import type {
   CurrentLevel,
   IntentId,
   PadOption,
-  PresetDefinition,
   PresetId,
   RouteSelection,
   Rule,
@@ -106,47 +99,18 @@ type LivePadStyle = React.CSSProperties & {
   "--pad-text-color": string;
 };
 
-const INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS: PresetDefinition["playbackTrackIds"] = [
-  "drums",
-  "bass",
-  "chords",
-  "keys",
-  "strings",
-  "bells",
-  "guitar",
-  "voice",
-];
-
-function createRuleId(targetId: TargetId, intentId: IntentId, techniqueId: string) {
-  if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-    return crypto.randomUUID();
-  }
-
-  return `${targetId}-${intentId}-${techniqueId}-${Date.now()}`;
-}
-
-function createRuleFromTechnique(technique: TechniqueDefinition): Rule {
-  return {
-    id: createRuleId(technique.targetId, technique.intentId, technique.id),
-    targetId: technique.targetId,
-    intentId: technique.intentId,
-    techniqueId: technique.id,
-    target: technique.target,
-    intent: technique.intent,
-    technique: technique.label,
-    shortLabel: technique.shortLabel,
-    strudelSnippet: technique.strudelSnippet,
-    playbackTransform: technique.playbackTransform,
-    needsTodo: technique.needsTodo ?? false,
-    enabled: true,
-  };
-}
-
 function loadInitialAppState() {
   const browserHref = getBrowserHref();
   const urlSnapshot = browserHref ? parseJamShareUrl(browserHref) : null;
 
   return createInitialAppState(urlSnapshot ?? loadJamSnapshot(getBrowserStorage()));
+}
+
+function getInitialShareStatus() {
+  const href = getBrowserHref();
+  return href && new URL(href).searchParams.has("jam") && !parseJamShareUrl(href)
+    ? "共有データを読み込めませんでした。保存済みのJamを使用します。"
+    : "";
 }
 
 function downloadTextFile(fileName: string, contents: string) {
@@ -168,18 +132,12 @@ function App() {
   const [highlightedPadId, setHighlightedPadId] = useState<string | null>(null);
   const [selectedRuleId, setSelectedRuleId] = useState<string | null>(null);
   const [copyStatus, setCopyStatus] = useState<CopyTextResult | "idle">("idle");
-  const [fileStatusMessage, setFileStatusMessage] = useState("");
-  const [audioStatusMessage, setAudioStatusMessage] = useState("");
-  const [audioRecoveryAvailable, setAudioRecoveryAvailable] = useState(false);
+  const [fileStatusMessage, setFileStatusMessage] = useState(getInitialShareStatus);
   const [codePulseIndex, setCodePulseIndex] = useState(0);
-  const [activeCodeLocations, setActiveCodeLocations] = useState<StrudelCodeLocation[] | null>(null);
-  const [evaluatedCodeLocations, setEvaluatedCodeLocations] = useState<StrudelCodeLocation[]>([]);
-  const pendingAudioLocationsRef = useRef<StrudelCodeLocation[]>([]);
-  const pendingAudioFlushIdRef = useRef<number | null>(null);
+  const [storageFailed, setStorageFailed] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
   const codeViewRef = useRef<HTMLPreElement | null>(null);
-  const lastPlayedCodeRef = useRef<string | null>(null);
   const {
     currentLevel,
     selectedTarget,
@@ -188,24 +146,11 @@ function App() {
     rules,
     ruleHistory,
     ruleFuture,
-    isPlaying,
   } = state;
 
   const selectedPreset = useMemo(
     () => getPresetDefinition(selectedPresetId),
     [selectedPresetId],
-  );
-
-  const isIndietronica = selectedPreset.id === "indietronica";
-  const indietronicaSafePreset = useMemo(
-    () =>
-      isIndietronica
-        ? {
-            ...selectedPreset,
-            playbackTrackIds: INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS,
-          }
-        : selectedPreset,
-    [isIndietronica, selectedPreset],
   );
 
   const visiblePads = useMemo<PadOption[]>(() => {
@@ -260,58 +205,19 @@ function App() {
     [rules, selectedPreset],
   );
   const audibleCode = useMemo(() => joinCodeLines(audibleCodeLines), [audibleCodeLines]);
+  const announce = useCallback((message: string) => {
+    setStatusMessage("");
+    window.setTimeout(() => setStatusMessage(message), 0);
+  }, []);
+  const {
+    play: handlePlay, stop: stopAudioPreview, isPlaying, isBusy: isAudioBusy,
+    statusMessage: audioStatusMessage, recoveryAvailable: audioRecoveryAvailable,
+    activeCodeLocations, evaluatedCodeLocations,
+  } = useAudioPlayback(audibleCode, announce);
   const audibleCodeTextLines = useMemo(
     () => audibleCodeLines.map((line) => line.text),
     [audibleCodeLines],
   );
-  const indietronicaSafeRules = useMemo(
-    () =>
-      isIndietronica
-        ? rules.filter((rule) => INDIETRONICA_PLAYBACK_SAFE_TRACK_IDS.includes(rule.targetId))
-        : rules,
-    [isIndietronica, rules],
-  );
-  const indietronicaCompactBaseCode = useMemo(
-    () => joinCodeLines(formatPlayableCodeLines([], indietronicaSafePreset)),
-    [indietronicaSafePreset],
-  );
-  const indietronicaCompactSafeRuleCode = useMemo(
-    () => joinCodeLines(formatPlayableCodeLines(indietronicaSafeRules, indietronicaSafePreset)),
-    [indietronicaSafePreset, indietronicaSafeRules],
-  );
-  const playbackCodeCandidates = useMemo(() => {
-    const candidateSet = new Set<string>();
-    const addCandidate = (code: string | undefined | null) => {
-      if (!code) {
-        return;
-      }
-
-      const normalizedCode = code.trim();
-
-      if (normalizedCode.length > 0) {
-        candidateSet.add(normalizedCode);
-      }
-    };
-
-    addCandidate(audibleCode);
-
-    if (isIndietronica) {
-      addCandidate(indietronicaCompactSafeRuleCode);
-      addCandidate(indietronicaCompactBaseCode);
-      addCandidate(indietronicaFallbackBaseCode);
-      addCandidate(selectedPreset.baseCode);
-    } else {
-      addCandidate(selectedPreset.baseCode);
-    }
-
-    return [...candidateSet];
-  }, [
-    audibleCode,
-    indietronicaCompactBaseCode,
-    indietronicaCompactSafeRuleCode,
-    isIndietronica,
-    selectedPreset.baseCode,
-  ]);
   const audibleCodeTokens = useMemo(
     () => audibleCodeLines.map((line) => tokenizeCodeLine(line.text || " ")),
     [audibleCodeLines],
@@ -361,76 +267,10 @@ function App() {
   const pathLabel = getPathLabel(currentLevel, selectedTarget, selectedIntent);
   const copyStatusLabel = getCopyStatusLabel(copyStatus);
 
-  const announce = useCallback((message: string) => {
-    setStatusMessage("");
-    window.setTimeout(() => setStatusMessage(message), 0);
-  }, []);
-
-  const clearPendingAudioLocations = useCallback(() => {
-    if (pendingAudioFlushIdRef.current !== null) {
-      window.clearTimeout(pendingAudioFlushIdRef.current);
-      pendingAudioFlushIdRef.current = null;
-    }
-
-    pendingAudioLocationsRef.current = [];
-  }, []);
-
-  const handleAudioTrigger = useCallback<StrudelAudioTriggerHandler>((locations) => {
-    pendingAudioLocationsRef.current = mergeCodeLocations(pendingAudioLocationsRef.current, locations);
-
-    if (pendingAudioFlushIdRef.current !== null) {
-      return;
-    }
-
-    pendingAudioFlushIdRef.current = window.setTimeout(() => {
-      pendingAudioFlushIdRef.current = null;
-      const nextLocations = pendingAudioLocationsRef.current;
-      pendingAudioLocationsRef.current = [];
-      setActiveCodeLocations(nextLocations.length > 0 ? nextLocations : null);
-    }, 0);
-  }, []);
-
-  const handleCodeLocationMetadata = useCallback<StrudelCodeLocationMetadataHandler>((locations) => {
-    setEvaluatedCodeLocations(mergeCodeLocations(locations));
-  }, []);
-
-  const handleAudioRuntimeError = useCallback<StrudelAudioErrorHandler>((error) => {
-    console.error(error);
-    clearPendingAudioLocations();
-    setEvaluatedCodeLocations([]);
-    stopStrudelAudio();
-    lastPlayedCodeRef.current = null;
-    setActiveCodeLocations(null);
-    dispatch({ type: "setPlaying", isPlaying: false });
-    setAudioRecoveryAvailable(true);
-    setAudioStatusMessage("Audio stopped after error. Retry available.");
-    announce("Audio playback stopped because of an audio error");
-  }, [announce, clearPendingAudioLocations]);
-
-  const stopAudioPreview = useCallback((statusMessage: string, announcement: string) => {
-    clearPendingAudioLocations();
-    setEvaluatedCodeLocations([]);
-    stopStrudelAudio();
-    lastPlayedCodeRef.current = null;
-    setActiveCodeLocations(null);
-    dispatch({ type: "setPlaying", isPlaying: false });
-    setAudioRecoveryAvailable(false);
-    setAudioStatusMessage(statusMessage);
-    announce(announcement);
-  }, [announce, clearPendingAudioLocations]);
-
   useEffect(() => {
-    return () => {
-      clearPendingAudioLocations();
-      stopStrudelAudio();
-    };
-  }, [clearPendingAudioLocations]);
-
-  useEffect(() => {
-    saveJamSnapshot(getBrowserStorage(), {
-      selectedPresetId,
-      rules,
-    });
+    const saved = saveJamSnapshot(getBrowserStorage(), { selectedPresetId, rules });
+    setStorageFailed(!saved);
+    if (saved) consumeJamShareUrl();
   }, [rules, selectedPresetId]);
 
   useEffect(() => {
@@ -494,11 +334,15 @@ function App() {
       return;
     }
 
+    if (rules.length >= maxJamRules) {
+      setFileStatusMessage(`ルールは${maxJamRules}件までです。不要なルールを削除してください。`);
+      return;
+    }
     const techniqueDefinition = getTechniqueById(pad.id);
     const nextRule = techniqueDefinition
       ? createRuleFromTechnique(techniqueDefinition)
       : {
-          id: createRuleId(selectedTarget.id, selectedIntent.id, pad.id),
+          id: createRuleId(),
           targetId: selectedTarget.id,
           intentId: selectedIntent.id,
           techniqueId: pad.id,
@@ -514,22 +358,22 @@ function App() {
     dispatch({ type: "addRule", rule: nextRule });
     setSelectedRuleId(nextRule.id);
     announce(formatRuleAddedAnnouncement(nextRule));
-  }, [announce, currentLevel, selectedIntent, selectedTarget]);
+  }, [announce, currentLevel, rules.length, selectedIntent, selectedTarget]);
 
   const handleStarterJam = useCallback(() => {
     const starterRules = starterJam.techniqueIds
       .map((techniqueId) => getTechniqueById(techniqueId))
       .filter((technique): technique is TechniqueDefinition => Boolean(technique))
-      .map(createRuleFromTechnique);
+      .map((technique) => createRuleFromTechnique(technique));
 
-    if (starterRules.length === 0) {
+    if (starterRules.length === 0 || rules.length + starterRules.length > maxJamRules) {
       return;
     }
 
     dispatch({ type: "addRules", rules: starterRules });
     setSelectedRuleId(starterRules[starterRules.length - 1]?.id ?? null);
     announce(`${starterJam.label}を追加しました。コードパネルで変化を確認できます。`);
-  }, [announce]);
+  }, [announce, rules.length]);
 
   const handleToggleRule = useCallback((rule: Rule) => {
     dispatch({ type: "toggleRuleEnabled", ruleId: rule.id });
@@ -542,15 +386,19 @@ function App() {
   }, [announce]);
 
   const handleDuplicateRule = useCallback((rule: Rule) => {
+    if (rules.length >= maxJamRules) {
+      setFileStatusMessage(`ルールは${maxJamRules}件までです。不要なルールを削除してください。`);
+      return;
+    }
     const duplicatedRule = {
       ...rule,
-      id: createRuleId(rule.targetId, rule.intentId, rule.techniqueId),
+      id: createRuleId(),
     };
 
     dispatch({ type: "duplicateRule", sourceRuleId: rule.id, rule: duplicatedRule });
     setSelectedRuleId(duplicatedRule.id);
     announce(formatRuleDuplicatedAnnouncement(rule));
-  }, [announce]);
+  }, [announce, rules.length]);
 
   const handleRemoveRule = useCallback((rule: Rule) => {
     dispatch({ type: "removeRule", ruleId: rule.id });
@@ -573,136 +421,10 @@ function App() {
   }, [announce, rules.length]);
 
   const handlePresetChange = useCallback((presetId: PresetId) => {
-    if (isPlaying) {
-      stopAudioPreview("Audio stopped for preset change", "Audio stopped for preset change");
-    }
+    stopAudioPreview("Audio stopped for preset change", "Audio stopped for preset change");
 
     dispatch({ type: "selectPreset", presetId });
-  }, [isPlaying, stopAudioPreview]);
-
-  const tryStartAudio = useCallback(
-    async (code: string) => {
-      return startStrudelAudio(
-        code,
-        handleAudioTrigger,
-        handleAudioRuntimeError,
-        handleCodeLocationMetadata,
-      );
-    },
-    [handleAudioRuntimeError, handleAudioTrigger, handleCodeLocationMetadata],
-  );
-
-  const startAudioWithFallback = useCallback(
-    async (codes: readonly string[]) => {
-      let evaluatedCode: string | null = null;
-
-      for (const [index, code] of codes.entries()) {
-        try {
-          const didEvaluate = await tryStartAudio(code);
-
-          if (didEvaluate) {
-            evaluatedCode = code;
-            setAudioStatusMessage(
-              index === 0 ? "Audio playing" : "Audio playing (compat mode)",
-            );
-            return evaluatedCode;
-          }
-        } catch (error) {
-          console.error(`Strudel playback candidate ${index + 1} failed`, error);
-        }
-      }
-
-      return evaluatedCode;
-    },
-    [tryStartAudio],
-  );
-
-  const handlePlay = useCallback(async () => {
-    clearPendingAudioLocations();
-    setAudioRecoveryAvailable(false);
-    setAudioStatusMessage("Starting audio...");
-    setActiveCodeLocations(null);
-    setEvaluatedCodeLocations([]);
-
-    const playedCode = await startAudioWithFallback(playbackCodeCandidates);
-
-    if (!playedCode) {
-      stopStrudelAudio();
-      lastPlayedCodeRef.current = null;
-      setActiveCodeLocations(null);
-      setEvaluatedCodeLocations([]);
-      dispatch({ type: "setPlaying", isPlaying: false });
-      setAudioRecoveryAvailable(true);
-      setAudioStatusMessage("Audio start failed. Retry available.");
-      announce("Audio playback could not start");
-      return;
-    }
-
-    lastPlayedCodeRef.current = playedCode;
-    setAudioRecoveryAvailable(false);
-    dispatch({ type: "setPlaying", isPlaying: true });
-    announce("Audio playback started");
-  }, [
-    announce,
-    clearPendingAudioLocations,
-    playbackCodeCandidates,
-    startAudioWithFallback,
-  ]);
-
-  const handleStop = useCallback(() => {
-    stopAudioPreview("Audio stopped", "Audio playback stopped");
   }, [stopAudioPreview]);
-
-  useEffect(() => {
-    if (!isPlaying || lastPlayedCodeRef.current === playbackCodeCandidates[0]) {
-      return;
-    }
-
-    let didCancel = false;
-    clearPendingAudioLocations();
-    setActiveCodeLocations(null);
-    setEvaluatedCodeLocations([]);
-    setAudioRecoveryAvailable(false);
-    setAudioStatusMessage("Updating audio...");
-
-    startAudioWithFallback(playbackCodeCandidates)
-      .then((didEvaluate) => {
-        if (didCancel || didEvaluate === null || lastPlayedCodeRef.current === null) {
-          return;
-        }
-
-        lastPlayedCodeRef.current = didEvaluate;
-        setAudioRecoveryAvailable(false);
-        setAudioStatusMessage("Audio playing");
-        announce("Audio playback updated");
-      })
-      .catch((error) => {
-        console.error(error);
-
-        if (didCancel) {
-          return;
-        }
-
-        stopStrudelAudio();
-        lastPlayedCodeRef.current = null;
-        setActiveCodeLocations(null);
-        setEvaluatedCodeLocations([]);
-        dispatch({ type: "setPlaying", isPlaying: false });
-        setAudioRecoveryAvailable(true);
-        setAudioStatusMessage("Audio update failed. Retry available.");
-        announce("Audio playback could not update");
-      });
-
-    return () => {
-      didCancel = true;
-    };
-  }, [
-    announce,
-    clearPendingAudioLocations,
-    playbackCodeCandidates,
-    startAudioWithFallback,
-    isPlaying,
-  ]);
 
   const handleCopyCode = useCallback(async () => {
     const result = await copyTextToClipboard(audibleCode, getBrowserClipboard());
@@ -736,22 +458,19 @@ function App() {
       return;
     }
 
-    const snapshot = parseJamSnapshotText(await file.text());
-
-    if (!snapshot) {
-      setFileStatusMessage("Import failed");
-      announce("Import failed");
-      return;
-    }
-
-    if (isPlaying) {
+    try {
+      if (file.size > maxJamSnapshotBytes) throw new Error("Oversized snapshot");
+      const snapshot = parseJamSnapshotText(await file.text());
+      if (!snapshot) throw new Error("Invalid snapshot");
       stopAudioPreview("Audio stopped for imported jam", "Audio stopped for imported jam");
+      dispatch({ type: "importSnapshot", snapshot });
+      setFileStatusMessage("Imported");
+      announce("Jam JSON imported");
+    } catch {
+      setFileStatusMessage("Import failed: 有効なJam JSONを選んでください（256 KB / 128ルール以内）。");
+      announce("Import failed. Current jam preserved.");
     }
-
-    dispatch({ type: "importSnapshot", snapshot });
-    setFileStatusMessage("Imported");
-    announce("Jam JSON imported");
-  }, [announce, isPlaying, stopAudioPreview]);
+  }, [announce, stopAudioPreview]);
 
   const handleShareJam = useCallback(async () => {
     const browserHref = getBrowserHref();
@@ -865,6 +584,7 @@ function App() {
             >
               Share URL
             </button>
+            {storageFailed && <span className="file-status" role="status">未保存: Export JSONで保存してください。</span>}
             {fileStatusMessage && (
               <span className="file-status" aria-live="polite">
                 {fileStatusMessage}
@@ -899,6 +619,7 @@ function App() {
               type="button"
               aria-label={formatTransportActionLabel(audioRecoveryAvailable ? "retry" : "play")}
               aria-pressed={isPlaying}
+              disabled={isAudioBusy}
               onClick={() => {
                 void handlePlay();
               }}
@@ -910,7 +631,7 @@ function App() {
               type="button"
               aria-label={formatTransportActionLabel("stop")}
               aria-pressed={!isPlaying}
-              onClick={handleStop}
+              onClick={() => stopAudioPreview()}
             >
               Stop
             </button>

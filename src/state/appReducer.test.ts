@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { appReducer, createInitialAppState, initialAppState } from "./appReducer";
 import type { Rule } from "../types";
+import { maxJamRules } from "../lib/rules";
 
 function makeRule(overrides: Partial<Rule> = {}): Rule {
   return {
@@ -33,11 +34,22 @@ describe("createInitialAppState", () => {
     expect(state.currentLevel).toBe("target");
     expect(state.ruleHistory).toEqual([]);
     expect(state.ruleFuture).toEqual([]);
-    expect(state.isPlaying).toBe(false);
   });
 });
 
 describe("appReducer", () => {
+  it("rejects single, batch and duplicate additions beyond the shared rule limit", () => {
+    const state = {
+      ...initialAppState,
+      rules: Array.from({ length: maxJamRules }, (_, index) => makeRule({ id: String(index) })),
+    };
+    const rule = makeRule({ id: "extra" });
+    expect(appReducer(state, { type: "addRule", rule })).toBe(state);
+    expect(appReducer(state, { type: "addRules", rules: [rule] })).toBe(state);
+    expect(appReducer(state, { type: "duplicateRule", sourceRuleId: "0", rule })).toBe(state);
+    expect(appReducer(state, { type: "removeRule", ruleId: "0" }).rules).toHaveLength(maxJamRules - 1);
+  });
+
   it("moves from target to intent when a target is selected", () => {
     const state = appReducer(initialAppState, {
       type: "selectTarget",
@@ -308,14 +320,6 @@ describe("appReducer", () => {
     expect(state.selectedIntent).toEqual({ id: "break", label: "崩す" });
   });
 
-  it("sets the transport UI state", () => {
-    const playingState = appReducer(initialAppState, { type: "setPlaying", isPlaying: true });
-    const stoppedState = appReducer(playingState, { type: "setPlaying", isPlaying: false });
-
-    expect(playingState.isPlaying).toBe(true);
-    expect(stoppedState.isPlaying).toBe(false);
-  });
-
   it("imports a persisted snapshot as a fresh jam state", () => {
     const importedRule = makeRule({ id: "imported" });
     const stateWithRule = {
@@ -323,7 +327,6 @@ describe("appReducer", () => {
       currentLevel: "technique" as const,
       rules: [makeRule({ id: "old" })],
       ruleHistory: [[makeRule({ id: "history" })]],
-      isPlaying: true,
     };
 
     const state = appReducer(stateWithRule, {
@@ -340,21 +343,18 @@ describe("appReducer", () => {
     expect(state.currentLevel).toBe("target");
     expect(state.ruleHistory).toEqual([]);
     expect(state.ruleFuture).toEqual([]);
-    expect(state.isPlaying).toBe(false);
   });
 
-  it("selects presets without changing rules and stops the transport", () => {
+  it("selects presets without changing rules", () => {
     const stateWithRule = {
       ...initialAppState,
       rules: [makeRule()],
-      isPlaying: true,
     };
 
     const state = appReducer(stateWithRule, { type: "selectPreset", presetId: "neon-dub" });
 
     expect(state.selectedPresetId).toBe("neon-dub");
     expect(state.rules).toEqual(stateWithRule.rules);
-    expect(state.isPlaying).toBe(false);
     expect(state.ruleHistory).toEqual([]);
   });
 });

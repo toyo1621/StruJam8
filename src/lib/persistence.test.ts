@@ -9,6 +9,8 @@ import {
   serializeJamSnapshot,
 } from "./persistence";
 import type { Rule } from "../types";
+import { maxJamRules, maxJamSnapshotBytes } from "./rules";
+import { formatPlayableCode } from "./codegen";
 
 class MemoryStorage {
   private values = new Map<string, string>();
@@ -72,7 +74,7 @@ describe("jam persistence", () => {
     expect(loadJamSnapshot(storage)).toBeNull();
   });
 
-  it("filters invalid rules from otherwise valid snapshots", () => {
+  it("rejects the entire snapshot instead of silently dropping invalid rules", () => {
     const storage = new MemoryStorage();
     const validRule = makeRule();
     storage.setItem(
@@ -84,7 +86,53 @@ describe("jam persistence", () => {
       }),
     );
 
-    expect(loadJamSnapshot(storage)?.rules).toEqual([validRule]);
+    expect(loadJamSnapshot(storage)).toBeNull();
+  });
+
+  it("rebuilds executable fields and labels from the catalog", () => {
+    const rule = makeRule({
+      target: "*/ globalThis.marker = 1; /*",
+      technique: "*/ globalThis.marker = 2; /*",
+      strudelSnippet: ".gain((globalThis.marker = 3, 0))",
+      needsTodo: true,
+      playbackTransform: "chordVoicing",
+    });
+    const restored = parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules: [rule] }));
+    expect(restored?.rules).toEqual([makeRule()]);
+    expect(formatPlayableCode(restored!.rules)).not.toContain("marker");
+  });
+
+  it.each([
+    { techniqueId: "unknown" },
+    { targetId: "drums" },
+    { intentId: "build" },
+    { enabled: "true" },
+    { id: "" },
+    { id: "x".repeat(129) },
+  ])("rejects an inconsistent rule: %j", (overrides) => {
+    const json = JSON.stringify({ version: 1, selectedPresetId: "toy-house", rules: [{ ...makeRule(), ...overrides }] });
+    expect(parseJamSnapshotText(json)).toBeNull();
+  });
+
+  it("rejects duplicate rule IDs and excessive rule counts", () => {
+    expect(parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules: [makeRule(), makeRule()] }))).toBeNull();
+    const rules = Array.from({ length: maxJamRules + 1 }, (_, i) => makeRule({ id: String(i) }));
+    expect(parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules }))).toBeNull();
+    expect(parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules: rules.slice(0, maxJamRules) }))?.rules).toHaveLength(maxJamRules);
+  });
+
+  it("bounds UTF-8 input before parsing", () => {
+    expect(parseJamSnapshotText(" ".repeat(maxJamSnapshotBytes + 1))).toBeNull();
+    const json = JSON.stringify({ version: 1, selectedPresetId: "toy-house", rules: [], extra: "音".repeat(100_000) });
+    expect(json.length).toBeLessThan(maxJamSnapshotBytes);
+    expect(parseJamSnapshotText(json)).toBeNull();
+  });
+
+  it("restores legacy placeholders only on undefined routes, always without code", () => {
+    const rule = makeRule({ targetId: "bells", intentId: "break", techniqueId: "fallback-technique-1", strudelSnippet: ".gain(9)" });
+    const restored = parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules: [rule] }));
+    expect(restored?.rules[0]).toMatchObject({ target: "ベル", technique: "手法1", strudelSnippet: null });
+    expect(parseJamSnapshotText(serializeJamSnapshot({ selectedPresetId: "toy-house", rules: [makeRule({ techniqueId: "fallback-technique-1" })] }))).toBeNull();
   });
 
   it("serializes and parses exportable jam JSON", () => {

@@ -31,6 +31,7 @@ let initPromise: Promise<unknown> | null = null;
 let didInitialize = false;
 let playbackGeneration = 0;
 let latestEvaluationRequest = 0;
+let playbackRequested = false;
 let evaluationQueue: Promise<void> = Promise.resolve();
 let audioTriggerHandler: StrudelAudioTriggerHandler | null = null;
 let audioErrorHandler: StrudelAudioErrorHandler | null = null;
@@ -398,6 +399,7 @@ export async function startStrudelAudio(
   onError?: StrudelAudioErrorHandler,
   onCodeLocationMetadata?: StrudelCodeLocationMetadataHandler,
 ) {
+  playbackRequested = true;
   if (onTrigger) {
     audioTriggerHandler = onTrigger;
   }
@@ -418,6 +420,11 @@ export async function startStrudelAudio(
 
   const evaluation = evaluationQueue.then(async () => {
     if (generation !== playbackGeneration || requestId !== latestEvaluationRequest) {
+      if (!playbackRequested) {
+        module.hush();
+        suspendAudioContextAfterStop(module);
+        await waitForAudioContextSuspend();
+      }
       return;
     }
 
@@ -450,6 +457,7 @@ export async function startStrudelAudio(
 }
 
 export function stopStrudelAudio() {
+  playbackRequested = false;
   playbackGeneration += 1;
   latestEvaluationRequest += 1;
   audioTriggerHandler = null;
@@ -467,6 +475,7 @@ export function stopStrudelAudio() {
 }
 
 export function resetStrudelEngineForTests() {
+  playbackRequested = false;
   strudelModulePromise = null;
   strudelModule = null;
   strudelImportAttempt = 0;

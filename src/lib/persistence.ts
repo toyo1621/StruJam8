@@ -1,5 +1,7 @@
 import { intents, targets } from "../data/pads";
 import { isPresetId } from "../data/presets";
+import { getTechniqueById, getTechniquesByRoute } from "../data/techniques";
+import { createRuleFromTechnique, maxJamRules, maxJamSnapshotBytes } from "./rules";
 import type { IntentId, PersistedJamSnapshot, Rule, TargetId } from "../types";
 
 export const jamStorageKey = "strujam8:jam:v1";
@@ -27,24 +29,39 @@ function isIntentId(value: unknown): value is IntentId {
   return typeof value === "string" && intentIds.has(value as IntentId);
 }
 
-function isRule(value: unknown): value is Rule {
-  if (!isRecord(value)) {
-    return false;
+function restoreRule(value: unknown): Rule | null {
+  if (
+    !isRecord(value) ||
+    typeof value.id !== "string" || value.id.length === 0 || value.id.length > 128 ||
+    !isTargetId(value.targetId) || !isIntentId(value.intentId) ||
+    typeof value.techniqueId !== "string" || typeof value.enabled !== "boolean"
+  ) {
+    return null;
   }
 
-  return (
-    typeof value.id === "string" &&
-    isTargetId(value.targetId) &&
-    isIntentId(value.intentId) &&
-    typeof value.techniqueId === "string" &&
-    typeof value.target === "string" &&
-    typeof value.intent === "string" &&
-    typeof value.technique === "string" &&
-    typeof value.shortLabel === "string" &&
-    (typeof value.strudelSnippet === "string" || value.strudelSnippet === null) &&
-    typeof value.needsTodo === "boolean" &&
-    typeof value.enabled === "boolean"
-  );
+  const technique = getTechniqueById(value.techniqueId);
+  if (technique) {
+    if (technique.targetId !== value.targetId || technique.intentId !== value.intentId) return null;
+    // External snapshots select catalog entries; they never supply executable code or labels.
+    return createRuleFromTechnique(technique, value.id, value.enabled);
+  }
+
+  const fallback = /^fallback-technique-([1-8])$/.exec(value.techniqueId);
+  if (!fallback || getTechniquesByRoute(value.targetId, value.intentId).length > 0) return null;
+  const label = `手法${fallback[1]}`;
+  return {
+    id: value.id,
+    targetId: value.targetId,
+    intentId: value.intentId,
+    techniqueId: value.techniqueId,
+    target: targets.find((target) => target.id === value.targetId)!.label,
+    intent: intents.find((intent) => intent.id === value.intentId)!.label,
+    technique: label,
+    shortLabel: label,
+    strudelSnippet: null,
+    needsTodo: false,
+    enabled: value.enabled,
+  };
 }
 
 function parseSnapshot(value: unknown): PersistedJamSnapshot | null {
@@ -52,14 +69,22 @@ function parseSnapshot(value: unknown): PersistedJamSnapshot | null {
     return null;
   }
 
-  if (!Array.isArray(value.rules)) {
+  if (!Array.isArray(value.rules) || value.rules.length > maxJamRules) {
     return null;
   }
 
+  const rules: Rule[] = [];
+  const ids = new Set<string>();
+  for (const entry of value.rules) {
+    const rule = restoreRule(entry);
+    if (!rule || ids.has(rule.id)) return null;
+    ids.add(rule.id);
+    rules.push(rule);
+  }
   return {
     version: 1,
     selectedPresetId: value.selectedPresetId,
-    rules: value.rules.filter(isRule),
+    rules,
   };
 }
 
@@ -76,6 +101,9 @@ export function serializeJamSnapshot(snapshot: PersistableJamSnapshot) {
 }
 
 export function parseJamSnapshotText(text: string): PersistedJamSnapshot | null {
+  if (text.length > maxJamSnapshotBytes || new TextEncoder().encode(text).byteLength > maxJamSnapshotBytes) {
+    return null;
+  }
   try {
     return parseSnapshot(JSON.parse(text));
   } catch {
@@ -117,7 +145,7 @@ export function saveJamSnapshot(
   storage: StorageLike | null,
   snapshot: PersistableJamSnapshot,
 ) {
-  if (!storage) {
+  if (!storage || snapshot.rules.length > maxJamRules) {
     return false;
   }
 

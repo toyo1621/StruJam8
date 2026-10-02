@@ -51,13 +51,18 @@ The workflow has the required Pages permissions:
 
 1. Merge or push to `main`.
 2. GitHub Actions runs `.github/workflows/pages.yml`.
-3. The build job runs `npm ci` and `npm run check:pages`.
-4. The workflow uploads `dist/` as a Pages artifact.
-5. The deploy job publishes the artifact to GitHub Pages.
+3. The build job calls `.github/workflows/ci.yml`, the same reusable validation used by CI: production dependency audit, unit tests, TypeScript/root build, root Chromium tests, Pages build/Chromium tests, all-technique evaluation and highlighting verification.
+4. Only after every check passes, it removes `dist/StruJam8/` (the preview-only copy), generates `dist/release.json` with the commit SHA and SHA-256 hashes of the tested files, and uploads the remaining `dist/` as the Pages artifact. There is no untested rebuild after browser validation.
+5. The deploy job depends on successful validation and publishes that artifact. Only this job receives `pages: write` and `id-token: write`; tests have read-only repository access.
 
 The workflow can also be started manually with `workflow_dispatch`.
 
 ## Post-Deploy QA
+
+Check the Pages run is successful for the intended commit. Fetch
+`https://toyo1621.github.io/StruJam8/release.json` and compare its `commit` with that SHA.
+For release-parity proof, fetch the files listed in `sha256` and compare their SHA-256
+digests with the manifest. HTTP 200 alone does not establish which release is served.
 
 Open https://toyo1621.github.io/StruJam8/ and check:
 
@@ -75,9 +80,18 @@ Open https://toyo1621.github.io/StruJam8/ and check:
 
 ## Troubleshooting
 
+- Failed tests or a high/critical production dependency advisory stop artifact upload and deployment. Fix the cause; do not bypass the reusable CI job to publish.
+
 - Blank page with missing JS/CSS usually means the Pages base path is wrong. Re-run `npm run check:pages` and inspect `dist/index.html`.
 - A failed deploy with permission errors usually means repository Pages settings are not set to GitHub Actions.
 - A successful deploy with stale UI may be browser cache. Hard refresh before debugging code.
+
+## Rollback
+
+Revert the faulty commit on `main` with a new commit and push it. The full validation
+gate must pass again before the reverted release is deployed. Do not force-push or
+replace the gate with a deploy-only workflow. If the gate is failing, the last successful
+Pages deployment stays live; it is not proof that the latest commit was published.
 
 ## Current Limits
 

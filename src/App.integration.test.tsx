@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
 import "@testing-library/jest-dom/vitest";
-import { cleanup, fireEvent, render, screen } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import App from "./App";
 import { jamStorageKey } from "./lib/persistence";
@@ -37,6 +37,33 @@ describe("App interactions", () => {
 
   afterEach(() => {
     cleanup();
+  });
+
+  it("shows an unsaved warning when browser storage is unavailable", () => {
+    Object.defineProperty(window, "localStorage", { configurable: true, get() { throw new Error("blocked"); } });
+    render(<App />);
+    expect(screen.getByText("未保存: Export JSONで保存してください。")).toBeInTheDocument();
+    clickButton(/ベース/);
+    clickButton(/崩す/);
+    clickButton(/音を抜く/);
+    expect(screen.getByLabelText("Audible Strudel code")).toHaveTextContent(".degradeBy(0.2)");
+  });
+
+  it.each(["invalid", "unreadable", "oversized"])("preserves the current jam on %s import", async (failure) => {
+    render(<App />);
+    clickButton(/ベース/);
+    clickButton(/崩す/);
+    clickButton(/音を抜く/);
+    const file = {
+      size: failure === "oversized" ? 256 * 1024 + 1 : 10,
+      text: async () => {
+        if (failure === "unreadable") throw new Error("read failure");
+        return "invalid JSON";
+      },
+    };
+    fireEvent.change(screen.getByLabelText("Import jam JSON"), { target: { files: [file] } });
+    await waitFor(() => expect(screen.getByText(/Import failed: 有効なJam/)).toBeInTheDocument());
+    expect(screen.getByLabelText("Audible Strudel code")).toHaveTextContent(".degradeBy(0.2)");
   });
 
   it("navigates through the three pad levels and adds a playable rule", () => {
@@ -127,7 +154,7 @@ describe("App interactions", () => {
       id: `large-share-rule-${index}`,
       targetId: "bass" as const,
       intentId: "break" as const,
-      techniqueId: `large-share-technique-${index}`,
+      techniqueId: "bass-break-drop-notes",
       target: "ベース",
       intent: "崩す",
       technique: `手法 ${index}`,

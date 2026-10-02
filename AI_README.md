@@ -48,7 +48,7 @@ npm run verify:techniques
 npm run verify:highlighting
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location merging and mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, all concrete route reachability, one verified playback technique from every concrete route, the 28-technique runtime-verified playback batch, code update, RESET behavior, safe exclusion of unverified snippets, real invalid-snippet failure recovery, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, live code highlighting across a representative route for all eight target tracks, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same flows against a Pages-base-path production preview.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location merging and mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, all concrete route reachability, one verified playback technique from every concrete route, the 28-technique runtime-verified playback batch, code update, RESET behavior, trusted-catalog input restoration, unknown-technique rejection, pending-start cancellation, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, live code highlighting across a representative route for all eight target tracks, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same flows against a Pages-base-path production preview.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Use `npm run verify:techniques` and `npm run verify:highlighting` with the local Vite server running to evaluate every technique definition and measure its runtime source-location signals. Reducer behavior is covered by unit tests.
 
 ## Architecture
@@ -92,7 +92,9 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/lib/keyboard.ts`: pure keyboard shortcut helpers and editing-control guards.
 - `src/lib/persistence.ts`: localStorage and JSON snapshot parse/serialize helpers.
 - `src/lib/shareUrl.ts`: URL snapshot sharing helpers using the `jam` query parameter, including a practical length guard.
-- `src/state/appReducer.ts`: reducer for navigation, rules, and transport UI state.
+- `src/state/appReducer.ts`: reducer for navigation and rules only.
+- `src/audio/useAudioPlayback.ts`: transport phases, generation-based cancellation, live updates and Retry.
+- `src/lib/rules.ts`: canonical rule builder and shared input limits.
 
 ### State Model
 
@@ -105,11 +107,10 @@ Current state is owned by `src/state/appReducer.ts` and consumed by `App.tsx`:
 - `rules: Rule[]`
 - `ruleHistory: Rule[][]`
 - `ruleFuture: Rule[][]`
-- `isPlaying: boolean`
 
 Active technique pad highlighting is derived from enabled rules, not stored separately.
 
-The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. If the first module load fails, the next Retry uses a separate query-keyed module URL to bypass the browser's failed ES-module cache. Stop calls `hush()` through the audio boundary, suspends the current browser AudioContext, and resets the Superdough controller/effect state; the next Play waits for suspension and resumes the same context. If a browser has already closed the context, the next Play still follows the closed-context recovery path and creates a fresh one. While `isPlaying` is true, `App.tsx` re-evaluates the current audible code when it changes. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
+The Play button initializes Strudel from a user click and evaluates conservative playable code. The `@strudel/web` runtime is dynamically imported at that point, so the initial UI does not pay the full audio bundle cost. If the first module load fails, the next Retry uses a separate query-keyed module URL to bypass the browser's failed ES-module cache. Stop calls `hush()` through the audio boundary, suspends the current browser AudioContext, and resets the Superdough controller/effect state; the next Play waits for suspension and resumes the same context. If a browser has already closed the context, the next Play still follows the closed-context recovery path and creates a fresh one. `useAudioPlayback` re-evaluates changed audible code while playback is requested, including during initialization. It owns transport state separately from the reducer. Preset changes and JSON imports stop playback before swapping state. The `isPlaying` state reflects the UI transport status, not a full low-level audio graph status.
 
 ### Technique Data Contract
 
@@ -183,7 +184,7 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 
 ### Partially Implemented
 
-- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, suspends the current AudioContext on Stop, resumes it before the next evaluation, recreates a fresh context when the browser has already closed the old one, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Real invalid-snippet failure and recovery are covered by browser E2E, but it is still not full strudel.cc transport parity.
+- Play/Stop/Retry: first audio preview only; it initializes Strudel, evaluates the same audible code shown in the right panel, serializes updates so the latest request wins, re-evaluates on audible code changes while playing, suspends the current AudioContext on Stop, resumes it before the next evaluation, recreates a fresh context when the browser has already closed the old one, clears the stale Superdough controller and global effects during context reset, stops UI playback when evaluation, output, or scheduler errors are reported, and exposes a visible Retry state after a recoverable failure. Evaluation failures are covered by engine/hook tests; browser E2E covers untrusted-input rejection and runtime-load Retry, but it is still not full strudel.cc transport parity.
 - Strudel code generation: selected snippets are grouped by track and chained against track templates. Runtime playback uses a stricter formatter that starts from preset playback tracks and omits disabled, missing, and unverified snippets.
 - Active code highlighting: syntax-colored tokens plus merged runtime Hap source-location highlighting are implemented, with evaluator `miniLocations` forwarded into the UI to refine the active source leaves. The left rule list derives from the same active rendered lines and shows a synchronized `LIVE` state, falling back to the active target when locations are broad. A representative browser smoke covers all eight target tracks, a playback smoke covers one verified technique from every concrete route, and a 28-technique runtime-verified playback batch is included. All 296 catalog snippets also pass the installed Strudel evaluator through `npm run verify:techniques`; `npm run verify:highlighting` confirms `miniLocations` for 296/296 and observes runtime event locations for 295/296 in a 500ms window, with the remaining rest-oriented technique documented as potentially silent. Exact strudel.cc editor rendering/state parity remains pending.
 - Technique catalog: 37 real routes have concrete snippets, covering every target and every intent at least once:
@@ -231,13 +232,13 @@ Concrete target/intent routes are listed in `src/data/routes.ts`. Every concrete
 ### Missing
 
 - Exact strudel.cc editor metadata/state parity beyond the currently consumed evaluator `miniLocations`, plus location coverage for techniques that do not carry mini notation.
-- Full normal-stop AudioContext disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures; normal Stop suspends the context and resets the global audio graph, while real invalid-snippet failure/recovery and runtime-load failure recovery are covered by browser E2E.
+- Full normal-stop AudioContext disposal and error-specific recovery for invalid snippets and unrecoverable runtime failures; normal Stop suspends the context and resets the global audio graph, while invalid-input rejection and runtime-load failure recovery are covered by browser E2E and evaluator failures by engine/hook tests.
 - External sample-pack and soundfont loading after license review.
 - Parameter editing for existing rules.
 - User-defined presets and named preset saving.
 - URL sharing of large jams beyond the practical length limit; the UI intentionally directs those jams to JSON export.
 - MIDI/controller input.
-- Full event-window coverage for techniques that intentionally begin with silence; the representative all-eight-target smoke, one-verified-technique-per-route playback smoke, 296-snippet evaluator verification, 296/296 `miniLocations` verification, 295/296 runtime event-location observation, safe-exclusion checks, real invalid-snippet failure/recovery, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by the documented checks.
+- Full event-window coverage for techniques that intentionally begin with silence; the representative all-eight-target smoke, one-verified-technique-per-route playback smoke, 296-snippet evaluator verification, 296/296 `miniLocations` verification, 295/296 runtime event-location observation, trusted-input restoration, pending-start cancellation, audio start/stop, lazy loading, and runtime-load Retry recovery are covered by the documented checks.
 - Accessibility pass beyond basic semantic buttons and labels.
 - Full error telemetry or remote crash reporting; the current boundary logs locally and offers reload.
 - Error-specific recovery for invalid snippets and unrecoverable runtime scheduler errors remains pending; real invalid snippets stop playback and expose Retry, runtime-load Retry bypasses a failed module cache, and closed AudioContexts are recreated before the next Play attempt.
@@ -316,10 +317,10 @@ Current level: acceptable for early playback MVP.
 
 Risks:
 
-- Rule IDs use `crypto.randomUUID()` with a `Date.now()` fallback.
-- Strudel snippets are strings and not validated.
+- New rule IDs use `crypto.randomUUID()` in the secure context required by the app.
+- Catalog snippets are trusted application code. URL, JSON and localStorage restore only registered IDs; executable fields and labels are rebuilt from the catalog, never accepted from external snapshots.
 - RESET semantics are tested and announced, but users may still expect it to return home because the visible label is intentionally compact.
-- localStorage access is guarded and malformed snapshots are ignored.
+- localStorage access is guarded; save failures show an unsaved warning. Invalid snapshots are rejected atomically; snapshots are capped at 256 KiB and 128 rules.
 
 Recommended direction:
 
@@ -383,7 +384,7 @@ Recommended direction:
 
 ### Performance
 
-Current level: no issue.
+Current level: partially measured; cold-start latency and real-device performance remain unverified.
 
 Risks later:
 
@@ -474,9 +475,9 @@ Tasks:
 - Add an audio engine boundary module instead of calling Strudel directly from UI components: done in `src/audio/strudelEngine.ts`.
 - Implement start and stop lifecycle: first pass done with `initStrudel()`, `evaluate()`, and `hush()`.
 - Implement serialized latest-request update lifecycle: done; Stop hushes playback, suspends the current AudioContext, waits for suspension before a new Play, and resets the stale Superdough controller and global effects.
-- Handle invalid code safely: unverified snippets are excluded before Play, while evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Real invalid-snippet evaluation and recovery are covered by browser E2E; error-specific recovery beyond the current retry behavior remains pending.
+- Handle invalid code safely: unverified snippets are excluded before Play, while evaluation, output, and scheduler errors are surfaced and stop UI playback; suspended contexts are resumed, closed contexts are recreated before retry, and a visible Retry state is shown. Evaluation failures are covered at the engine/hook boundary; untrusted input rejection and runtime-load Retry are covered by browser E2E; error-specific recovery beyond the current retry behavior remains pending.
 - Keep right-panel code, copied code, and Play input identical: done for audible code.
-- Re-evaluate playback when the audible code changes while Play is active: done in `src/App.tsx`.
+- Re-evaluate playback when the audible code changes while Play is active: done in `src/audio/useAudioPlayback.ts`.
 - Add a user gesture gate for browser audio permissions: first pass done by starting from the Play button click.
 - Review external sample-pack licensing before enabling remote samples: pending.
 
@@ -500,7 +501,7 @@ Tasks:
 - Choose final license and add LICENSE: done with `AGPL-3.0-or-later`; see `docs/license-review.md`.
 - Add contribution guidelines: done in `CONTRIBUTING.md`.
 - Add automated checks in GitHub Actions: done for unit/build validation via `npm run check`, development Chromium validation via `npm run test:e2e`, and Pages-base-path production validation via `npm run test:e2e:pages`.
-- Add GitHub Pages deployment workflow: done in `.github/workflows/pages.yml`; it runs `npm run check:pages`, and repository Pages settings still need to allow GitHub Actions deployment. Runbook added in `docs/deployment.md`.
+- Add GitHub Pages deployment workflow: done in `.github/workflows/pages.yml`; it calls the reusable CI gate before uploading/deploying the tested Pages artifact. Pages is already configured for GitHub Actions. Runbook added in `docs/deployment.md`.
 - Add screenshots or demo GIF: desktop/rules/tablet PNG assets and the short pad-to-code demo GIF are committed under `docs/assets/`; a sharing-controls screenshot remains pending.
 - Add visible Source and License links in the app header: done via `src/data/projectLinks.ts`.
 - Add deployment target: GitHub Pages selected; expected URL is `https://toyo1621.github.io/StruJam8/` after repository Pages settings are enabled.

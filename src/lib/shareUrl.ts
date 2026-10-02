@@ -34,6 +34,17 @@ export function parseJamShareUrl(urlText: string): PersistedJamSnapshot | null {
   }
 }
 
+export function consumeJamShareUrl() {
+  try {
+    const url = new URL(window.location.href);
+    if (!url.searchParams.has(jamUrlParam)) return;
+    url.searchParams.delete(jamUrlParam);
+    window.history.replaceState(window.history.state, "", url);
+  } catch {
+    // Some embedded browsers do not allow history updates.
+  }
+}
+
 export function getBrowserHref() {
   if (typeof window === "undefined") {
     return null;

@@ -25,6 +25,10 @@ function makeRule(overrides: Partial<Rule> = {}): Rule {
 }
 
 describe("jam share URL", () => {
+  it("never trusts executable text embedded in a shared URL", () => {
+    const url = createJamShareUrl("https://example.com/", { selectedPresetId: "toy-house", rules: [makeRule({ strudelSnippet: ".gain((globalThis.marker = 1, 0))" })] });
+    expect(parseJamShareUrl(url)?.rules[0].strudelSnippet).toBe(".degradeBy(0.2)");
+  });
   it("encodes and decodes a jam snapshot in the URL", () => {
     const rule = makeRule();
     const url = createJamShareUrl("https://example.com/strujam?view=pad#dock", {

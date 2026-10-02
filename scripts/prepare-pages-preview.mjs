@@ -7,6 +7,7 @@ const distRoot = path.join(projectRoot, "dist");
 const pagesRoot = path.join(distRoot, "StruJam8");
 
 await rm(pagesRoot, { recursive: true, force: true });
+if (process.argv.includes("--clean")) process.exit(0);
 await mkdir(pagesRoot, { recursive: true });
 await cp(path.join(distRoot, "assets"), path.join(pagesRoot, "assets"), { recursive: true });
 await cp(path.join(distRoot, "index.html"), path.join(pagesRoot, "index.html"));

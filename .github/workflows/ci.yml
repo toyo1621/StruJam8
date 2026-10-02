@@ -4,6 +4,11 @@ on:
   push:
     branches: [main]
   pull_request:
+  workflow_call:
+    inputs:
+      upload-pages:
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -12,6 +17,7 @@ jobs:
   test:
     name: Test and build
     runs-on: ubuntu-latest
+    timeout-minutes: 20
 
     steps:
       - name: Checkout repository
@@ -25,6 +31,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Run validation checks
         run: npm run check
@@ -52,3 +61,17 @@ jobs:
           curl --fail --silent http://127.0.0.1:4173/ >/dev/null
           npm run verify:techniques
           npm run verify:highlighting
+
+      - name: Remove preview-only fixture
+        if: inputs.upload-pages
+        run: node scripts/prepare-pages-preview.mjs --clean
+
+      - name: Record verified release identity
+        if: inputs.upload-pages
+        run: node scripts/write-release-manifest.mjs
+
+      - name: Upload verified Pages artifact
+        if: inputs.upload-pages
+        uses: actions/upload-pages-artifact@v5
+        with:
+          path: dist

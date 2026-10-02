@@ -1,4 +1,5 @@
 import { defaultPresetId } from "../data/presets";
+import { maxJamRules } from "../lib/rules";
 import type {
   CurrentLevel,
   IntentId,
@@ -21,7 +22,6 @@ export interface AppState {
   rules: Rule[];
   ruleHistory: Rule[][];
   ruleFuture: Rule[][];
-  isPlaying: boolean;
 }
 
 export type AppAction =
@@ -38,7 +38,6 @@ export type AppAction =
   | { type: "goBack" }
   | { type: "goHome" }
   | { type: "resetRules" }
-  | { type: "setPlaying"; isPlaying: boolean }
   | { type: "selectPreset"; presetId: PresetId }
   | { type: "importSnapshot"; snapshot: PersistedJamSnapshot };
 
@@ -50,7 +49,6 @@ export const initialAppState: AppState = {
   rules: [],
   ruleHistory: [],
   ruleFuture: [],
-  isPlaying: false,
 };
 
 export function createInitialAppState(snapshot: PersistedJamSnapshot | null = null): AppState {
@@ -70,7 +68,7 @@ function pushRuleStack(ruleStack: Rule[][], currentRules: Rule[]) {
 }
 
 function commitRuleChange(state: AppState, nextRules: Rule[]): AppState {
-  if (nextRules === state.rules) {
+  if (nextRules === state.rules || nextRules.length > maxJamRules) {
     return state;
   }
 
@@ -225,17 +223,10 @@ export function appReducer(state: AppState, action: AppAction): AppState {
     case "resetRules":
       return state.rules.length === 0 ? state : commitRuleChange(state, []);
 
-    case "setPlaying":
-      return {
-        ...state,
-        isPlaying: action.isPlaying,
-      };
-
     case "selectPreset":
       return {
         ...state,
         selectedPresetId: action.presetId,
-        isPlaying: false,
       };
 
     case "importSnapshot":

@@ -276,6 +276,20 @@ describe("strudel engine", () => {
     expect(hushMock).not.toHaveBeenCalled();
   });
 
+  it("suspends a context initialized after Stop instead of leaving it running", async () => {
+    let finishInit!: () => void;
+    initStrudelMock.mockReturnValueOnce(new Promise<void>((resolve) => { finishInit = resolve; }));
+    const context = { state: "running", suspend: vi.fn().mockResolvedValue(undefined) };
+    getAudioContextMock.mockReturnValue(context);
+    const pending = startStrudelAudio();
+    await vi.waitFor(() => expect(initStrudelMock).toHaveBeenCalledOnce());
+    stopStrudelAudio();
+    finishInit();
+    await expect(pending).resolves.toBe(false);
+    expect(evaluateMock).not.toHaveBeenCalled();
+    expect(context.suspend).toHaveBeenCalledOnce();
+  });
+
   it("stops playback through hush after initialization", async () => {
     await startStrudelAudio();
     stopStrudelAudio();
