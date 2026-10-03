@@ -48,14 +48,15 @@ npm run verify:techniques
 npm run verify:highlighting
 ```
 
-The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, live pad color contrast, keyboard shortcut mapping and interaction guards, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location merging and mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, all concrete route reachability, one verified playback technique from every concrete route, the 28-technique runtime-verified playback batch, code update, RESET behavior, trusted-catalog input restoration, unknown-technique rejection, pending-start cancellation, tablet-width overflow, narrow mobile touch controls, browser audio start/stop, live code highlighting across a representative route for all eight target tracks, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same flows against a Pages-base-path production preview.
+The Vitest suite covers route lookup, technique lookup, concrete route completeness, concrete route uniqueness, all-target route coverage, all-intent route coverage, required learning copy, project source/license link metadata, accessibility labels, pad and code-token contrast, keyboard focus/shortcut behavior, screen reader announcement formatting, clipboard helpers, persistence parsing, share URL encoding, app reducer transitions, rule duplication, rule ordering, undo/redo behavior, generated code formatting, code highlighting, code tokenization, code-location merging and mapping, the Strudel audio engine boundary, and browser-like React interactions through Testing Library + jsdom, including audio retry recovery. Playwright adds real-browser checks for the three-level route, keyboard focus continuity, all concrete route reachability, one verified playback technique from every concrete route, the 28-technique runtime-verified playback batch, code update, RESET behavior, trusted-catalog input restoration, unknown-technique rejection, pending-start cancellation, full pad visibility at 1024x768, narrow mobile touch controls, browser audio start/stop, live code highlighting across a representative route for all eight target tracks, runtime-load Retry recovery, the lazy-loading boundary that keeps the Strudel runtime out of the initial page load, and the same flows against a Pages-base-path production preview.
 Use `npm run check` as the normal local validation gate; it runs `npm test` and `npm run build`. Use `npm run check:pages` before deployment-related changes; it validates the GitHub Pages build base path. Use `npm run verify:techniques` and `npm run verify:highlighting` with the local Vite server running to evaluate every technique definition and measure its runtime source-location signals. Reducer behavior is covered by unit tests.
 
 ## Architecture
 
 ### Main Files
 
-- `src/App.tsx`: React state, navigation, rule creation, generated code output, transport calls, and pad preview UI.
+- `src/App.tsx`: React state, navigation, rule creation, transport integration, and pad preview UI.
+- `src/components/CodePanel.tsx`: code token rendering, selected-rule scrolling, and runtime source highlighting.
 - `src/components/AppErrorBoundary.tsx`: catches unexpected render failures and provides a reload action.
 - `src/audio/strudelEngine.ts`: small boundary around `@strudel/web` init/evaluate/hush, runtime event locations, and evaluation errors.
 - `src/components/RuleDetailPanel.tsx`: compact selected-rule learning panel.
@@ -75,6 +76,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/types.ts`: shared data contracts.
 - `src/data/pads.ts`: target and intent pad definitions plus route-specific technique pad lookup.
 - `src/data/padColors.ts`: shared live pad palette, text color, and minimum contrast target.
+- `src/data/codeColors.ts`: shared code token colors and minimum WCAG AA contrast target.
 - `src/data/presets.ts`: static preset metadata, base code, and preset track patterns.
 - `src/data/starterJam.ts`: the beginner starter rule recipe shown in the empty rule state.
 - `src/data/projectLinks.ts`: source and license links shown in the app header.
@@ -84,7 +86,7 @@ Use `npm run check` as the normal local validation gate; it runs `npm test` and 
 - `src/lib/accessibilityLabels.ts`: pure labels for rule actions and transport controls.
 - `src/lib/announcements.ts`: pure screen reader announcement formatting helpers.
 - `src/lib/clipboard.ts`: clipboard copy helpers with success/failure states.
-- `src/lib/colorContrast.ts`: pure WCAG-style contrast helpers used by pad palette tests.
+- `src/lib/colorContrast.ts`: pure WCAG-style contrast helpers used by pad and code palette tests.
 - `src/lib/codegen.ts`: pure formatting helpers for audible Strudel code and conservative runtime playback code.
 - `src/lib/codeHighlight.ts`: pure helpers for active target and rule-snippet highlighting.
 - `src/lib/codeTokens.ts`: lossless tokenization for syntax-colored Strudel-like code.
@@ -271,7 +273,7 @@ Strengths:
 
 Risks:
 
-- `App.tsx` still owns navigation, rule creation, and most rendering.
+- `App.tsx` still owns navigation and rule creation; code rendering is isolated in `CodePanel.tsx` and rule details in `RuleDetailPanel.tsx`.
 - Technique IDs and fallback IDs are still string values and should remain stable.
 - Rule state transitions are centralized in a reducer, including order changes and undo/redo stacks for rule operations.
 - No lint formatter gate exists yet.

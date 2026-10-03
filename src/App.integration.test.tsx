@@ -147,6 +147,23 @@ describe("App interactions", () => {
 
     fireEvent.keyDown(window, { key: "2" });
     expect(screen.getByRole("button", { name: /音を抜く/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /音を抜く/ })).toHaveFocus();
+  });
+
+  it("moves keyboard focus into each newly rendered pad level", () => {
+    render(<App />);
+    const bassPad = screen.getByRole("button", { name: "2ベース" });
+    bassPad.focus();
+    fireEvent.keyDown(bassPad, { key: "Enter" });
+    fireEvent.click(bassPad, { detail: 0 });
+
+    expect(screen.getByRole("button", { name: "1盛り上げる" })).toHaveFocus();
+    const breakPad = screen.getByRole("button", { name: "2崩す" });
+    breakPad.focus();
+    fireEvent.keyDown(breakPad, { key: "Enter" });
+    fireEvent.click(breakPad, { detail: 0 });
+
+    expect(screen.getByRole("button", { name: /音を抜く/ })).toHaveFocus();
   });
 
   it("directs large jams to JSON export instead of copying an unusable URL", () => {

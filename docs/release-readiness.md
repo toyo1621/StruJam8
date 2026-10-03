@@ -11,7 +11,7 @@ next. Update the checkpoint and evidence links when a release changes.
 - Public URL: https://toyo1621.github.io/StruJam8/
 - Repository: https://github.com/toyo1621/StruJam8
 - Repository visibility: public
-- Local evidence: 198 unit/component tests, TypeScript/root build, 26 root Chromium tests and 26 Pages-build Chromium tests passed.
+- Local evidence: 200 unit/component tests, TypeScript/root build, 27 root Chromium tests and 27 Pages-build Chromium tests passed.
 - Catalog evidence: 296/296 snippets evaluate; 296/296 have miniLocations, 295/296 produce event locations in the 500ms observation window.
 - Publication is a separate check: verify the Pages workflow SHA, `release.json`, asset hashes and a browser smoke flow. Local green tests alone do not establish production parity.
 - Production dependency audit: `npm audit --omit=dev --audit-level=high` reported 0 vulnerabilities
@@ -39,12 +39,13 @@ next. Update the checkpoint and evidence links when a release changes.
 | --- | --- | --- |
 | TypeScript and production build are clean | Done | `npm run check` and `npm run check:pages` pass. |
 | GitHub Pages base path works | Done | Pages preview tests pass and the deployed URL returns `200 OK`. |
-| Regression coverage | Partial | 24 Vitest files / 198 tests and 26 Chromium tests pass at both root and Pages base paths. Real listening, assistive-technology and Safari checks remain evidence gaps. |
+| Regression coverage | Partial | 24 Vitest files / 200 tests and 27 Chromium tests pass at both root and Pages base paths. Real listening, assistive-technology and Safari checks remain evidence gaps. |
 | Untrusted snapshot execution | Hardened | URL, JSON and localStorage cannot supply executable snippets or labels: IDs are restored through the catalog. Unknown/mismatched techniques, duplicate IDs and invalid snapshots are rejected atomically. Parser tests plus three real-browser injection regression cases cover the trust boundary. |
 | Bounded inputs and storage failure | Hardened | Shared constants cap snapshots at 256 KiB and rules at 128; parser, file import and reducer enforce limits. This is a resource bound, not a musical-complexity or audio-safety guarantee. |
 | Deployment gate and identity | Implemented; verify per release | Pages calls reusable CI; tests, builds, dependency audit, both browser suites and catalog checks must pass before upload. No rebuild follows validation. Only deployment receives write permissions. `release.json` exposes commit and file hashes. |
-| Mobile and tablet usability | Done for tested sizes | 360px and 1024px overflow/touch-target checks pass. Real iPad and Safari testing remains. |
-| Keyboard and screen-reader basics | Partial | Semantic groups, labels, focus states, announcements, and guarded number keys exist. A full assistive-technology audit remains. |
+| Mobile and tablet usability | Done for tested sizes | 360px has no horizontal overflow and 44px controls. At 1024x768 the two work panels and all eight pads are visible without scrolling. Real iPad and Safari testing remains. |
+| Keyboard and screen-reader basics | Partial | Semantic groups, labels, announcements and guarded number keys exist. Enter and number-key level changes move focus to the first newly rendered pad. A real assistive-technology audit remains. |
+| Visual contrast | Done for tested code/pad palettes | Every live-pad combination and every syntax-token color is tested at 4.5:1 or better. Runtime highlight combinations and real-device rendering still need human review. |
 | Reduced-motion support | Done | The reduced-motion browser test verifies transitions are disabled. |
 | Performance | Partial | Strudel is lazy-loaded as one runtime chunk of about 710 kB minified (about 226 kB gzip); the source-entry build shares one `@strudel/core` copy and avoids the duplicate-core warning. Retry uses a query-keyed URL to bypass a failed module cache. The initial UI chunk is about 302 kB minified, so this budget remains under review. |
 | Runtime resilience | Partial | Playback lifecycle is isolated in `useAudioPlayback`; generation checks reject late results. Stop during delayed initialization is guarded in both hook and engine. Full strudel.cc transport parity and browser/device coverage remain outside this checkpoint. |
@@ -114,9 +115,6 @@ hold a second, competing `isPlaying` value.
 
 ## Remaining Audit Findings
 
-- P2 / S: preserve keyboard focus when pads change level; verify with Enter/Back/Home flows.
-- P2 / S: improve code-token contrast on the light code background, with contrast tests.
-- P2 / M: keep pads easier to reach on 1024x768 tablets; overflow-only tests do not prove usability.
 - P2 / M: split remaining rule/code rendering out of the large App component when changing those views; avoid a framework rewrite.
 - P2 / M: measure real Safari/iPad playback, cold-start latency and long-running stability. These are evidence gaps, not proven failures.
 - P3 / S: pin third-party Actions to reviewed immutable SHAs as a separate supply-chain maintenance change.

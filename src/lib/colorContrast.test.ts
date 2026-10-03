@@ -6,6 +6,11 @@ import {
   techniquePalette,
 } from "../data/padColors";
 import { getContrastRatio, meetsContrastRatio, parseHexColor } from "./colorContrast";
+import {
+  codePanelBackgroundColor,
+  codeTokenColors,
+  minimumCodeTokenContrastRatio,
+} from "../data/codeColors";
 
 describe("color contrast helpers", () => {
   it("parses six-digit hex colors", () => {
@@ -36,5 +41,16 @@ describe("color contrast helpers", () => {
         meetsContrastRatio(livePadTextColor, padColor.color, minimumLivePadContrastRatio),
       ),
     ).toBe(true);
+  });
+
+  it("keeps every code token color at WCAG AA contrast", () => {
+    const failures = Object.entries(codeTokenColors)
+      .map(([token, color]) => ({
+        token,
+        ratio: getContrastRatio(color, codePanelBackgroundColor),
+      }))
+      .filter(({ ratio }) => ratio < minimumCodeTokenContrastRatio);
+
+    expect(failures).toEqual([]);
   });
 });

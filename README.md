@@ -44,12 +44,14 @@ Implemented:
 - Intent-level route guide plus technique preview and rule detail panels with descriptions, snippet explanations, short labels, TODO badges, and playback-safety notes for unverified snippets
 - Number-key shortcuts for live pads 1-8, with guards for editable controls
 - Visible keyboard focus states
+- Keyboard focus follows the eight-pad flow when Enter or number keys change levels
 - Named control groups, touch-sized controls, and reduced-motion preference support
 - Screen reader status announcements and full-route labels for rule actions, including reset semantics
 - Live pad color contrast guarded by tests
+- Strudel token colors guarded at WCAG AA 4.5:1 contrast on the code panel
 - Visible source and license links for release readiness
 - Dark interface with colorful live pads
-- Responsive layout for desktop and tablet-sized screens
+- Responsive layout for desktop and tablet-sized screens; all eight pads stay visible at 1024x768
 - Recoverable audio failures expose a visible Retry state
 - Unexpected UI rendering failures show a reloadable fallback instead of a blank screen
 - React Testing Library + jsdom integration coverage for route navigation, reset, persistence restore, number-key navigation, and audio retry recovery
@@ -216,9 +218,11 @@ src/
     useAudioPlayback.ts   Playback lifecycle, cancellation and retry
   types.ts               Shared TypeScript types
   components/            Focused React UI components
+    CodePanel.tsx        Token rendering, selection and live source highlights
   data/
     pads.ts              Target, intent, and visible pad data
     padColors.ts         Shared live pad palette and contrast target
+    codeColors.ts        Shared WCAG AA token palette for the code panel
     presets.ts          Preset metadata and base Strudel-like code
     projectLinks.ts      Source and license links shown in the app
     routes.ts            Concrete target/intent route definitions

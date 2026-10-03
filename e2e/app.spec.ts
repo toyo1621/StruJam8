@@ -699,9 +699,27 @@ test.describe("StruJam8 browser flow", () => {
     const layout = await page.evaluate(() => ({
       documentWidth: document.documentElement.scrollWidth,
       viewportWidth: document.documentElement.clientWidth,
+      firstPadTop: document.querySelector(".live-pad")?.getBoundingClientRect().top ?? Infinity,
+      lastPadBottom: [...document.querySelectorAll(".live-pad")].at(-1)?.getBoundingClientRect().bottom ?? Infinity,
+      workspaceColumns: getComputedStyle(document.querySelector(".workspace")!).gridTemplateColumns.split(" ").length,
     }));
 
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
+    expect(layout.workspaceColumns).toBe(2);
+    expect(layout.firstPadTop).toBeGreaterThanOrEqual(0);
+    expect(layout.lastPadBottom).toBeLessThanOrEqual(768);
+  });
+
+  test("keeps keyboard focus on the eight-pad workflow", async ({ page }) => {
+    await page.goto("./");
+    const pads = livePads(page);
+    await pads.filter({ hasText: "ベース" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(pads.first()).toBeFocused();
+    await pads.filter({ hasText: "崩す" }).focus();
+    await page.keyboard.press("Enter");
+    await expect(pads.first()).toBeFocused();
+    await expect(pads.first()).toContainText("音を抜く");
   });
 
   test("keeps the pad dock usable in a narrow mobile viewport", async ({ page }) => {

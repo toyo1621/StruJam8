@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer, useRef, useState } from "react";
 import { useAudioPlayback } from "./audio/useAudioPlayback";
 import { RuleDetailPanel } from "./components/RuleDetailPanel";
+import { CodePanel } from "./components/CodePanel";
 import {
   formatRedoAnnouncement,
   formatRuleAddedAnnouncement,
@@ -39,11 +40,7 @@ import {
 import {
   expandCodeLocationsToMiniLocations,
   getActiveCodeLineIndexesFromLocations,
-  getCodeLineOffsets,
-  getCodeTokenOffsets,
-  getCodeTokenSegments,
 } from "./lib/codeLocations";
-import { tokenizeCodeLine } from "./lib/codeTokens";
 import {
   copyTextToClipboard,
   getBrowserClipboard,
@@ -137,7 +134,8 @@ function App() {
   const [storageFailed, setStorageFailed] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const importFileInputRef = useRef<HTMLInputElement | null>(null);
-  const codeViewRef = useRef<HTMLPreElement | null>(null);
+  const firstPadRef = useRef<HTMLButtonElement | null>(null);
+  const focusNextPadLevel = useRef(false);
   const {
     currentLevel,
     selectedTarget,
@@ -218,20 +216,6 @@ function App() {
     () => audibleCodeLines.map((line) => line.text),
     [audibleCodeLines],
   );
-  const audibleCodeTokens = useMemo(
-    () => audibleCodeLines.map((line) => tokenizeCodeLine(line.text || " ")),
-    [audibleCodeLines],
-  );
-  const codeLineOffsets = useMemo(
-    () => getCodeLineOffsets(audibleCodeTextLines),
-    [audibleCodeTextLines],
-  );
-  const codeTokenOffsets = useMemo(
-    () => audibleCodeTokens.map((tokens, index) =>
-      getCodeTokenOffsets(codeLineOffsets[index] ?? 0, tokens),
-    ),
-    [audibleCodeTokens, codeLineOffsets],
-  );
   const renderedCodeLocations = useMemo(
     () =>
       activeCodeLocations === null
@@ -294,6 +278,12 @@ function App() {
     setHighlightedPadId(null);
   }, [currentLevel, selectedIntent?.id, selectedTarget?.id]);
 
+  useLayoutEffect(() => {
+    if (!focusNextPadLevel.current) return;
+    focusNextPadLevel.current = false;
+    firstPadRef.current?.focus({ preventScroll: true });
+  }, [currentLevel]);
+
   useEffect(() => {
     if (rules.length === 0) {
       setSelectedRuleId(null);
@@ -304,20 +294,6 @@ function App() {
       setSelectedRuleId(rules[rules.length - 1]?.id ?? null);
     }
   }, [rules, selectedRuleId]);
-
-  useEffect(() => {
-    if (!selectedRuleId || !codeViewRef.current) {
-      return;
-    }
-
-    const selectedCodeLine = [...codeViewRef.current.querySelectorAll<HTMLElement>(".code-line")].find(
-      (line) => line.dataset.ruleId === selectedRuleId,
-    );
-
-    if (selectedCodeLine && typeof selectedCodeLine.scrollIntoView === "function") {
-      selectedCodeLine.scrollIntoView({ block: "nearest", inline: "nearest" });
-    }
-  }, [audibleCode, selectedRuleId]);
 
   const handlePadPress = useCallback((pad: PadOption) => {
     if (currentLevel === "target") {
@@ -520,6 +496,7 @@ function App() {
 
       event.preventDefault();
       setHighlightedPadId(pad.id);
+      focusNextPadLevel.current = currentLevel !== "technique";
       handlePadPress(pad);
     };
 
@@ -528,7 +505,7 @@ function App() {
     return () => {
       window.removeEventListener("keydown", handlePadShortcut);
     };
-  }, [handlePadPress, visiblePads]);
+  }, [currentLevel, handlePadPress, visiblePads]);
 
   return (
     <div className="app-shell">
@@ -766,74 +743,18 @@ function App() {
           )}
         </section>
 
-        <section className="code-panel" aria-labelledby="code-heading">
-          <div className="panel-heading code-heading-row">
-            <div>
-              <p className="eyebrow">Strudel Output</p>
-              <h2 id="code-heading">Strudel Code</h2>
-            </div>
-            <div className="code-actions">
-              {copyStatusLabel && (
-                <span className={`copy-status copy-status-${copyStatus}`} aria-live="polite">
-                  {copyStatusLabel}
-                </span>
-              )}
-              <button className="copy-code-button" type="button" onClick={handleCopyCode}>
-                Copy
-              </button>
-            </div>
-          </div>
-          <pre
-            ref={codeViewRef}
-            className="code-view"
-            aria-label="Audible Strudel code"
-            data-location-map={isPlaying ? (evaluatedCodeLocations.length > 0 ? "ready" : "pending") : "idle"}
-            data-source-location-count={evaluatedCodeLocations.length}
-          >
-            <code>
-              {audibleCodeLines.map((line, index) => {
-                const isLineActive = activeCodeLineIndexes.has(index);
-                const isRuleActive = activeCodeRuleId === line.ruleId;
-                const isRuleSelected = selectedRuleId === line.ruleId;
-
-                return (
-                  <span
-                    className={[
-                      "code-line",
-                      isLineActive ? "is-active" : "",
-                      isRuleActive ? "is-rule-active" : "",
-                      isRuleSelected ? "is-rule-selected" : "",
-                    ].filter(Boolean).join(" ")}
-                    data-rule-id={line.ruleId}
-                    data-target-id={line.targetId}
-                    key={index + "-" + line.text}
-                  >
-                    {(audibleCodeTokens[index] ?? []).map((token, tokenIndex) => {
-                      const tokenSegments = getCodeTokenSegments(
-                        codeTokenOffsets[index]?.[tokenIndex] ?? codeLineOffsets[index] ?? 0,
-                        token.text,
-                        isPlaying && renderedCodeLocations !== null ? renderedCodeLocations : [],
-                      );
-
-                      return tokenSegments.map((segment, segmentIndex) => (
-                        <span
-                          className={[
-                            "code-token",
-                            "code-token--" + token.kind,
-                            segment.isActive ? "is-location-active" : "",
-                          ].filter(Boolean).join(" ")}
-                          key={tokenIndex + "-" + segmentIndex + "-" + segment.text}
-                        >
-                          {segment.text}
-                        </span>
-                      ));
-                    })}
-                  </span>
-                );
-              })}
-            </code>
-          </pre>
-        </section>
+        <CodePanel
+          lines={audibleCodeLines}
+          activeLineIndexes={activeCodeLineIndexes}
+          activeRuleId={activeCodeRuleId}
+          selectedRuleId={selectedRuleId}
+          isPlaying={isPlaying}
+          evaluatedLocationCount={evaluatedCodeLocations.length}
+          renderedLocations={renderedCodeLocations}
+          copyStatus={copyStatus}
+          copyStatusLabel={copyStatusLabel}
+          onCopy={handleCopyCode}
+        />
       </main>
 
       <footer className="pad-dock">
@@ -954,6 +875,7 @@ function App() {
               <button
                 className={`live-pad ${isSelectedTechnique ? "is-selected" : ""}`}
                 key={`${currentLevel}-${pad.id}`}
+                ref={index === 0 ? firstPadRef : undefined}
                 type="button"
                 style={
                   {
@@ -965,7 +887,10 @@ function App() {
                 aria-keyshortcuts={String(index + 1)}
                 onMouseEnter={() => setHighlightedPadId(pad.id)}
                 onFocus={() => setHighlightedPadId(pad.id)}
-                onClick={() => handlePadPress(pad)}
+                onClick={(event) => {
+                  focusNextPadLevel.current = event.detail === 0 && currentLevel !== "technique";
+                  handlePadPress(pad);
+                }}
               >
                 <span className="pad-number">{index + 1}</span>
                 {pad.shortLabel && <span className="pad-short-label">{pad.shortLabel}</span>}
