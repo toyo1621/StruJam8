@@ -707,7 +707,7 @@ test.describe("StruJam8 browser flow", () => {
     expect(layout.documentWidth).toBeLessThanOrEqual(layout.viewportWidth + 1);
     expect(layout.workspaceColumns).toBe(2);
     expect(layout.firstPadTop).toBeGreaterThanOrEqual(0);
-    expect(layout.lastPadBottom).toBeLessThanOrEqual(768);
+    expect(layout.lastPadBottom).toBeLessThanOrEqual(760);
   });
 
   test("keeps keyboard focus on the eight-pad workflow", async ({ page }) => {
